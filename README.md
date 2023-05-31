@@ -8,9 +8,17 @@ The code should also work with the latest version of ndnSIM, but it is not guara
     mkdir ndnSIM
     cd ndnSIM
 
-    git clone -b ndnSIM-2.5 https://github.com/named-data-ndnSIM/ns-3-dev.git ns-3
-    git clone -b 0.18.0 https://github.com/named-data-ndnSIM/pybindgen.git pybindgen
-    git clone -b ndnSIM-2.5 --recursive https://github.com/named-data-ndnSIM/ndnSIM ns-3/src/ndnSIM
+    git clone -b ndnSIM-ns-3.35 https://github.com/named-data-ndnSIM/ns-3-dev.git ns-3
+        commit 1b3bab9b6dba5f1e616c0b286eb889e9ce3d5d59 (HEAD -> ndnSIM-ns-3.35, origin/ndnSIM-ns-3.35, origin/HEAD)
+
+    git clone https://github.com/named-data-ndnSIM/pybindgen.git pybindgen
+        commit a619e22a1492e586f42a688b015c551ea1facd7b (HEAD -> master, origin/master, origin/HEAD)
+        
+    git clone --recursive https://github.com/named-data-ndnSIM/ndnSIM ns-3/src/ndnSIM
+        commit 90d50396654dabad54b6979f2dc8fa929ade544c (HEAD -> master, tag: ndnSIM-2.9-NFD-22.02, origin/master, origin/HEAD)
+
+    git clone https://github.com/named-data-ndnSIM/scenario-template.git scenario
+        commit 8c91e46d206229db9377ed48d2f56e47c8c46725 (HEAD -> master, origin/master, origin/HEAD)
 
     # Build and install NS-3 and ndnSIM
     cd ns-3
@@ -25,8 +33,8 @@ The code should also work with the latest version of ndnSIM, but it is not guara
     # sudo ldconfig -a
 
     cd ..
-    git clone https://github.com/named-data-ndnSIM/scenario-template.git my-simulations
-    cd my-simulations
+    git clone https://github.com/named-data-ndnSIM/scenario-template.git scenario
+    cd scenario
 
     ./waf configure
     ./waf --run scenario
