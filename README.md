@@ -32,14 +32,15 @@ The code should also work with the latest version of ndnSIM, but it is not guara
     # When using Freebsd, run
     # sudo ldconfig -a
 
+After which you can proceed to compile and run the code
+
     cd ..
     git clone https://github.com/named-data-ndnSIM/scenario-template.git scenario
     cd scenario
 
-    ./waf configure
-    ./waf --run scenario
+    CXXFLAGS="-std=c++17" ./waf configure
+    ./waf --run <scenario-name>
 
-After which you can proceed to compile and run the code
 
 For more information how to install NS-3 and ndnSIM, please refer to http://ndnsim.net website.
 
