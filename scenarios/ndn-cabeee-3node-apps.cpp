@@ -168,7 +168,9 @@ main(int argc, char* argv[])
   // Custom App for User(Consumer)
   ndn::AppHelper userApp("CustomAppConsumer");
   //userApp.SetPrefix("/cabeee/sensor/service1/service2/service3");
-  userApp.SetPrefix("/service4/service3/service2/service1/sensor");
+  userApp.SetPrefix("/service4/service3/service2/service1/sensor"); // only for linear workflows
+  //TODO: only send out the last service (service4) - for now, I just do a linear workflow
+  //userApp.SetPrefix("/service4");
   userApp.Install(consumer).Start(Seconds(0));
 
 /*

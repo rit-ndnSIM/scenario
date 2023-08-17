@@ -94,7 +94,7 @@ DagForwarderApp::StopApplication()
 }
 
 void
-DagForwarderApp::SendInterest(const std::string& interestName)
+DagForwarderApp::SendInterest(const std::string& interestName, ndn::Block dagParameter)
 {
   if (!m_isRunning)
   {
@@ -115,11 +115,8 @@ DagForwarderApp::SendInterest(const std::string& interestName)
   interest->setInterestLifetime(ndn::time::seconds(5));
   //interest->setMustBeFresh(true);
 
-  //TODO: create structure or JSON object with DAG workflow, and add it as a parameter to the interest
-  //add custom parameter to interest packet
-  //interest.setApplicationParameters(???);
-  //extract custom parameter from interest packet
-  //auto ??? = interest.getApplicationParameters();
+  //add DAG workflow as a parameter to the new interest
+  interest->setApplicationParameters(dagParameter);
 
   NS_LOG_DEBUG("Sending Interest packet for " << *interest);
 
@@ -139,7 +136,7 @@ DagForwarderApp::OnInterest(std::shared_ptr<const ndn::Interest> interest)
   NS_LOG_DEBUG("Received Interest packet for " << interest->getName());
   //NS_LOG_DEBUG("Received on node hosting service " << m_service);
 
-
+  /*
   //remove the FIRST portion of the name to create a new interest for the next service in the DAG workflow
 
   //std::string interestName = ndn::Name::toUri(interest->getName());
@@ -167,8 +164,19 @@ DagForwarderApp::OnInterest(std::shared_ptr<const ndn::Interest> interest)
   //NS_LOG_DEBUG("String without first element: " << string_without_first_element);
 
   // generate the new interest with the shorter name
-  //TODO: generate interest at this level along with the DAG workflow parameter added to it, and pass it in to SendInterest()
   DagForwarderApp::SendInterest(string_without_first_element);
+  */
+
+
+  //TODO: look at the DAG and generate the new interest(s)
+  //extract custom parameter from interest packet
+  auto dagParameterFromInterest = interest->getApplicationParameters();
+  NS_LOG_DEBUG("Interest parameters received: " << dagParameterFromInterest);
+  //TODO: for now, I'm just doing a linear workflow with the dag workflow attached to the interests for testing.
+  ndn::Name without_first_element = interest->getName().ndn::Name::getSubName(1, ndn::Name::npos); // remove the first component
+  NS_LOG_DEBUG("Name without first element: " << without_first_element);
+  std::string string_without_first_element = without_first_element.ndn::Name::toUri();
+  DagForwarderApp::SendInterest(string_without_first_element, dagParameterFromInterest);
 
   // Note that Interests send out by the app will not be sent back to the app !
 

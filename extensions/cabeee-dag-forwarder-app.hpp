@@ -64,7 +64,7 @@ public:
 
 private:
   void
-  SendInterest(const std::string& interestName);
+  SendInterest(const std::string& interestName, ndn::Block);
   
 private:
   bool m_isRunning;

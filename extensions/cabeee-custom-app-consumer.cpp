@@ -120,7 +120,7 @@ CustomAppConsumer::SendInterest()
   interest->setInterestLifetime(ndn::time::seconds(5));
   //interest->setMustBeFresh(true);
 
-  //TODO: create structure or JSON object with DAG workflow, and add it as a parameter to the interest
+  //TODO: create structure or JSON object with DAG workflow by reading from a text file
   /*
   std::list<ndn::cabeee::DAG_SERVICE> serviceList;
   ndn::cabeee::DAG_SERVICE service;
@@ -155,6 +155,7 @@ CustomAppConsumer::SendInterest()
 
 
   std::string dagParameter = "head:service4,dagWorkflow:sensor>service1#service1>service2,service3#service2>service4#service3>service4,hash:0123456789ABCDEF";
+  //std::string dagParameter = "abcdef";
   const uint8_t * buffer = (const uint8_t*)&dagParameter;
 
   //add dagParameter as custom parameter to interest packet
@@ -176,7 +177,7 @@ CustomAppConsumer::SendInterest()
   //ndn::Block appParamBlock;
   //auto appParamBlock = std::make_shared<ndn::Block>();
 
-  //TODO: must encode the parameter(s) we are adding as a TLV-Value!!!
+  // the parameters are encoded as a TLV-Value!!!
   interest->setApplicationParameters(buffer, length);
   //interest->setApplicationParameters(appParamBlock);
   //extract custom parameter from interest packet
