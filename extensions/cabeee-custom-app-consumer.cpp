@@ -161,7 +161,7 @@ CustomAppConsumer::SendInterest()
 
   std::ifstream f("workflows/rpa-dag.json");
   json dagObject = json::parse(f);
-  //dagObject["head"] = "/service4"; //TODO: I'm doing this manually right now. I should look at the json input file, and see which service feeds "consumer", and use that instead of hardcoding
+  dagObject["head"] = "/service4"; //TODO: I'm doing this manually right now. I should look at the json input file, and see which service feeds "consumer", and use that instead of hardcoding
   interest->setName("/service4"); //TODO: I'm doing this manually right now. I should look at the json input file, and see which service feeds "consumer", and use that instead of hardcoding
 
   std::string dagString = dagObject.dump();

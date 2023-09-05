@@ -124,18 +124,25 @@ DagForwarderApp::SendInterest(const std::string& interestName, ndn::Block dagPar
   interest->setInterestLifetime(ndn::time::seconds(5));
   //interest->setMustBeFresh(true);
 
-  // overwrite the dag parameter "head" value and generate new application parameters
-  //json newInterestDagObject = dagObject;
-  //newInterestDagObject["head"] = y.value();
-  //std::string dagString = dagObject.dump();
-  //char *dagStringParameter = new char[dagString.length() + 1];
-  //strcpy(dagStringParameter, dagString.c_str());
-  //size_t length = strlen(dagStringParameter);
 
 
+  // overwrite the dag parameter "head" value and generate new application parameters (thus calculating new sha256 digest)
+  std::string dagString = std::string(reinterpret_cast<const char*>(dagParameter.value()), dagParameter.value_size());
+  auto dagObject = json::parse(dagString);
+  dagObject["head"] = interestName;
+  std::string updatedDagString = dagObject.dump();
+  // in order to convert from std::string to a char[] datatype we do the following (https://stackoverflow.com/questions/7352099/stdstring-to-char):
+  char *dagStringParameter = new char[updatedDagString.length() + 1];
+  strcpy(dagStringParameter, updatedDagString.c_str());
+  size_t length = strlen(dagStringParameter);
 
   //add DAG workflow as a parameter to the new interest
-  interest->setApplicationParameters(dagParameter);
+  //interest->setApplicationParameters(dagParameter);
+
+  //add modified DAG workflow as a parameter to the new interest
+  interest->setApplicationParameters((const uint8_t *)dagStringParameter, length);
+
+  
 
   NS_LOG_DEBUG("Forwarder: Sending Interest packet for " << *interest);
 
@@ -231,6 +238,8 @@ DagForwarderApp::OnInterest(std::shared_ptr<const ndn::Interest> interest)
   //NS_LOG_DEBUG("Interest parameter sensor feeds " << (dagObject["dag"]["/sensor"].size()) << " services: " << dagObject["dag"]["/sensor"]);
   //NS_LOG_DEBUG("Interest parameter s1 feeds " << (dagObject["dag"]["/S1"].size()) << " services: " << dagObject["dag"]["/S1"]);
 
+
+
   for (auto& x : dagObject["dag"].items())
   {
     for (auto& y : dagObject["dag"][x.key()].items())
@@ -242,6 +251,8 @@ DagForwarderApp::OnInterest(std::shared_ptr<const ndn::Interest> interest)
       {
         // generate new interest for service that feeds results to this application's service
         NS_LOG_DEBUG("Generating new interest for: " << x.key());
+
+
         DagForwarderApp::SendInterest(x.key(), dagParameterFromInterest);
       }
     }
@@ -250,7 +261,9 @@ DagForwarderApp::OnInterest(std::shared_ptr<const ndn::Interest> interest)
 
 
 
-  m_nameAndDigest = interest->getName(); //store the name with digest so that we can later generate the data packet with the same name/digest!
+  m_nameAndDigest = interest->getName();  // store the name with digest so that we can later generate the data packet with the same name/digest!
+                                          // TODO: this has issues - we cannot use the same service in more than one location in the DAG workflow!
+                                          // for this, we would need to be able to store and retrieve unique interests and their digest (perhaps using a fully hierarchical name?)
 
 
   // Note that Interests send out by the app will not be sent back to the app !
