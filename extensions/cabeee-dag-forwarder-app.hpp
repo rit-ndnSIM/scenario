@@ -69,6 +69,7 @@ private:
 private:
   bool m_isRunning;
   ndn::Name m_name;
+  ndn::Name m_nameAndDigest;
   ndn::Name m_service;
 };
 

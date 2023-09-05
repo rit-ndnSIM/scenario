@@ -34,10 +34,16 @@
 #include "ns3/random-variable-stream.h"
 
 
+#include <fstream>
+#include <nlohmann/json.hpp>
+using json = nlohmann::json;
+
+
+
 //#include "ns3/ndnSIM/ndn-cxx/ndn-cxx/encoding/encoder.hpp"
 //#include "ns3/ndnSIM/ndn-cxx/ndn-cxx/encoding/block.hpp"
-#include "ns3/ndnSIM/ndn-cxx/encoding/tlv.hpp"
-#include "ns3/ndnSIM/ndn-cxx/encoding/block-helpers.hpp"
+//#include "ns3/ndnSIM/ndn-cxx/encoding/tlv.hpp"
+//#include "ns3/ndnSIM/ndn-cxx/encoding/block-helpers.hpp"
 
 
 NS_LOG_COMPONENT_DEFINE("CustomAppConsumer");
@@ -120,8 +126,8 @@ CustomAppConsumer::SendInterest()
   interest->setInterestLifetime(ndn::time::seconds(5));
   //interest->setMustBeFresh(true);
 
-  //TODO: create structure or JSON object with DAG workflow by reading from a text file
   /*
+  // this is my attempt to create the dag workflow using a struct, rather than using JSON. I aborted early on.
   std::list<ndn::cabeee::DAG_SERVICE> serviceList;
   ndn::cabeee::DAG_SERVICE service;
 
@@ -150,18 +156,30 @@ CustomAppConsumer::SendInterest()
 
   serviceList.push_back(service);
 
-  //ndn::cabeee::DAG_INTEREST dagParameter = {.head = "service4", .dagWorkflow = serviceList, .hash = "0123456789ABCDEF"};
+  //ndn::cabeee::DAG_INTEREST dagStringParameter = {.head = "service4", .dagWorkflow = serviceList, .hash = "0123456789ABCDEF"};
   */
 
+  std::ifstream f("workflows/rpa-dag.json");
+  json dagObject = json::parse(f);
+  //dagObject["head"] = "/service4"; //TODO: I'm doing this manually right now. I should look at the json input file, and see which service feeds "consumer", and use that instead of hardcoding
+  interest->setName("/service4"); //TODO: I'm doing this manually right now. I should look at the json input file, and see which service feeds "consumer", and use that instead of hardcoding
 
-  std::string dagParameter = "head:service4,dagWorkflow:sensor>service1#service1>service2,service3#service2>service4#service3>service4,hash:0123456789ABCDEF";
-  //std::string dagParameter = "abcdef";
-  const uint8_t * buffer = (const uint8_t*)&dagParameter;
+  std::string dagString = dagObject.dump();
+  // in order to convert from std::string to a char[] datatype we do the following (https://stackoverflow.com/questions/7352099/stdstring-to-char):
+  char *dagStringParameter = new char[dagString.length() + 1];
+  strcpy(dagStringParameter, dagString.c_str());
 
-  //add dagParameter as custom parameter to interest packet
-  //const uint8_t * buffer = (const uint8_t*)&dagParameter;
+  //std::string dagStringParameter = "head:service4,dagWorkflow:sensor>service1#service1>service2,service3#service2>service4#service3>service4,hash:0123456789ABCDEF";
+  //char dagStringParameter[] = "head:service4,dagWorkflow:sensor>service1#service1>service2,service3#service2>service4#service3>service4,hash:0123456789ABCDEF";
+  //std::string dagStringParameter = "abcdef";
+  //const uint8_t * buffer = (const uint8_t*)dagStringParameter;
+
+  //add dagStringParameter as custom parameter to interest packet
+  //const uint8_t * buffer = (const uint8_t*)&dagStringParameter;
   //const uint8_t * buffer = NULL;
-  size_t length = dagParameter.length();
+  //size_t length = dagParameter.length();
+  size_t length = strlen(dagStringParameter);
+
 
   //uint32_t type = ndn::tlv::ApplicationParameters;
   //uint32_t type = 36;
@@ -177,11 +195,34 @@ CustomAppConsumer::SendInterest()
   //ndn::Block appParamBlock;
   //auto appParamBlock = std::make_shared<ndn::Block>();
 
+
   // the parameters are encoded as a TLV-Value!!!
-  interest->setApplicationParameters(buffer, length);
+  //interest->setApplicationParameters(buffer, length);
+  interest->setApplicationParameters((const uint8_t *)dagStringParameter, length);
   //interest->setApplicationParameters(appParamBlock);
   //extract custom parameter from interest packet
-  //auto dagParameterFromInterest = interest.getApplicationParameters();
+  //auto dagStringParameterFromInterest = interest.getApplicationParameters();
+
+
+  /*
+  // These interests are NOT signed. The SHA256 digest added by the application parameters is separate from a signature!
+  auto sigPresent = interest->isSigned();
+  NS_LOG_DEBUG("Consumer: Interest is signed: " << sigPresent);
+  auto dagSignatureInfo = interest->getSignatureInfo();
+  //NS_LOG_DEBUG("Consumer: Interest signature info after adding appParams: " << dagSignatureInfo);
+  if (dagSignatureInfo) {
+    auto dagSignatureType2 = dagSignatureInfo->getSignatureType();
+    NS_LOG_DEBUG("Consumer: Interest signature type after adding appParams: " << dagSignatureType2);
+  }
+  auto dagSignatureValue = interest->getSignatureValue();
+  NS_LOG_DEBUG("Consumer: Interest signature value after adding appParams: " << dagSignatureValue);
+  */
+
+
+  //NS_LOG_DEBUG("Consumer: Interest parameters being sent: " << dagStringParameter);
+  //auto dagParameterFromInterest = interest->getApplicationParameters();
+  //NS_LOG_DEBUG("Consumer: Interest parameters being sent: " << dagParameterFromInterest);
+
 
   NS_LOG_DEBUG("Sending Interest packet for " << *interest);
 
@@ -189,6 +230,7 @@ CustomAppConsumer::SendInterest()
   m_transmittedInterests(interest, this, m_face);
 
   m_appLink->onReceiveInterest(*interest);
+
 }
 
 // Callback that will be called when Interest arrives

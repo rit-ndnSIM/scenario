@@ -32,7 +32,16 @@
 
 #include "ns3/random-variable-stream.h"
 
+//#include "ns3/ndnSIM/ndn-cxx/ndn-cxx/encoding/encoder.hpp"
+//#include "ns3/ndnSIM/ndn-cxx/ndn-cxx/encoding/block.hpp"
+//#include "ns3/ndnSIM/ndn-cxx/encoding/tlv.hpp"
+//#include "ns3/ndnSIM/ndn-cxx/encoding/block-helpers.hpp"
+
 #include <string.h>
+
+#include <fstream>
+#include <nlohmann/json.hpp>
+using json = nlohmann::json;
 
 NS_LOG_COMPONENT_DEFINE("DagForwarderApp");
 
@@ -115,10 +124,20 @@ DagForwarderApp::SendInterest(const std::string& interestName, ndn::Block dagPar
   interest->setInterestLifetime(ndn::time::seconds(5));
   //interest->setMustBeFresh(true);
 
+  // overwrite the dag parameter "head" value and generate new application parameters
+  //json newInterestDagObject = dagObject;
+  //newInterestDagObject["head"] = y.value();
+  //std::string dagString = dagObject.dump();
+  //char *dagStringParameter = new char[dagString.length() + 1];
+  //strcpy(dagStringParameter, dagString.c_str());
+  //size_t length = strlen(dagStringParameter);
+
+
+
   //add DAG workflow as a parameter to the new interest
   interest->setApplicationParameters(dagParameter);
 
-  NS_LOG_DEBUG("Sending Interest packet for " << *interest);
+  NS_LOG_DEBUG("Forwarder: Sending Interest packet for " << *interest);
 
   // Call trace (for logging purposes)
   m_transmittedInterests(interest, this, m_face);
@@ -168,15 +187,71 @@ DagForwarderApp::OnInterest(std::shared_ptr<const ndn::Interest> interest)
   */
 
 
-  //TODO: look at the DAG and generate the new interest(s)
+  // decode the DAG string contained in the application parameters, so we can generate the new interest(s)
   //extract custom parameter from interest packet
   auto dagParameterFromInterest = interest->getApplicationParameters();
-  NS_LOG_DEBUG("Interest parameters received: " << dagParameterFromInterest);
-  //TODO: for now, I'm just doing a linear workflow with the dag workflow attached to the interests for testing.
+  //std::string dagString = ndn::encoding::readString(dagParameterFromInterest);
+  std::string dagString = std::string(reinterpret_cast<const char*>(dagParameterFromInterest.value()), dagParameterFromInterest.value_size());
+  //std::string dagString = ndn::lp::DecodeHelper();
+  //auto dagBuffer = dagParameterFromInterest.ndn::Block::getBuffer();
+  //auto dagValue = dagParameterFromInterest.ndn::Block::value();
+  ////NS_LOG_DEBUG("Interest parameters received: " << dagParameterFromInterest);
+  //NS_LOG_DEBUG("Interest parameters received as string: " << dagString);
+  ////NS_LOG_DEBUG("Interest parameters received as value: " << dagValue);
+
+
+
+  //bool dagParameterDigestValid = interest->isParametersDigestValid();
+  //NS_LOG_DEBUG("Fwd: Interest parameter digest is valid: " << dagParameterDigestValid);
+
+  //bool dagParameterPresent = interest->hasApplicationParameters();
+  //NS_LOG_DEBUG("Fwd: Interest parameters presesnt: " << dagParameterPresent);
+
+
+
+/*
+  // for now, I'm just doing a linear workflow with the dag workflow attached to the interests for testing.
   ndn::Name without_first_element = interest->getName().ndn::Name::getSubName(1, ndn::Name::npos); // remove the first component
   NS_LOG_DEBUG("Name without first element: " << without_first_element);
   std::string string_without_first_element = without_first_element.ndn::Name::toUri();
   DagForwarderApp::SendInterest(string_without_first_element, dagParameterFromInterest);
+*/
+
+
+
+  // read the dag parameters and figure out which interests to generate next. Change the dagParameters accordingly (head will be different)
+  auto dagObject = json::parse(dagString);
+  //NS_LOG_DEBUG("Interest parameter head: " << dagObject["head"] << ", m_name attribute: " << m_name.ndn::Name::toUri());
+  //if (dagObject["head"] != m_name.ndn::Name::toUri())
+  //{
+    //NS_LOG_DEBUG("Forwarder app ERROR: received interest with DAG head different than m_name attribute for this service.");
+    //NS_LOG_DEBUG("Interest parameter head: " << dagObject["head"] << ", m_name attribute: " << m_name.ndn::Name::toUri());
+  //}
+  //NS_LOG_DEBUG("Interest parameter number of services: " << dagObject["dag"].size());
+  //NS_LOG_DEBUG("Interest parameter sensor feeds " << (dagObject["dag"]["/sensor"].size()) << " services: " << dagObject["dag"]["/sensor"]);
+  //NS_LOG_DEBUG("Interest parameter s1 feeds " << (dagObject["dag"]["/S1"].size()) << " services: " << dagObject["dag"]["/S1"]);
+
+  for (auto& x : dagObject["dag"].items())
+  {
+    for (auto& y : dagObject["dag"][x.key()].items())
+    {
+      //NS_LOG_DEBUG("Looking at service x: " << x.key() << " feeding into service y: " << y.value());
+      //NS_LOG_DEBUG("Comparing y.value(): " << y.value() << " with the name of this application's service: " << m_name.ndn::Name::toUri());
+      //if (y.value() == dagObject["head"])
+      if (y.value() == m_name.ndn::Name::toUri()) // if service x feeds into this service (y) then we need to generate an interest for x.
+      {
+        // generate new interest for service that feeds results to this application's service
+        NS_LOG_DEBUG("Generating new interest for: " << x.key());
+        DagForwarderApp::SendInterest(x.key(), dagParameterFromInterest);
+      }
+    }
+  }
+  //DagForwarderApp::SendInterest(string_without_first_element, dagParameterFromInterest);
+
+
+
+  m_nameAndDigest = interest->getName(); //store the name with digest so that we can later generate the data packet with the same name/digest!
+
 
   // Note that Interests send out by the app will not be sent back to the app !
 
@@ -208,11 +283,16 @@ DagForwarderApp::OnData(std::shared_ptr<const ndn::Data> data)
   NS_LOG_DEBUG("Fake running service " << m_service);
   
   //now add the service name in front of the data name
-  std::string new_name = m_service.ndn::Name::toUri() + data->getName().ndn::Name::toUri();
+  // this following line is for linear workflows only!
+  //std::string new_name = m_service.ndn::Name::toUri() + data->getName().ndn::Name::toUri();
+  //NS_LOG_DEBUG("Creating data for new name: " << new_name);
+  // for dag workflows, FOR NOW we just generate the data packet with the name of the service we ran. We don't support repeated services yet. For that we need higharchical names/results such as "/S2/S1/sensor" for example
 
-  NS_LOG_DEBUG("Creating data for new name: " << new_name);
+  NS_LOG_DEBUG("Creating data for name: " << m_nameAndDigest);  // m_name doesn't have the sha256 digest, so it doesn't match the original interest!
+                                                                // We use m_nameAndDigest to store the old name with the digest.
 
-  auto new_data = std::make_shared<ndn::Data>(new_name);
+  //auto new_data = std::make_shared<ndn::Data>(new_name);
+  auto new_data = std::make_shared<ndn::Data>(m_nameAndDigest);
   new_data->setFreshnessPeriod(ndn::time::milliseconds(3000));
   new_data->setContent(std::make_shared< ::ndn::Buffer>(1024));
   ndn::StackHelper::getKeyChain().sign(*new_data);

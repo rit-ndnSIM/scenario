@@ -24,6 +24,7 @@
 #include "ns3/ndnSIM-module.h"
 #include "ns3/string.h"
 
+
 namespace ns3 {
 
 /**
@@ -40,11 +41,11 @@ namespace ns3 {
 *         ^ F3
 *         |
 *         |
-*         v F4
-*       /-------\ Fapp    ---------------------
-*  node2| rtr-2 |---------| DAG Forwarder APP | Service 3 and 4
-*       \-------/         ---------------------
-*         ^ F5
+*         v F4    Fapp    ---------------------
+*       /-------\ --------| DAG Forwarder APP | Service 3
+*  node2| rtr-2 | Fapp    |-------------------|
+*       \-------/ --------| DAG Forwarder APP | Service 4
+*         ^ F5            ---------------------
 *         |
 *         |
 *         v F6
@@ -98,13 +99,13 @@ main(int argc, char* argv[])
   ndnHelper.setCsSize(0); // disable content store
   ndnHelper.Install(producer);
 
-  ndnHelper.setCsSize(0); // enable content store
+  ndnHelper.setCsSize(0); // disable content store for now
   ndnHelper.Install(router1);
 
-  ndnHelper.setCsSize(0); // enable content store
+  ndnHelper.setCsSize(0); // disable content store for now
   ndnHelper.Install(router2);
 
-  ndnHelper.setCsSize(0); // enable content store
+  ndnHelper.setCsSize(0); // disable content store for now
   ndnHelper.Install(router3);
 
   ndnHelper.setCsSize(0); // disable content store
@@ -151,15 +152,15 @@ main(int argc, char* argv[])
   routerApp.SetPrefix("/service1");
   routerApp.SetAttribute("Service", StringValue("service1"));
   //routerApp.SetAttribute("Results", StringValue("/sensor/service1")); //TODO: eventually control caching of results like this
-  routerApp.Install(router1).Start(Seconds(0));
+  routerApp.Install(router3).Start(Seconds(0));
   routerApp.SetPrefix("/service2");
   routerApp.SetAttribute("Service", StringValue("service2"));
   //routerApp.SetAttribute("Results", StringValue("/sensor/service1/service2"));
-  routerApp.Install(router2).Start(Seconds(0));
+  routerApp.Install(router1).Start(Seconds(0));
   routerApp.SetPrefix("/service3");
   routerApp.SetAttribute("Service", StringValue("service3"));
   //routerApp.SetAttribute("Results", StringValue("/sensor/service1/service2/service3"));
-  routerApp.Install(router3).Start(Seconds(0));
+  routerApp.Install(router2).Start(Seconds(0));
   routerApp.SetPrefix("/service4");
   routerApp.SetAttribute("Service", StringValue("service4"));
   //routerApp.SetAttribute("Results", StringValue("/sensor/service1/service2/service3/service4"));
@@ -168,9 +169,8 @@ main(int argc, char* argv[])
   // Custom App for User(Consumer)
   ndn::AppHelper userApp("CustomAppConsumer");
   //userApp.SetPrefix("/cabeee/sensor/service1/service2/service3");
-  userApp.SetPrefix("/service4/service3/service2/service1/sensor"); // only for linear workflows
-  //TODO: only send out the last service (service4) - for now, I just do a linear workflow
-  //userApp.SetPrefix("/service4");
+  //userApp.SetPrefix("/service4/service3/service2/service1/sensor"); // only for linear workflows
+  userApp.SetPrefix("/consumer"); // this is only a placeholder. The app will read the JSON workflow, and figure out which service is "last"
   userApp.Install(consumer).Start(Seconds(0));
 
 /*
