@@ -115,7 +115,13 @@ CustomAppProducer::OnInterest(std::shared_ptr<const ndn::Interest> interest)
 
   auto data = std::make_shared<ndn::Data>(interest->getName());
   data->setFreshnessPeriod(ndn::time::milliseconds(3000));
-  data->setContent(std::make_shared< ::ndn::Buffer>(1024));
+
+  //data->setContent(std::make_shared< ::ndn::Buffer>(1024));
+  unsigned char myBuffer[1024];
+  // write to the buffer
+  myBuffer[0] = 5;
+  data->setContent(myBuffer, 1024);
+
   ndn::StackHelper::getKeyChain().sign(*data);
 
   NS_LOG_DEBUG("Sending Data packet for " << data->getName());

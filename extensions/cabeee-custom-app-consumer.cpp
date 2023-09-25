@@ -262,7 +262,18 @@ CustomAppConsumer::OnData(std::shared_ptr<const ndn::Data> data)
 {
   NS_LOG_DEBUG("Receiving Data packet for " << data->getName());
 
-  std::cout << "\n\nCONSUMER: DATA received for name " << data->getName() << std::endl << "\n\n";
+  std::cout << "\n\n      CONSUMER: DATA received for name " << data->getName() << std::endl << "\n\n";
+
+  ndn::Block myRxedBlock = data->getContent();
+  //std::cout << "\nCONSUMER: result = " << myRxedBlock << std::endl << "\n\n";
+
+  uint8_t *pContent = (uint8_t *)(myRxedBlock.data()); // this points to the first byte, which is the TLV-TYPE (21 for data packet contet)
+  pContent++;  // now this points to the second byte, containing 253 (0xFD), meaning size (1024) is expressed with 2 octets
+  pContent++;  // now this points to the first size octet
+  pContent++;  // now this points to the second size octet
+  pContent++;  // now we are pointing at the first byte of the true content
+  std::cout << "\n  The final answer is: " <<  (int)(*pContent) << std::endl << "\n\n";
+
 }
 
 } // namespace ns3

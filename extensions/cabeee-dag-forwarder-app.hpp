@@ -26,6 +26,11 @@
 
 #include "ns3/ndnSIM/apps/ndn-app.hpp"
 
+#include <nlohmann/json.hpp>
+using json = nlohmann::json;
+
+#include <map>
+
 namespace ns3 {
 
 /**
@@ -71,6 +76,13 @@ private:
   ndn::Name m_name;
   ndn::Name m_nameAndDigest;
   ndn::Name m_service;
+  json m_rxedInputs; // TODO: eventually we can keep better track of WHICH inputs have arrived, rather than just the NUMBER of inputs. (in case one inputs arrives multiple times)
+  int m_numRxedInputs;
+  int m_inputTotal;
+  std::list <ndn::Name> m_listOfGeneratedInterests;
+  //std::map <std::string, std::vector<ndn::Block> > m_mapOfRxedBlocks;
+  std::map <std::string, std::vector<std::string> > m_mapOfRxedBlocks;
+  std::vector <unsigned char> m_vectorOfServiceInputs;
 };
 
 } // namespace ns3
