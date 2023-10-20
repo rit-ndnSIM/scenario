@@ -38,7 +38,7 @@
 #include <nlohmann/json.hpp>
 using json = nlohmann::json;
 
-
+#include "ns3/uinteger.h"
 
 //#include "ns3/ndnSIM/ndn-cxx/ndn-cxx/encoding/encoder.hpp"
 //#include "ns3/ndnSIM/ndn-cxx/ndn-cxx/encoding/block.hpp"
@@ -60,7 +60,9 @@ CustomAppConsumer::GetTypeId()
     .SetParent<ndn::App>()
     .AddConstructor<CustomAppConsumer>()
     .AddAttribute("Prefix", "Requested name", StringValue("/dumb-interest"),
-                    ndn::MakeNameAccessor(&CustomAppConsumer::m_name), ndn::MakeNameChecker());
+                    ndn::MakeNameAccessor(&CustomAppConsumer::m_name), ndn::MakeNameChecker())
+    .AddAttribute("Orchestrate", "Requested orchestration", UintegerValue(0),
+                    MakeUintegerAccessor(&CustomAppConsumer::m_orchestrate), MakeUintegerChecker<uint16_t>());
   return tid;
 }
 
@@ -161,8 +163,14 @@ CustomAppConsumer::SendInterest()
 
   std::ifstream f("workflows/rpa-dag.json");
   json dagObject = json::parse(f);
-  dagObject["head"] = "/service4"; //TODO: I'm doing this manually right now. I should look at the json input file, and see which service feeds "consumer", and use that instead of hardcoding
-  interest->setName("/service4"); //TODO: I'm doing this manually right now. I should look at the json input file, and see which service feeds "consumer", and use that instead of hardcoding
+  if (m_orchestrate == 0) {
+    dagObject["head"] = "/service4"; //TODO: I'm doing this manually right now. I should look at the json input file, and see which service feeds "consumer", and use that instead of hardcoding
+    interest->setName("/service4"); //TODO: I'm doing this manually right now. I should look at the json input file, and see which service feeds "consumer", and use that instead of hardcoding
+  }
+  else {
+    dagObject["head"] = "/serviceOrchestration";
+    interest->setName("/serviceOrchestration");
+  }
 
   std::string dagString = dagObject.dump();
   // in order to convert from std::string to a char[] datatype we do the following (https://stackoverflow.com/questions/7352099/stdstring-to-char):

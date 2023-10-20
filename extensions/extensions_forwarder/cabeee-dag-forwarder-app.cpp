@@ -139,9 +139,12 @@ DagForwarderApp::SendInterest(const std::string& interestName, ndn::Block dagPar
   strcpy(dagStringParameter, updatedDagString.c_str());
   size_t length = strlen(dagStringParameter);
 
+
+  //TODO: we should PRUNE the DAG workflow to not include anything further downstream than this service,
+  // so that when caching is implemented, we can reuse intermediate results for other DAG workflows which use portions of the current DAG.
+
   //add DAG workflow as a parameter to the new interest
   //interest->setApplicationParameters(dagParameter);
-
   //add modified DAG workflow as a parameter to the new interest
   interest->setApplicationParameters((const uint8_t *)dagStringParameter, length);
 
@@ -257,7 +260,7 @@ DagForwarderApp::OnInterest(std::shared_ptr<const ndn::Interest> interest)
 
         // We need to see if this interest has already been generated. If so, don't increment (seems duplicate interests are still generated and reach the "sensor")
         // if this is a new interest (if interest is not in our list of generated interests)
-        if ((std::find(m_listOfGeneratedInterests.begin(), m_listOfGeneratedInterests.end(), x.key()) == m_listOfGeneratedInterests.end())) {
+        if ((std::find(m_listOfGeneratedInterests.begin(), m_listOfGeneratedInterests.end(), x.key()) == m_listOfGeneratedInterests.end())) { // if we don't find it...
           // add this new interest to list of generated interests
           m_listOfGeneratedInterests.push_back(x.key());
           m_inputTotal++;
@@ -267,7 +270,7 @@ DagForwarderApp::OnInterest(std::shared_ptr<const ndn::Interest> interest)
                                                             // without this, we won't know which data packet goes with which generated interest.
           m_vectorOfServiceInputs.push_back(0);             // for now, just create vector entries for the inputs, so that if they arrive out of order, we can insert at any index location
         }
-
+//TODO: is the following line supposed to be inside the if conditional above???
         DagForwarderApp::SendInterest(x.key(), dagParameterFromInterest);
       }
     }
@@ -335,9 +338,10 @@ DagForwarderApp::OnData(std::shared_ptr<const ndn::Data> data)
   m_vectorOfServiceInputs[index] = (*pServiceInput);
 
   m_numRxedInputs++;
+  //TODO: this just checks for number of inputs received. I should check if all inputs have been received (this won't work if I need two inputs, but I receive the same input twice)
 
   // we have to check if we have received all necessary inputs for this instance of the hosted service!
-  //      if so, fake run the service below and generate new data packet to go downstream.
+  //      if so, run the service below and generate new data packet to go downstream.
   //      otherwise, just wait for the other inputs.
   if (m_numRxedInputs == m_inputTotal)
   {
@@ -351,6 +355,7 @@ DagForwarderApp::OnData(std::shared_ptr<const ndn::Data> data)
 
     // run operation. First we need to figure out what service this is, so we know the operation. This screams to be a function pointer! For now just use if's
 
+    // TODO: we should use function pointers here, and have each service be a function defined in a separate file. Figure out how to deal with potentially different num of inputs.
 
     if (m_service.ndn::Name::toUri() == "/service1"){
       serviceOutput = (m_vectorOfServiceInputs[0])*2;

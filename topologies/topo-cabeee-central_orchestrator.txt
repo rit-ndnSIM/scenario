@@ -1,0 +1,59 @@
+# topo-cabeee-3node.txt
+# manually modified by cabeee
+# June 2023
+#
+#                /------\
+#             -->|sensor|
+#             |  \------/
+#             |
+#             |
+#         	  |
+#	          |  /-------\
+#	          -->| rtr-1 |
+#             |  \-------/
+#             |
+#             |
+#         	  |
+#	          |  /-------\
+#	          -->| rtr-2 |
+#             |  \-------/
+#             |
+#             |
+#         	  |
+#	          |  /-------\
+#	          -->| rtr-3 |
+#             |  \-------/
+#             |
+#             |
+#         	  |
+#             |
+#             v
+#		  /--------\
+#		  |  orch  |
+#         \--------/
+#             ^
+#             |
+#             v
+#	      /--------\
+#		  |  user  |
+#         \--------/
+#
+
+router
+
+#node	city	y	x	mpi-partition
+sensor	NA	80	20	1
+rtr-1	NA	70	20	1
+rtr-2	NA	60	20	2
+rtr-3	NA	50	20	3
+orch	NA	20	0	3
+user	NA	20	0	0
+
+link
+
+# from	    to		capacity	metric	delay	queue
+orch	    sensor	10Mbps		1	1ms	100
+orch	    rtr-1	10Mbps		1	1ms	100
+orch	    rtr-2	10Mbps		1	1ms	100
+orch	    rtr-3	10Mbps		1	1ms	100
+orch	    user	10Mbps		1	1ms	100

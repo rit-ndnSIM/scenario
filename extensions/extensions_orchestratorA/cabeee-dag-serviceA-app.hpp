@@ -17,14 +17,19 @@
  * ndnSIM, e.g., in COPYING.md file.  If not, see <http://www.gnu.org/licenses/>.
  **/
 
-// cabeee-custom-app-consumer.hpp
+// cabeee-dag-serviceA-app.hpp
 
-#ifndef CUSTOM_APP_CONSUMER_H_
-#define CUSTOM_APP_CONSUMER_H_
+#ifndef DAG_SERVICEA_APP_H_
+#define DAG_SERVICEA_APP_H_
 
 #include "ns3/ndnSIM/model/ndn-common.hpp"
 
 #include "ns3/ndnSIM/apps/ndn-app.hpp"
+
+#include <nlohmann/json.hpp>
+using json = nlohmann::json;
+
+#include <map>
 
 namespace ns3 {
 
@@ -38,13 +43,13 @@ namespace ns3 {
  *
  * When an Interest is received, it is replied with a Data with 1024-byte fake payload
  */
-class CustomAppConsumer : public ndn::App {
+class DagServiceAApp : public ndn::App {
 public:
-  // register NS-3 type "CustomAppConsumer"
+  // register NS-3 type "DagServiceAApp"
   static TypeId
   GetTypeId();
 
-  CustomAppConsumer();
+  DagServiceAApp();
 
   // (overridden from ndn::App) Processing upon start of the application
   virtual void
@@ -58,20 +63,32 @@ public:
   virtual void
   OnInterest(std::shared_ptr<const ndn::Interest> interest);
 
+
   // (overridden from ndn::App) Callback that will be called when Data arrives
   virtual void
   OnData(std::shared_ptr<const ndn::Data> contentObject);
 
+
 private:
   void
-  SendInterest();
-  
+  SendInterest(const std::string& interestName, ndn::Block);
+
 private:
   bool m_isRunning;
   ndn::Name m_name;
-  uint16_t m_orchestrate;
+  ndn::Name m_nameAndDigest;
+  ndn::Name m_service;
+  //ndn::Data m_data;
+  //bool m_done;
+  json m_rxedInputs; // TODO: eventually we can keep better track of WHICH inputs have arrived, rather than just the NUMBER of inputs. (in case one inputs arrives multiple times)
+  int m_numRxedInputs;
+  int m_inputTotal;
+  std::list <ndn::Name> m_listOfGeneratedInterests;
+  //std::map <std::string, std::vector<ndn::Block> > m_mapOfRxedBlocks;
+  std::map <std::string, std::vector<std::string> > m_mapOfRxedBlocks;
+  std::vector <unsigned char> m_vectorOfServiceInputs;
 };
 
 } // namespace ns3
 
-#endif // CUSTOM_APP_CONSUMER_H_
+#endif // DAG_SERVICEA_APP_H_
