@@ -84,16 +84,6 @@ DagForwarderApp::StartApplication()
   m_inputTotal = 0;
   m_numRxedInputs = 0;
 
-  //DagForwarderApp::SendInterest("/cabeee");
-  // Schedule send of first interest
-  //Simulator::Schedule(Seconds(1.0), &DagForwarderApp::SendInterest, this);
-  //Simulator::Schedule(Seconds(2.0), &DagForwarderApp::SendInterest, this);
-  //Simulator::Schedule(Seconds(3.0), &DagForwarderApp::SendInterest, this);
-  //Simulator::Schedule(Seconds(4.0), &DagForwarderApp::SendInterest, this);
-  //Simulator::Schedule(Seconds(5.0), &DagForwarderApp::SendInterest, this);
-  //Simulator::Schedule(Seconds(6.0), &DagForwarderApp::SendInterest, this);
-  //Simulator::Schedule(Seconds(7.0), &DagForwarderApp::SendInterest, this);
-  //Simulator::Schedule(Seconds(8.0), &DagForwarderApp::SendInterest, this);
 }
 
 // Processing when application is stopped
@@ -260,7 +250,8 @@ DagForwarderApp::OnInterest(std::shared_ptr<const ndn::Interest> interest)
 
         // We need to see if this interest has already been generated. If so, don't increment (seems duplicate interests are still generated and reach the "sensor")
         // if this is a new interest (if interest is not in our list of generated interests)
-        if ((std::find(m_listOfGeneratedInterests.begin(), m_listOfGeneratedInterests.end(), x.key()) == m_listOfGeneratedInterests.end())) { // if we don't find it...
+        if ((std::find(m_listOfGeneratedInterests.begin(), m_listOfGeneratedInterests.end(), x.key()) == m_listOfGeneratedInterests.end())) // if we don't find it...
+        {
           // add this new interest to list of generated interests
           m_listOfGeneratedInterests.push_back(x.key());
           m_inputTotal++;
@@ -269,9 +260,9 @@ DagForwarderApp::OnInterest(std::shared_ptr<const ndn::Interest> interest)
           m_mapOfRxedBlocks[y.value()].push_back(x.key());  // this is to keep track of the order of inputs for multi-input services.
                                                             // without this, we won't know which data packet goes with which generated interest.
           m_vectorOfServiceInputs.push_back(0);             // for now, just create vector entries for the inputs, so that if they arrive out of order, we can insert at any index location
+          
+          DagForwarderApp::SendInterest(x.key(), dagParameterFromInterest);
         }
-//TODO: is the following line supposed to be inside the if conditional above???
-        DagForwarderApp::SendInterest(x.key(), dagParameterFromInterest);
       }
     }
   }

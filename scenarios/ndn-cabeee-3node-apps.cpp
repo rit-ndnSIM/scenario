@@ -161,19 +161,16 @@ main(int argc, char* argv[])
   ndn::AppHelper routerApp("DagForwarderApp");
   routerApp.SetPrefix("/service1");
   routerApp.SetAttribute("Service", StringValue("service1"));
-  //routerApp.SetAttribute("Results", StringValue("/sensor/service1")); //TODO: eventually control caching of results like this
+  //routerApp.SetAttribute("Results", StringValue(JSON_DAG)); //TODO: eventually control caching of results like this?
   routerApp.Install(router3).Start(Seconds(0));
   routerApp.SetPrefix("/service2");
   routerApp.SetAttribute("Service", StringValue("service2"));
-  //routerApp.SetAttribute("Results", StringValue("/sensor/service1/service2"));
   routerApp.Install(router1).Start(Seconds(0));
   routerApp.SetPrefix("/service3");
   routerApp.SetAttribute("Service", StringValue("service3"));
-  //routerApp.SetAttribute("Results", StringValue("/sensor/service1/service2/service3"));
   routerApp.Install(router2).Start(Seconds(0));
   routerApp.SetPrefix("/service4");
   routerApp.SetAttribute("Service", StringValue("service4"));
-  //routerApp.SetAttribute("Results", StringValue("/sensor/service1/service2/service3/service4"));
   routerApp.Install(router2).Start(Seconds(0));
 
   // Custom App for User(Consumer)

@@ -43,34 +43,34 @@
 #include <nlohmann/json.hpp>
 using json = nlohmann::json;
 
-NS_LOG_COMPONENT_DEFINE("DagServiceAApp");
+NS_LOG_COMPONENT_DEFINE("DagServiceA_App");
 
 namespace ns3 {
 
-NS_OBJECT_ENSURE_REGISTERED(DagServiceAApp);
+NS_OBJECT_ENSURE_REGISTERED(DagServiceA_App);
 
 // register NS-3 type
 TypeId
-DagServiceAApp::GetTypeId()
+DagServiceA_App::GetTypeId()
 {
-  static TypeId tid = TypeId("DagServiceAApp")
+  static TypeId tid = TypeId("DagServiceA_App")
     .SetParent<ndn::App>()
-    .AddConstructor<DagServiceAApp>()
+    .AddConstructor<DagServiceA_App>()
     .AddAttribute("Prefix", "Requested name", StringValue("/dumb-interest"),
-                    ndn::MakeNameAccessor(&DagServiceAApp::m_name), ndn::MakeNameChecker())
+                    ndn::MakeNameAccessor(&DagServiceA_App::m_name), ndn::MakeNameChecker())
     .AddAttribute("Service", "Requested service", StringValue("dumb-service"),
-                    ndn::MakeNameAccessor(&DagServiceAApp::m_service), ndn::MakeNameChecker());
+                    ndn::MakeNameAccessor(&DagServiceA_App::m_service), ndn::MakeNameChecker());
   return tid;
 }
 
-DagServiceAApp::DagServiceAApp()
+DagServiceA_App::DagServiceA_App()
   : m_isRunning(false)
 {
 }
 
 // Processing upon start of the application
 void
-DagServiceAApp::StartApplication()
+DagServiceA_App::StartApplication()
 {
   // initialize ndn::App
   ndn::App::StartApplication();
@@ -81,25 +81,17 @@ DagServiceAApp::StartApplication()
   ndn::FibHelper::AddRoute(GetNode(), m_name, m_face, 0);
 
 
-  m_inputTotal = 0;
-  m_numRxedInputs = 0;
-  //m_done = false;
+  m_done = false;
+  m_nameUri = m_name.ndn::Name::toUri();
 
-  //DagServiceAApp::SendInterest("/cabeee");
-  // Schedule send of first interest
-  //Simulator::Schedule(Seconds(1.0), &DagServiceAApp::SendInterest, this);
-  //Simulator::Schedule(Seconds(2.0), &DagServiceAApp::SendInterest, this);
-  //Simulator::Schedule(Seconds(3.0), &DagServiceAApp::SendInterest, this);
-  //Simulator::Schedule(Seconds(4.0), &DagServiceAApp::SendInterest, this);
-  //Simulator::Schedule(Seconds(5.0), &DagServiceAApp::SendInterest, this);
-  //Simulator::Schedule(Seconds(6.0), &DagServiceAApp::SendInterest, this);
-  //Simulator::Schedule(Seconds(7.0), &DagServiceAApp::SendInterest, this);
-  //Simulator::Schedule(Seconds(8.0), &DagServiceAApp::SendInterest, this);
+  //m_dagObject = 0;
+  //m_dagServTracker = 0;
+
 }
 
 // Processing when application is stopped
 void
-DagServiceAApp::StopApplication()
+DagServiceA_App::StopApplication()
 {
   m_isRunning = false;
   // cleanup ndn::App
@@ -109,24 +101,15 @@ DagServiceAApp::StopApplication()
 
 
 
-
-
 // received interests will contain the name of the required inputs with the full DAG. This service must then parse the DAG and generate said
 // interest(s) (for inputs).
-// we keep track of received interests. Once all interests have been received, we run the service and respond with data.
-// alternatively, we could respond with complete signal for the orchestrator, and host the result data.
-
-// Figure out how to store the data locally? If an interest comes in for results, just respond with results? Caching will take care of this
-// for us IF we have genrated data packets with results in the past.
-
-
-
-
+// we keep track of received data inputs. Once all interests for data inputs have been fulfilled, we run the service and respond with data.
+// alternatively, we could respond with complete signal for the orchestrator, and host the result data locally.
 
 
 
 void
-DagServiceAApp::SendInterest(const std::string& interestName, ndn::Block dagParameter)
+DagServiceA_App::SendInterest(const std::string& interestName, std::string dagString)
 {
   if (!m_isRunning)
   {
@@ -150,7 +133,7 @@ DagServiceAApp::SendInterest(const std::string& interestName, ndn::Block dagPara
 
 
   // overwrite the dag parameter "head" value and generate new application parameters (thus calculating new sha256 digest)
-  std::string dagString = std::string(reinterpret_cast<const char*>(dagParameter.value()), dagParameter.value_size());
+  //std::string dagString = std::string(reinterpret_cast<const char*>(dagParameter.value()), dagParameter.value_size());
   auto dagObject = json::parse(dagString);
   dagObject["head"] = interestName;
   std::string updatedDagString = dagObject.dump();
@@ -167,7 +150,7 @@ DagServiceAApp::SendInterest(const std::string& interestName, ndn::Block dagPara
 
 
 
-  NS_LOG_DEBUG("Orchestrator: Sending Interest packet for " << *interest);
+  NS_LOG_DEBUG("Service: Sending Interest packet for " << *interest);
 
   // Call trace (for logging purposes)
   m_transmittedInterests(interest, this, m_face);
@@ -176,9 +159,13 @@ DagServiceAApp::SendInterest(const std::string& interestName, ndn::Block dagPara
 }
 
 
+
+
+
+
 // Callback that will be called when Interest arrives
 void
-DagServiceAApp::OnInterest(std::shared_ptr<const ndn::Interest> interest)
+DagServiceA_App::OnInterest(std::shared_ptr<const ndn::Interest> interest)
 {
   ndn::App::OnInterest(interest);
 
@@ -186,97 +173,86 @@ DagServiceAApp::OnInterest(std::shared_ptr<const ndn::Interest> interest)
   NS_LOG_DEBUG("Received Interest packet for " << interest->getName());
   //NS_LOG_DEBUG("Received on node hosting service " << m_service);
 
-  /*
   // check to see if we have already ran this service with the included DAG. If so, just respond with the results.
-  we let the content store deal with responding
-  if (m_done)
+  // OR we can let the content store caching deal with responding
+  if (m_done == true)
   {
-    // send stored data packet
-    m_transmittedDatas(m_data, this, m_face);
-    m_appLink->onReceiveData(*m_data);
+    NS_LOG_DEBUG("    ServiceA: We already ran this service before. Responding with internally stored result!");
+    // send stored result
+    //auto new_data = std::make_shared<ndn::Data>(new_name);
+    auto new_data = std::make_shared<ndn::Data>(m_nameAndDigest);
+    new_data->setFreshnessPeriod(ndn::time::milliseconds(3000));
+    //new_data->setContent(std::make_shared< ::ndn::Buffer>(1024));
+    unsigned char myBuffer[1024];
+    // write to the buffer
+    myBuffer[0] = m_serviceOutput;
+    new_data->setContent(myBuffer, 1024);
+    ndn::StackHelper::getKeyChain().sign(*new_data);
+
+    // Call trace (for logging purposes)
+    m_transmittedDatas(new_data, this, m_face);
+    m_appLink->onReceiveData(*new_data);
+    return;
   }
-  */
 
 
   // extract the NAME of the inputs from the DAG in the interest parameter, and generate new interests for input data
 
   //extract custom parameter from interest packet
   auto dagParameterFromInterest = interest->getApplicationParameters();
-  //std::string dagParamString = ndn::encoding::readString(dagParameterFromInterest);
-  std::string dagParamString = std::string(reinterpret_cast<const char*>(dagParameterFromInterest.value()), dagParameterFromInterest.value_size());
-  //std::string dagParamString = ndn::lp::DecodeHelper();
+  //std::string dagString = ndn::encoding::readString(dagParameterFromInterest);
+  std::string dagString = std::string(reinterpret_cast<const char*>(dagParameterFromInterest.value()), dagParameterFromInterest.value_size());
+  //std::string dagString = ndn::lp::DecodeHelper();
   //auto dagBuffer = dagParameterFromInterest.ndn::Block::getBuffer();
   //auto dagValue = dagParameterFromInterest.ndn::Block::value();
   ////NS_LOG_DEBUG("Interest parameters received: " << dagParameterFromInterest);
-  //NS_LOG_DEBUG("Interest parameters received as string: " << dagParamString);
+  //NS_LOG_DEBUG("Interest parameters received as string: " << dagString);
   ////NS_LOG_DEBUG("Interest parameters received as value: " << dagValue);
 
 
   // read the dag parameter and figure out which interests to generate next.
   // if inputs come from other services, Ochestrator must have made sure the service results are already available (received "done" signal)!
-  auto dagParamObject = json::parse(dagParamString);
+  m_dagObject = json::parse(dagString);
 
 
 
-  for (auto& x : dagParamObject["dag"].items())
+
+  // create the tracking data structure using JSON
+  json nullJson;
+  //m_dagServTracker[m_nameUri].push_back( json::object_t::value_type("interestGenerated", 0 ) );
+  m_dagServTracker[m_nameUri].push_back( json::object_t::value_type("inputsRxed", nullJson ) );
+  for (auto& x : m_dagObject["dag"].items())
   {
-    for (auto& y : dagParamObject["dag"][x.key()].items())
+    for (auto& y : m_dagObject["dag"][x.key()].items())
     {
-      //NS_LOG_DEBUG("Looking at service x: " << x.key() << " feeding into service y: " << y.value());
-      //NS_LOG_DEBUG("Comparing y.value(): " << y.value() << " with the name of this application's service: " << m_name.ndn::Name::toUri());
-      //if (y.value() == dagParamObject["head"])
-      if (y.value() == m_name.ndn::Name::toUri()) // if service x feeds into this service (y) then we need to generate an interest for x.
+      if (y.key() == m_nameUri)
       {
-        // generate new interest for service that feeds results to this application's service
-        NS_LOG_DEBUG("Generating interest for: " << x.key());
+        m_dagServTracker[(std::string)y.key()]["inputsRxed"][(std::string)x.key()] = 0;
+        //std::cout << "x.key is " << x.key() << ", and y.key is " << y.key() << '\n';
 
-        // We need to see if this interest has already been generated. If so, don't increment (seems duplicate interests are still generated and reach the "sensor")
-        // if this is a new interest (if interest is not in our list of generated interests)
-        if ((std::find(m_listOfGeneratedInterests.begin(), m_listOfGeneratedInterests.end(), x.key()) == m_listOfGeneratedInterests.end())) {
-          // add this new interest to list of generated interests
-          m_listOfGeneratedInterests.push_back(x.key());
-          m_inputTotal++;
-          NS_LOG_DEBUG(" THIS IS A NEW interest for X: " << x.key() << ", which feeds into service Y: " << y.value());
-
-          m_mapOfRxedBlocks[y.value()].push_back(x.key());  // this is to keep track of the order of inputs for multi-input services.
-                                                            // without this, we won't know which data packet goes with which generated interest.
-          m_vectorOfServiceInputs.push_back(0);             // for now, just create vector entries for the inputs, so that if they arrive out of order, we can insert at any index location
-        }
-
-        DagServiceAApp::SendInterest(x.key(), dagParameterFromInterest);
+        m_vectorOfServiceInputs.push_back(0);             // for now, just create vector entries for the inputs, so that if they arrive out of order, we can insert at any index location
       }
     }
   }
+  //std::cout << "ServiceA dagServTracker data structure: " << std::setw(2) << m_dagServTracker << '\n';
 
 
 
 
-
-
-/*
-  for (auto& inputNum : dagParamObject["inputs"].items())
+  // generate all the interests for required inputs
+  for (auto& serviceInput : m_dagServTracker[(std::string)m_nameUri]["inputsRxed"].items())
   {
-    NS_LOG_DEBUG("Looking at inputNum: " << inputNum.key() << " with input name " << inputNum.value());
-
-    // generate new interest for results of service that feeds into this application's service
-    NS_LOG_DEBUG("Generating interest for: " << inputNum.key());
-  
-    // We need to see if this interest has already been generated. If so, don't increment (seems duplicate interests are still generated and reach the "sensor")
-    // if this is a new interest (if interest is not in our list of generated interests)
-    if ((std::find(m_listOfGeneratedInterests.begin(), m_listOfGeneratedInterests.end(), inputNum.key()) == m_listOfGeneratedInterests.end())) {
-      // add this new interest to list of generated interests
-      m_listOfGeneratedInterests.push_back(inputNum.key());
-      m_inputTotal++;
-      NS_LOG_DEBUG(" THIS IS A NEW interest for inputNum: " << inputNum.key() << " with input name " << inputNum.value());
-      m_mapOfRxedBlocks[m_name.ndn::Name::toUri()].push_back(inputNum.value());  // this is to keep track of the order of inputs for multi-input services.
-                                                               // without this, we won't know which data packet goes with which generated interest.
-      m_vectorOfServiceInputs.push_back(0);                    // for now, just create vector entries for the inputs, so that if they arrive out of order, we can insert at any index location
+    if (serviceInput.value() == 0)
+    {
+      // generate the interest for this input
+      std::string dagString = m_dagObject.dump();
+      DagServiceA_App::SendInterest(serviceInput.key(), dagString);
     }
-
-    DagServiceAApp::SendInterest(inputNum.value());
   }
 
-*/
+
+
+  
 
   m_nameAndDigest = interest->getName();  // store the name with digest so that we can later generate the data packet with the same name/digest!
                                           // TODO: this has issues - we cannot use the same service in more than one location in the DAG workflow!
@@ -295,13 +271,12 @@ DagServiceAApp::OnInterest(std::shared_ptr<const ndn::Interest> interest)
 
 // Callback that will be called when Data arrives
 void
-DagServiceAApp::OnData(std::shared_ptr<const ndn::Data> data)
+DagServiceA_App::OnData(std::shared_ptr<const ndn::Data> data)
 {
   NS_LOG_DEBUG("Receiving Data packet for " << data->getName());
 
   //std::cout << "DATA received for name " << data->getName() << std::endl;
 
-  //std::cout << "numRxedInputs = " << m_numRxedInputs << std::endl;
   //std::cout << "content = " << data->getContent() << std::endl;
 
   std::string rxedDataName = (data->getName()).getPrefix(-1).toUri(); // remove the last component of the name (the parameter digest) so we have just the raw name
@@ -309,7 +284,6 @@ DagServiceAApp::OnData(std::shared_ptr<const ndn::Data> data)
 
   // TODO: this is a HACK. I need a better way to get to the first byte of the content. Right now, I'm just incrementing the pointer past the TLV type, and size.
   // and then getting to the first byte (which is all I'm using for data)
-  unsigned char serviceOutput = 0;
   uint8_t *pServiceInput = 0;
   //pServiceInput = (uint8_t *)(m_mapOfRxedBlocks.back().data());
   pServiceInput = (uint8_t *)(data->getContent().data()); // this points to the first byte, which is the TLV-TYPE (21 for data packet content)
@@ -320,30 +294,50 @@ DagServiceAApp::OnData(std::shared_ptr<const ndn::Data> data)
   //m_mapOfServiceInputs[rxedDataName] = (*pServiceInput);
 
   // we keep track of which input is for which interest that was sent out. Data packets may arrive in different order than how interests were sent out.
-  // index = look for rxedDataName in m_mapOfRxedBlocks and figure out what index it is using!
-  unsigned char index = 0;
-  for (auto i = (m_mapOfRxedBlocks[m_service.toUri()]).begin(); i != (m_mapOfRxedBlocks[m_service.toUri()]).end(); ++i) {
-    if ((*i).compare(rxedDataName) == 0) {
-      break;
+  char index = -1;
+  // instead of what I did above, just read the index from the dagObject JSON structure
+  //std::cout << "dagObject data structure: " << std::setw(2) << m_dagObject << '\n';
+  for (auto& x : m_dagObject["dag"].items())
+  {
+    if (x.key() == rxedDataName)
+    {
+      for (auto& y : m_dagObject["dag"][x.key()].items())
+      {
+        if (y.key() == m_nameUri)
+        {
+          //std::cout << "  HIT, y.key(): " << y.key() << ", y.value(): " << y.value() << '\n';
+          index = y.value().template get<char>();
+        }
+      }
     }
-    index++;
   }
-  m_vectorOfServiceInputs[index] = (*pServiceInput);
+  if (index < 0)
+  {
+    std::cout << "  ERROR!! index for m_vectorOfServiceInputs cannot be negative! Something went wrong!!" << '\n';
+  }
+  else
+  {
+    m_vectorOfServiceInputs[index] = (*pServiceInput);
+  }
 
-  m_numRxedInputs++;
-  //TODO: this just checks for number of inputs received. I should check if all inputs have been received (this won't work if I need two inputs, but I receive the same input twice)
+  // mark this input as having been received
+  m_dagServTracker[m_nameUri]["inputsRxed"][rxedDataName] = 1;
 
   // we have to check if we have received all necessary inputs for this instance of the hosted service!
   //      if so, run the service below and generate new data packet to go downstream.
   //      otherwise, just wait for the other inputs.
-  if (m_numRxedInputs == m_inputTotal)
+  unsigned char allInputsReceived = 1;
+  for (auto& serviceInput : m_dagServTracker[m_nameUri]["inputsRxed"].items())
   {
-
-    m_inputTotal = 0;     // reset for next time service is called? so that we start fresh with next interest?
-    m_numRxedInputs = 0;  // reset for next time service is called? so that we wait for new inputs?
-
+    if (serviceInput.value() == 0)
+    {
+      allInputsReceived = 0;
+      break;
+    }
+  }
+  if (allInputsReceived == 1)
+  {
     //"RUN" the service, and create a new data packet to respond downstream
-    //NS_LOG_DEBUG("Fake running service " << m_service);
     NS_LOG_DEBUG("Running service " << m_service);
 
     // run operation. First we need to figure out what service this is, so we know the operation. This screams to be a function pointer! For now just use if's
@@ -351,19 +345,19 @@ DagServiceAApp::OnData(std::shared_ptr<const ndn::Data> data)
     // TODO: we should use function pointers here, and have each service be a function defined in a separate file. Figure out how to deal with potentially different num of inputs.
 
     if (m_service.ndn::Name::toUri() == "/service1"){
-      serviceOutput = (m_vectorOfServiceInputs[0])*2;
+      m_serviceOutput = (m_vectorOfServiceInputs[0])*2;
     }
     if (m_service.ndn::Name::toUri() == "/service2"){
-      serviceOutput = (m_vectorOfServiceInputs[0])+1;
+      m_serviceOutput = (m_vectorOfServiceInputs[0])+1;
     }
     if (m_service.ndn::Name::toUri() == "/service3"){
-      serviceOutput = (m_vectorOfServiceInputs[0])+7;
+      m_serviceOutput = (m_vectorOfServiceInputs[0])+7;
     }
     if (m_service.ndn::Name::toUri() == "/service4"){
-      serviceOutput = (m_vectorOfServiceInputs[0])*3 + (m_vectorOfServiceInputs[1])*4;
+      m_serviceOutput = (m_vectorOfServiceInputs[0])*3 + (m_vectorOfServiceInputs[1])*4;
     }
     
-    NS_LOG_DEBUG("Service " << m_service.ndn::Name::toUri() << " has output: " << (int)serviceOutput);
+    NS_LOG_DEBUG("Service " << m_service.ndn::Name::toUri() << " has output: " << (int)m_serviceOutput);
   
     // this following line is for linear workflows only!
     //now add the service name in front of the data name
@@ -380,11 +374,10 @@ DagServiceAApp::OnData(std::shared_ptr<const ndn::Data> data)
     //auto new_data = std::make_shared<ndn::Data>(new_name);
     auto new_data = std::make_shared<ndn::Data>(m_nameAndDigest);
     new_data->setFreshnessPeriod(ndn::time::milliseconds(3000));
-
     //new_data->setContent(std::make_shared< ::ndn::Buffer>(1024));
     unsigned char myBuffer[1024];
     // write to the buffer
-    myBuffer[0] = serviceOutput;
+    myBuffer[0] = m_serviceOutput;
     new_data->setContent(myBuffer, 1024);
     ndn::StackHelper::getKeyChain().sign(*new_data);
 
@@ -393,24 +386,21 @@ DagServiceAApp::OnData(std::shared_ptr<const ndn::Data> data)
     m_appLink->onReceiveData(*new_data);
 
 
-    /*
     // in order to "host" the data locally, we must store it, and set a flag that is checked at "onInterest" above
     // This is a one time deal. Assumes data will be available and fresh from now on.
-    OR we can just let the content store deal with storing results
+    // OR we can just let the content store deal with storing results
 
     // so now, we do the same for the copy that we store in m_data as we did for new_data above
     m_done = true;
-    m_data.ndn::setName(m_nameAndDigest);
-    m_data.setFreshnessPeriod(ndn::time::milliseconds(3000));
-    m_data.setContent(myBuffer, 1024);
-    ndn::StackHelper::getKeyChain().sign(*m_data);
-    */
+    //m_data.ndn::setName(m_nameAndDigest);
+    //m_data.setFreshnessPeriod(ndn::time::milliseconds(3000));
+    //m_data.setContent(myBuffer, 1024);
+    //ndn::StackHelper::getKeyChain().sign(*m_data);
 
   }
   else
   {
-    NS_LOG_DEBUG("    Even though we received data packet, we are still waiting for more inputs! Rxed so far: " << m_numRxedInputs);
-    NS_LOG_DEBUG("    This service needs this many inputs: " << m_inputTotal);
+    NS_LOG_DEBUG("    Even though we received data packet, we are still waiting for more inputs!");
   }
   
 }

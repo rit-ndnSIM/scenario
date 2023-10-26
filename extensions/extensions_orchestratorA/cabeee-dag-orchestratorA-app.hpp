@@ -43,13 +43,13 @@ namespace ns3 {
  *
  * When an Interest is received, it is replied with a Data with 1024-byte fake payload
  */
-class DagOrchestratorAApp : public ndn::App {
+class DagOrchestratorA_App : public ndn::App {
 public:
-  // register NS-3 type "DagOrchestratorAApp"
+  // register NS-3 type "DagOrchestratorA_App"
   static TypeId
   GetTypeId();
 
-  DagOrchestratorAApp();
+  DagOrchestratorA_App();
 
   // (overridden from ndn::App) Processing upon start of the application
   virtual void
@@ -76,14 +76,12 @@ private:
   ndn::Name m_name;
   ndn::Name m_nameAndDigest;
   ndn::Name m_service;
-  json m_dagTracker; // with this data structure, we can keep track of WHICH inputs have arrived, rather than just the NUMBER of inputs. (in case one inputs arrives multiple times)
+  json m_dagOrchTracker; // with this data structure, we can keep track of WHICH inputs have arrived, rather than just the NUMBER of inputs. (in case one inputs arrives multiple times)
   json m_dagObject;
-  //std::map <std::string, int> m_mapOfRxedInputNums;
-  //std::map <std::string, int> m_mapOfInputTotals;
   //std::list <ndn::Name> m_listOfGeneratedInterests;
   ////std::map <std::string, std::vector<ndn::Block> > m_mapOfRxedBlocks;
   //std::map <std::string, std::vector<std::string> > m_mapOfRxedBlocks;
-  std::map <std::string, unsigned char> m_mapOfServiceInputs;
+  //std::map <std::string, unsigned char> m_mapOfServiceInputs;
   std::list <std::string> m_listOfServicesWithInputs;   // keeps track of which services have inputs
   std::list <std::string> m_listOfRootServices;         // keeps track of which services don't have any inputs
   std::list <std::string> m_listOfSinkNodes;            // keeps track of which node doesn't have an output (usually this is just the consumer)

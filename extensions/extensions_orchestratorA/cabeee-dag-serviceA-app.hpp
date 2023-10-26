@@ -43,13 +43,13 @@ namespace ns3 {
  *
  * When an Interest is received, it is replied with a Data with 1024-byte fake payload
  */
-class DagServiceAApp : public ndn::App {
+class DagServiceA_App : public ndn::App {
 public:
-  // register NS-3 type "DagServiceAApp"
+  // register NS-3 type "DagServiceA_App"
   static TypeId
   GetTypeId();
 
-  DagServiceAApp();
+  DagServiceA_App();
 
   // (overridden from ndn::App) Processing upon start of the application
   virtual void
@@ -71,21 +71,22 @@ public:
 
 private:
   void
-  SendInterest(const std::string& interestName, ndn::Block);
+  SendInterest(const std::string& interestName, std::string);
 
 private:
   bool m_isRunning;
   ndn::Name m_name;
+  std::string m_nameUri;
   ndn::Name m_nameAndDigest;
   ndn::Name m_service;
   //ndn::Data m_data;
-  //bool m_done;
-  json m_rxedInputs; // TODO: eventually we can keep better track of WHICH inputs have arrived, rather than just the NUMBER of inputs. (in case one inputs arrives multiple times)
-  int m_numRxedInputs;
-  int m_inputTotal;
-  std::list <ndn::Name> m_listOfGeneratedInterests;
+  bool m_done;
+  unsigned char m_serviceOutput;
+  json m_dagServTracker; // with this data structure, we can keep track of WHICH inputs have arrived, rather than just the NUMBER of inputs. (in case one inputs arrives multiple times)
+  json m_dagObject;
+
   //std::map <std::string, std::vector<ndn::Block> > m_mapOfRxedBlocks;
-  std::map <std::string, std::vector<std::string> > m_mapOfRxedBlocks;
+  //std::map <std::string, std::vector<std::string> > m_mapOfRxedBlocks;
   std::vector <unsigned char> m_vectorOfServiceInputs;
 };
 

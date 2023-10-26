@@ -51,34 +51,34 @@
 #include <nlohmann/json.hpp>
 using json = nlohmann::json;
 
-NS_LOG_COMPONENT_DEFINE("DagOrchestratorAApp");
+NS_LOG_COMPONENT_DEFINE("DagOrchestratorA_App");
 
 namespace ns3 {
 
-NS_OBJECT_ENSURE_REGISTERED(DagOrchestratorAApp);
+NS_OBJECT_ENSURE_REGISTERED(DagOrchestratorA_App);
 
 // register NS-3 type
 TypeId
-DagOrchestratorAApp::GetTypeId()
+DagOrchestratorA_App::GetTypeId()
 {
-  static TypeId tid = TypeId("DagOrchestratorAApp")
+  static TypeId tid = TypeId("DagOrchestratorA_App")
     .SetParent<ndn::App>()
-    .AddConstructor<DagOrchestratorAApp>()
+    .AddConstructor<DagOrchestratorA_App>()
     .AddAttribute("Prefix", "Requested name", StringValue("/dumb-interest"),
-                    ndn::MakeNameAccessor(&DagOrchestratorAApp::m_name), ndn::MakeNameChecker())
+                    ndn::MakeNameAccessor(&DagOrchestratorA_App::m_name), ndn::MakeNameChecker())
     .AddAttribute("Service", "Requested service", StringValue("dumb-service"),
-                    ndn::MakeNameAccessor(&DagOrchestratorAApp::m_service), ndn::MakeNameChecker());
+                    ndn::MakeNameAccessor(&DagOrchestratorA_App::m_service), ndn::MakeNameChecker());
   return tid;
 }
 
-DagOrchestratorAApp::DagOrchestratorAApp()
+DagOrchestratorA_App::DagOrchestratorA_App()
   : m_isRunning(false)
 {
 }
 
 // Processing upon start of the application
 void
-DagOrchestratorAApp::StartApplication()
+DagOrchestratorA_App::StartApplication()
 {
   // initialize ndn::App
   ndn::App::StartApplication();
@@ -89,26 +89,14 @@ DagOrchestratorAApp::StartApplication()
   ndn::FibHelper::AddRoute(GetNode(), m_name, m_face, 0);
 
 
-  //m_mapOfInputTotals.clear();
-  //m_mapOfRxedInputNums.clear();
-  m_dagObject = 0;
-  //m_dagTracker = 0;
+  //m_dagObject = 0;
+  //m_dagOrchTracker = 0;
 
-  //DagOrchestratorAApp::SendInterest("/cabeee");
-  // Schedule send of first interest
-  //Simulator::Schedule(Seconds(1.0), &DagOrchestratorAApp::SendInterest, this);
-  //Simulator::Schedule(Seconds(2.0), &DagOrchestratorAApp::SendInterest, this);
-  //Simulator::Schedule(Seconds(3.0), &DagOrchestratorAApp::SendInterest, this);
-  //Simulator::Schedule(Seconds(4.0), &DagOrchestratorAApp::SendInterest, this);
-  //Simulator::Schedule(Seconds(5.0), &DagOrchestratorAApp::SendInterest, this);
-  //Simulator::Schedule(Seconds(6.0), &DagOrchestratorAApp::SendInterest, this);
-  //Simulator::Schedule(Seconds(7.0), &DagOrchestratorAApp::SendInterest, this);
-  //Simulator::Schedule(Seconds(8.0), &DagOrchestratorAApp::SendInterest, this);
 }
 
 // Processing when application is stopped
 void
-DagOrchestratorAApp::StopApplication()
+DagOrchestratorA_App::StopApplication()
 {
   m_isRunning = false;
   // cleanup ndn::App
@@ -120,7 +108,7 @@ DagOrchestratorAApp::StopApplication()
 
 
 void
-DagOrchestratorAApp::SendInterest(const std::string& interestName, std::string dagString)
+DagOrchestratorA_App::SendInterest(const std::string& interestName, std::string dagString)
 {
   if (!m_isRunning)
   {
@@ -169,9 +157,13 @@ DagOrchestratorAApp::SendInterest(const std::string& interestName, std::string d
   m_appLink->onReceiveInterest(*interest);
 }
 
+
+
+
+
 // Callback that will be called when Interest arrives
 void
-DagOrchestratorAApp::OnInterest(std::shared_ptr<const ndn::Interest> interest)
+DagOrchestratorA_App::OnInterest(std::shared_ptr<const ndn::Interest> interest)
 {
   ndn::App::OnInterest(interest);
 
@@ -212,10 +204,10 @@ DagOrchestratorAApp::OnInterest(std::shared_ptr<const ndn::Interest> interest)
     m_listOfRootServices.push_back(x.key()); // for now, add ALL keys to the list, we'll remove non-root ones later
     for (auto& y : m_dagObject["dag"][x.key()].items())
     {
-      m_listOfServicesWithInputs.push_back(y.value()); // add all values to the list
-      if ((std::find(m_listOfSinkNodes.begin(), m_listOfSinkNodes.end(), y.value()) == m_listOfSinkNodes.end())) // if y.value() does not exist in m_listOfSinkNodes
+      m_listOfServicesWithInputs.push_back(y.key()); // add all values to the list
+      if ((std::find(m_listOfSinkNodes.begin(), m_listOfSinkNodes.end(), y.key()) == m_listOfSinkNodes.end())) // if y.key() does not exist in m_listOfSinkNodes
       {
-        m_listOfSinkNodes.push_back(y.value()); // for now, add ALL values to the list, we'll remove non-sinks later
+        m_listOfSinkNodes.push_back(y.key()); // for now, add ALL values to the list, we'll remove non-sinks later
       }
     }
   }
@@ -230,30 +222,15 @@ DagOrchestratorAApp::OnInterest(std::shared_ptr<const ndn::Interest> interest)
   }
 
   // now remove services that have other services as inputs from the list of root services
-  for (auto thisItem : m_listOfServicesWithInputs)
+  for (auto serviceWithInputs : m_listOfServicesWithInputs)
   {
-    if (!(std::find(m_listOfRootServices.begin(), m_listOfRootServices.end(), thisItem) == m_listOfRootServices.end())) // if thisItem exists in m_listOfRootServices
+    if (!(std::find(m_listOfRootServices.begin(), m_listOfRootServices.end(), serviceWithInputs) == m_listOfRootServices.end())) // if serviceWithInputs exists in m_listOfRootServices
     {
-      m_listOfRootServices.remove(thisItem);
+      m_listOfRootServices.remove(serviceWithInputs);
     }
   }
 
 
-
-
-  for (auto thisItem : m_listOfRootServices)
-  {
-    // generate new interest for root services if one has not yet been generated
-    NS_LOG_DEBUG("Generating interest for: " << thisItem);
-
-    // We need to see if this interest has already been generated. If so, don't increment
-    // if this is a new interest (if interest is not in our list of generated interests)
-    //if ((std::find(m_listOfGeneratedInterests.begin(), m_listOfGeneratedInterests.end(), thisItem) == m_listOfGeneratedInterests.end())) { // if we don't find it...
-      // add this new interest to list of generated interests
-      //m_listOfGeneratedInterests.push_back(thisItem);
-      DagOrchestratorAApp::SendInterest(thisItem, dagString);
-    //}
-  }
 
 
   // create the tracking data structure using JSON
@@ -263,23 +240,40 @@ DagOrchestratorAApp::OnInterest(std::shared_ptr<const ndn::Interest> interest)
     unsigned char isRoot = 0;
     if (!(std::find(m_listOfRootServices.begin(), m_listOfRootServices.end(), x.key()) == m_listOfRootServices.end())) // if x.key() exists in m_listOfRootServices
       isRoot = 1;
-    m_dagTracker.push_back( json::object_t::value_type(x.key(), {{"root", isRoot}} ) );
-    m_dagTracker[x.key()].push_back( json::object_t::value_type("interestGenerated", 0 ) );
-    m_dagTracker[x.key()].push_back( json::object_t::value_type("inputsRxed", nullJson ) );
+    m_dagOrchTracker.push_back( json::object_t::value_type(x.key(), {{"root", isRoot}} ) );
+    m_dagOrchTracker[x.key()].push_back( json::object_t::value_type("interestGenerated", 0 ) );
+    m_dagOrchTracker[x.key()].push_back( json::object_t::value_type("inputsRxed", nullJson ) );
   }
-  //std::cout << std::setw(2) << m_dagTracker << '\n';
+  //std::cout << std::setw(2) << m_dagOrchTracker << '\n';
   for (auto& x : m_dagObject["dag"].items())
   {
     for (auto& y : m_dagObject["dag"][x.key()].items())
     {
-      if ((std::find(m_listOfSinkNodes.begin(), m_listOfSinkNodes.end(), y.value()) == m_listOfSinkNodes.end())) // if y.value() does not exist in m_listOfSinkNodes
+      if ((std::find(m_listOfSinkNodes.begin(), m_listOfSinkNodes.end(), y.key()) == m_listOfSinkNodes.end())) // if y.key() does not exist in m_listOfSinkNodes
       {
-        m_dagTracker[(std::string)y.value()]["inputsRxed"][(std::string)x.key()] = 0;
-        //std::cout << "x.key is " << x.key() << ", and y.value is " << y.value() << '\n';
+        m_dagOrchTracker[(std::string)y.key()]["inputsRxed"][(std::string)x.key()] = 0;
+        //std::cout << "x.key is " << x.key() << ", and y.key is " << y.key() << '\n';
       }
     }
   }
-  //std::cout << "dagTracker data structure: " << std::setw(2) << m_dagTracker << '\n';
+  //std::cout << "OrchestratorA dagOrchTracker data structure: " << std::setw(2) << m_dagOrchTracker << '\n';
+
+
+  for (auto rootService : m_listOfRootServices)
+  {
+    // generate new interest for root services if one has not yet been generated
+    NS_LOG_DEBUG("Generating interest for: " << rootService);
+
+    // We need to see if this interest has already been generated. If so, don't increment
+    // if this is a new interest (if interest is not in our list of generated interests)
+    //if ((std::find(m_listOfGeneratedInterests.begin(), m_listOfGeneratedInterests.end(), rootService) == m_listOfGeneratedInterests.end())) { // if we don't find it...
+      // add this new interest to list of generated interests
+      //m_listOfGeneratedInterests.push_back(rootService);
+      DagOrchestratorA_App::SendInterest(rootService, dagString);
+      m_dagOrchTracker[rootService]["interestGenerated"] = 1;
+    //}
+  }
+
 
 
   m_nameAndDigest = interest->getName();  // store the name with digest so that we can later generate the final result data packet with the same name/digest!
@@ -301,13 +295,12 @@ DagOrchestratorAApp::OnInterest(std::shared_ptr<const ndn::Interest> interest)
 
 // Callback that will be called when Data arrives
 void
-DagOrchestratorAApp::OnData(std::shared_ptr<const ndn::Data> data)
+DagOrchestratorA_App::OnData(std::shared_ptr<const ndn::Data> data)
 {
   NS_LOG_DEBUG("Receiving Data packet for " << data->getName());
 
   //std::cout << "DATA received for name " << data->getName() << std::endl;
 
-  //std::cout << "mapOfRxedInputNums = " << m_mapOfRxedInputNums << std::endl;
   //std::cout << "content = " << data->getContent() << std::endl;
 
   std::string rxedDataName = (data->getName()).getPrefix(-1).toUri(); // remove the last component of the name (the parameter digest) so we have just the raw name
@@ -315,24 +308,25 @@ DagOrchestratorAApp::OnData(std::shared_ptr<const ndn::Data> data)
 
   // TODO: this is a HACK. I need a better way to get to the first byte of the content. Right now, I'm just incrementing the pointer past the TLV type, and size.
   // and then getting to the first byte (which is all I'm using for data)
+  /*
   unsigned char serviceOutput = 0;
   uint8_t *pServiceInput = 0;
-  //pServiceInput = (uint8_t *)(m_mapOfRxedBlocks.back().data());
   pServiceInput = (uint8_t *)(data->getContent().data()); // this points to the first byte, which is the TLV-TYPE (21 for data packet content)
   pServiceInput++;  // now this points to the second byte, containing 253 (0xFD), meaning size (1024) is expressed with 2 octets
   pServiceInput++;  // now this points to the first size octet
   pServiceInput++;  // now this points to the second size octet
   pServiceInput++;  // now we are pointing at the first byte of the true content
   m_mapOfServiceInputs[rxedDataName] = (*pServiceInput);
+  */
 
 
 
 
 
   // mark down this input as having been received for all services that use this data as an input
-  for (auto& service : m_dagTracker.items())
+  for (auto& service : m_dagOrchTracker.items())
   {
-    for (auto& serviceInput : m_dagTracker[(std::string)service.key()]["inputsRxed"].items())
+    for (auto& serviceInput : m_dagOrchTracker[(std::string)service.key()]["inputsRxed"].items())
     {
       if (serviceInput.key() == rxedDataName)
       {
@@ -340,7 +334,7 @@ DagOrchestratorAApp::OnData(std::shared_ptr<const ndn::Data> data)
       }
     }
   }
-  //std::cout << "Updated dagTracker data structure: " << std::setw(2) << m_dagTracker << '\n';
+  //std::cout << "Updated dagTracker data structure: " << std::setw(2) << m_dagOrchTracker << '\n';
 
 
 
@@ -348,12 +342,12 @@ DagOrchestratorAApp::OnData(std::shared_ptr<const ndn::Data> data)
 
   // now we check to see which services that we have not generated interests for yet have all their inputs satisfied, and generate new interest if satisfied.
   // note there might be more than one service that needs to run next (ex: in the RPA DAG, when we receive R1, we can now run S2 AND S3)
-  for (auto& service : m_dagTracker.items())  // for each service in the tracker
+  for (auto& service : m_dagOrchTracker.items())  // for each service in the tracker
   {
     if (service.value()["interestGenerated"] == 0)  // if we haven't generated an interest for this service, then analyze its rxed inputs
     {
       unsigned char allInputsReceived = 1;
-      for (auto& serviceInput : m_dagTracker[(std::string)service.key()]["inputsRxed"].items())
+      for (auto& serviceInput : m_dagOrchTracker[(std::string)service.key()]["inputsRxed"].items())
       {
         if (serviceInput.value() == 0)
         {
@@ -365,7 +359,7 @@ DagOrchestratorAApp::OnData(std::shared_ptr<const ndn::Data> data)
       {
         // generate the interest for this service, and mark it down as generated
         std::string dagString = m_dagObject.dump();
-        DagOrchestratorAApp::SendInterest(service.key(), dagString);
+        DagOrchestratorA_App::SendInterest(service.key(), dagString);
         service.value()["interestGenerated"] = 1;
       }
     }
@@ -378,19 +372,21 @@ DagOrchestratorAApp::OnData(std::shared_ptr<const ndn::Data> data)
   {
     //if this data packet feeds sink node
     //std::cout << "        CHECKING SINK: rxedData is " << rxedDataName << ", and current sink node is " << sinkNode << '\n';
-    if (sinkNode == m_dagObject["dag"][rxedDataName])
+    for (auto& serviceFeed : m_dagObject["dag"][rxedDataName].items())
     {
-      NS_LOG_DEBUG("Final data packet! Creating data for name: " << m_nameAndDigest);   // m_name doesn't have the sha256 digest, so it doesn't match the original interest!
-                                                                                        // We use m_nameAndDigest to store the old name with the digest.
-      auto new_data = std::make_shared<ndn::Data>(m_nameAndDigest);
-      new_data->setFreshnessPeriod(ndn::time::milliseconds(3000));
+      if (sinkNode == serviceFeed.key())
+      {
+        NS_LOG_DEBUG("Final data packet! Creating data for name: " << m_nameAndDigest);   // m_name doesn't have the sha256 digest, so it doesn't match the original interest!
+                                                                                          // We use m_nameAndDigest to store the old name with the digest.
+        auto new_data = std::make_shared<ndn::Data>(m_nameAndDigest);
+        new_data->setFreshnessPeriod(ndn::time::milliseconds(3000));
 
-      new_data->setContent(data->getContent());
-      ndn::StackHelper::getKeyChain().sign(*new_data);
-      // Call trace (for logging purposes)
-      m_transmittedDatas(new_data, this, m_face);
-      m_appLink->onReceiveData(*new_data);
-
+        new_data->setContent(data->getContent());
+        ndn::StackHelper::getKeyChain().sign(*new_data);
+        // Call trace (for logging purposes)
+        m_transmittedDatas(new_data, this, m_face);
+        m_appLink->onReceiveData(*new_data);
+      }
     }
   }
 

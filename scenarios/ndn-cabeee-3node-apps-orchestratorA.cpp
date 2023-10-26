@@ -37,29 +37,29 @@ namespace ns3 {
 *         |
 *         v F2
 *       /-------\ Fapp    ---------------
-*  node1| rtr-1 |---------| ServiceA APP | Service 2
+*  node1| rtr-1 |---------| Service_A APP | Service 2
 *       \-------/         ---------------
 *         ^ F3
 *         |
 *         |
-*         v F4    Fapp    ---------------
-*       /-------\ --------| ServiceA APP | Service 3
-*  node2| rtr-2 | Fapp    |-------------|
-*       \-------/ --------| ServiceA APP | Service 4
-*         ^ F5            ---------------
+*         v F4    Fapp    -----------------
+*       /-------\ --------| Service_A APP | Service 3
+*  node2| rtr-2 | Fapp    |---------------|
+*       \-------/ --------| Service_A APP | Service 4
+*         ^ F5            -----------------
 *         |
 *         |
 *         v F6
-*       /-------\ Fapp    ---------------
-*  node3| rtr-3 |---------| ServiceA APP | Service 1
-*       \-------/         ---------------
+*       /-------\ Fapp    -----------------
+*  node3| rtr-3 |---------| Service_A APP | Service 1
+*       \-------/         -----------------
 *         ^ F7
 *         |
 *         |
 *         v F8
-*       /--------\ Fapp   --------------------
-*  node4|  orch  |--------| OrchestratorA APP | ServiceOrchestration
-*       \--------/        --------------------
+*       /--------\ Fapp   ----------------------
+*  node4|  orch  |--------| Orchestrator_A APP | ServiceOrchestration
+*       \--------/        ----------------------
 *         ^ F9
 *     0ms |
 *         v F10
@@ -106,19 +106,19 @@ main(int argc, char* argv[])
   Ptr<Node> orchestrator = Names::Find<Node>("orch");
   Ptr<Node> consumer = Names::Find<Node>("user");
 
-  ndnHelper.setCsSize(10); // enable/disable content store
+  ndnHelper.setCsSize(0); // enable/disable content store by setting size
   ndnHelper.Install(producer);
 
-  ndnHelper.setCsSize(10); // enable/disable content store
+  ndnHelper.setCsSize(0); // enable/disable content store by setting size
   ndnHelper.Install(router1);
 
-  ndnHelper.setCsSize(10); // enable/disable content store
+  ndnHelper.setCsSize(0); // enable/disable content store by setting size
   ndnHelper.Install(router2);
 
-  ndnHelper.setCsSize(10); // enable/disable content store
+  ndnHelper.setCsSize(0); // enable/disable content store by setting size
   ndnHelper.Install(router3);
 
-  ndnHelper.setCsSize(10); // enable/disable content store
+  ndnHelper.setCsSize(0); // enable/disable content store by setting size
   ndnHelper.Install(orchestrator);
 
   ndnHelper.setCsSize(0); // disable content store
@@ -162,25 +162,22 @@ main(int argc, char* argv[])
   sensorApp.Install(producer).Start(Seconds(0));
 
   // Custom App for routers
-  ndn::AppHelper serviceApp("DagServiceAApp");
+  ndn::AppHelper serviceApp("DagServiceA_App");
   serviceApp.SetPrefix("/service1");
   serviceApp.SetAttribute("Service", StringValue("service1"));
-  //serviceApp.SetAttribute("Results", StringValue("/sensor/service1")); //TODO: eventually control caching of results like this
+  //serviceApp.SetAttribute("Results", StringValue(JSON_DAG)); //TODO: eventually control caching of results like this?
   serviceApp.Install(router3).Start(Seconds(0));
   serviceApp.SetPrefix("/service2");
   serviceApp.SetAttribute("Service", StringValue("service2"));
-  //serviceApp.SetAttribute("Results", StringValue("/sensor/service1/service2"));
   serviceApp.Install(router1).Start(Seconds(0));
   serviceApp.SetPrefix("/service3");
   serviceApp.SetAttribute("Service", StringValue("service3"));
-  //serviceApp.SetAttribute("Results", StringValue("/sensor/service1/service2/service3"));
   serviceApp.Install(router2).Start(Seconds(0));
   serviceApp.SetPrefix("/service4");
   serviceApp.SetAttribute("Service", StringValue("service4"));
-  //serviceApp.SetAttribute("Results", StringValue("/sensor/service1/service2/service3/service4"));
   serviceApp.Install(router2).Start(Seconds(0));
 
-  ndn::AppHelper orchestratorApp("DagOrchestratorAApp");
+  ndn::AppHelper orchestratorApp("DagOrchestratorA_App");
   orchestratorApp.SetPrefix("/serviceOrchestration");
   orchestratorApp.SetAttribute("Service", StringValue("serviceOrchestration"));
   //orchestratorApp.SetAttribute("Results", StringValue("/sensor/service1/service2/service3/service4"));
@@ -248,8 +245,8 @@ main(int argc, char* argv[])
 
   Simulator::Stop(Seconds(20.0));
 
-  ndn::L3RateTracer::InstallAll("rate-trace_cabeee-3node-apps-centralized.txt", Seconds(0.1));
-  ndn::CsTracer::InstallAll("cs-trace_cabeee-3node-apps-centralized.txt", Seconds(0.1));
+  ndn::L3RateTracer::InstallAll("rate-trace_cabeee-3node-apps-orchestratorA.txt", Seconds(0.1));
+  ndn::CsTracer::InstallAll("cs-trace_cabeee-3node-apps-orchestratorA.txt", Seconds(0.1));
 
   Simulator::Run();
   Simulator::Destroy();
