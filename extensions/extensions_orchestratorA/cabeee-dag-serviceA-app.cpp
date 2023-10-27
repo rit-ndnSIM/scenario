@@ -84,9 +84,6 @@ DagServiceA_App::StartApplication()
   m_done = false;
   m_nameUri = m_name.ndn::Name::toUri();
 
-  //m_dagObject = 0;
-  //m_dagServTracker = 0;
-
 }
 
 // Processing when application is stopped
@@ -269,6 +266,11 @@ DagServiceA_App::OnInterest(std::shared_ptr<const ndn::Interest> interest)
 }
 
 
+
+
+
+
+
 // Callback that will be called when Data arrives
 void
 DagServiceA_App::OnData(std::shared_ptr<const ndn::Data> data)
@@ -294,9 +296,8 @@ DagServiceA_App::OnData(std::shared_ptr<const ndn::Data> data)
   //m_mapOfServiceInputs[rxedDataName] = (*pServiceInput);
 
   // we keep track of which input is for which interest that was sent out. Data packets may arrive in different order than how interests were sent out.
+  // just read the index from the dagObject JSON structure
   char index = -1;
-  // instead of what I did above, just read the index from the dagObject JSON structure
-  //std::cout << "dagObject data structure: " << std::setw(2) << m_dagObject << '\n';
   for (auto& x : m_dagObject["dag"].items())
   {
     if (x.key() == rxedDataName)
