@@ -88,10 +88,6 @@ DagOrchestratorA_App::StartApplication()
   //ndn::FibHelper::AddRoute(GetNode(), "/prefix/sub", m_face, 0); //cabeee took this out, let the global router figure it out.
   ndn::FibHelper::AddRoute(GetNode(), m_name, m_face, 0);
 
-
-  //m_dagObject = 0;
-  //m_dagOrchTracker = 0;
-
 }
 
 // Processing when application is stopped
@@ -195,9 +191,8 @@ DagOrchestratorA_App::OnInterest(std::shared_ptr<const ndn::Interest> interest)
   m_dagObject = json::parse(dagString);
 
 
-  // here we generate just the first interest(s) according to the workflow (not backwards as done originally in our proposed optimized methodology).
+  // here we generate just the first interest(s) according to the workflow (not backwards as done in our proposed forwarder-based methodology).
   // to do this, we must discover which services in the DAG are "root" services (services which don't have inputs coming from other services - sensors excluded).
-
 
   for (auto& x : m_dagObject["dag"].items())
   {

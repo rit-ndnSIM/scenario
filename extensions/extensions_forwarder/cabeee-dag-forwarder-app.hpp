@@ -69,19 +69,22 @@ public:
 
 private:
   void
-  SendInterest(const std::string& interestName, ndn::Block);
+  SendInterest(const std::string& interestName, std::string);
   
 private:
   bool m_isRunning;
   ndn::Name m_name;
+  std::string m_nameUri;
   ndn::Name m_nameAndDigest;
   ndn::Name m_service;
-  json m_rxedInputs; // TODO: eventually we can keep better track of WHICH inputs have arrived, rather than just the NUMBER of inputs. (in case one inputs arrives multiple times)
-  int m_numRxedInputs;
-  int m_inputTotal;
+  json m_dagServTracker; // with this data structure, we can keep track of WHICH inputs have arrived, rather than just the NUMBER of inputs. (in case one inputs arrives multiple times)
+  json m_dagObject;
+
+  //int m_numRxedInputs;
+  //int m_inputTotal;
   std::list <ndn::Name> m_listOfGeneratedInterests;
   //std::map <std::string, std::vector<ndn::Block> > m_mapOfRxedBlocks;
-  std::map <std::string, std::vector<std::string> > m_mapOfRxedBlocks;
+  //std::map <std::string, std::vector<std::string> > m_mapOfRxedBlocks;
   std::vector <unsigned char> m_vectorOfServiceInputs;
 };
 

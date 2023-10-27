@@ -80,9 +80,10 @@ DagForwarderApp::StartApplication()
   //ndn::FibHelper::AddRoute(GetNode(), "/prefix/sub", m_face, 0); //cabeee took this out, let the global router figure it out.
   ndn::FibHelper::AddRoute(GetNode(), m_name, m_face, 0);
 
+  m_nameUri = m_name.ndn::Name::toUri();
 
-  m_inputTotal = 0;
-  m_numRxedInputs = 0;
+  //m_inputTotal = 0;
+  //m_numRxedInputs = 0;
 
 }
 
@@ -95,8 +96,13 @@ DagForwarderApp::StopApplication()
   ndn::App::StopApplication();
 }
 
+
+
+
+
+
 void
-DagForwarderApp::SendInterest(const std::string& interestName, ndn::Block dagParameter)
+DagForwarderApp::SendInterest(const std::string& interestName, std::string dagString)
 {
   if (!m_isRunning)
   {
@@ -120,7 +126,7 @@ DagForwarderApp::SendInterest(const std::string& interestName, ndn::Block dagPar
 
 
   // overwrite the dag parameter "head" value and generate new application parameters (thus calculating new sha256 digest)
-  std::string dagString = std::string(reinterpret_cast<const char*>(dagParameter.value()), dagParameter.value_size());
+  //std::string dagString = std::string(reinterpret_cast<const char*>(dagParameter.value()), dagParameter.value_size());
   auto dagObject = json::parse(dagString);
   dagObject["head"] = interestName;
   std::string updatedDagString = dagObject.dump();
@@ -148,6 +154,12 @@ DagForwarderApp::SendInterest(const std::string& interestName, ndn::Block dagPar
   m_appLink->onReceiveInterest(*interest);
 }
 
+
+
+
+
+
+
 // Callback that will be called when Interest arrives
 void
 DagForwarderApp::OnInterest(std::shared_ptr<const ndn::Interest> interest)
@@ -158,36 +170,7 @@ DagForwarderApp::OnInterest(std::shared_ptr<const ndn::Interest> interest)
   NS_LOG_DEBUG("Received Interest packet for " << interest->getName());
   //NS_LOG_DEBUG("Received on node hosting service " << m_service);
 
-  /*
-  //remove the FIRST portion of the name to create a new interest for the next service in the DAG workflow
-
-  //std::string interestName = ndn::Name::toUri(interest->getName());
-  //std::string last_element(interestName.substr(interestName.rfind("::") + 2));
-
-  // it might be easier to simply use the ndn provided methods: getSubName() and getPrefix()
-
-  //ndn::PartialName last_element = ndn::Name::getSubName(-1, 1); // isolate the last component of the name
-  //ndn::Name last_element = interest->getName().ndn::Name::getSubName(-1, 1); // isolate the last component of the name
-  //NS_LOG_DEBUG("Found last element: " << last_element);
-
-  //ndn::Name without_last_element = interest->getName().ndn::Name::getPrefix(-1); // remove the last component
-  //NS_LOG_DEBUG("Name without last element: " << without_last_element);
-  //std::string string_without_last_element = without_last_element.ndn::Name::toUri();
-  //NS_LOG_DEBUG("String without last element: " << string_without_last_element);
-
-  //ndn::Name first_element = interest->getName().ndn::Name::getPrefix(1); // keep only first component
-  //NS_LOG_DEBUG("Name first element: " << first_element);
-  //std::string string_first_element = first_element.ndn::Name::toUri();
-  //NS_LOG_DEBUG("String first element: " << string_first_element);
-
-  ndn::Name without_first_element = interest->getName().ndn::Name::getSubName(1, ndn::Name::npos); // remove the first component
-  NS_LOG_DEBUG("Name without first element: " << without_first_element);
-  std::string string_without_first_element = without_first_element.ndn::Name::toUri();
-  //NS_LOG_DEBUG("String without first element: " << string_without_first_element);
-
-  // generate the new interest with the shorter name
-  DagForwarderApp::SendInterest(string_without_first_element);
-  */
+  
 
 
   // decode the DAG string contained in the application parameters, so we can generate the new interest(s)
@@ -212,18 +195,10 @@ DagForwarderApp::OnInterest(std::shared_ptr<const ndn::Interest> interest)
 
 
 
-/*
-  // for now, I'm just doing a linear workflow with the dag workflow attached to the interests for testing.
-  ndn::Name without_first_element = interest->getName().ndn::Name::getSubName(1, ndn::Name::npos); // remove the first component
-  NS_LOG_DEBUG("Name without first element: " << without_first_element);
-  std::string string_without_first_element = without_first_element.ndn::Name::toUri();
-  DagForwarderApp::SendInterest(string_without_first_element, dagParameterFromInterest);
-*/
-
 
 
   // read the dag parameters and figure out which interests to generate next. Change the dagParameters accordingly (head will be different)
-  auto dagObject = json::parse(dagString);
+  m_dagObject = json::parse(dagString);
   //NS_LOG_DEBUG("Interest parameter head: " << dagObject["head"] << ", m_name attribute: " << m_name.ndn::Name::toUri());
   //if (dagObject["head"] != m_name.ndn::Name::toUri())
   //{
@@ -235,38 +210,37 @@ DagForwarderApp::OnInterest(std::shared_ptr<const ndn::Interest> interest)
   //NS_LOG_DEBUG("Interest parameter s1 feeds " << (dagObject["dag"]["/S1"].size()) << " services: " << dagObject["dag"]["/S1"]);
 
 
-
-  for (auto& x : dagObject["dag"].items())
+  // create the tracking data structure using JSON
+  json nullJson;
+  //m_dagServTracker[m_nameUri].push_back( json::object_t::value_type("interestGenerated", 0 ) );
+  m_dagServTracker[m_nameUri].push_back( json::object_t::value_type("inputsRxed", nullJson ) );
+  for (auto& x : m_dagObject["dag"].items())
   {
-    for (auto& y : dagObject["dag"][x.key()].items())
+    for (auto& y : m_dagObject["dag"][x.key()].items())
     {
-      //NS_LOG_DEBUG("Looking at service x: " << x.key() << " feeding into service y: " << y.value());
-      //NS_LOG_DEBUG("Comparing y.value(): " << y.value() << " with the name of this application's service: " << m_name.ndn::Name::toUri());
-      //if (y.value() == dagObject["head"])
-      if (y.value() == m_name.ndn::Name::toUri()) // if service x feeds into this service (y) then we need to generate an interest for x.
+      if (y.key() == m_nameUri)
       {
-        // generate new interest for service that feeds results to this application's service
-        NS_LOG_DEBUG("Generating interest for: " << x.key());
+        m_dagServTracker[(std::string)y.key()]["inputsRxed"][(std::string)x.key()] = 0;
+        //std::cout << "x.key is " << x.key() << ", and y.key is " << y.key() << '\n';
 
-        // We need to see if this interest has already been generated. If so, don't increment (seems duplicate interests are still generated and reach the "sensor")
-        // if this is a new interest (if interest is not in our list of generated interests)
-        if ((std::find(m_listOfGeneratedInterests.begin(), m_listOfGeneratedInterests.end(), x.key()) == m_listOfGeneratedInterests.end())) // if we don't find it...
-        {
-          // add this new interest to list of generated interests
-          m_listOfGeneratedInterests.push_back(x.key());
-          m_inputTotal++;
-          NS_LOG_DEBUG(" THIS IS A NEW interest for X: " << x.key() << ", which feeds into service Y: " << y.value());
-
-          m_mapOfRxedBlocks[y.value()].push_back(x.key());  // this is to keep track of the order of inputs for multi-input services.
-                                                            // without this, we won't know which data packet goes with which generated interest.
-          m_vectorOfServiceInputs.push_back(0);             // for now, just create vector entries for the inputs, so that if they arrive out of order, we can insert at any index location
-          
-          DagForwarderApp::SendInterest(x.key(), dagParameterFromInterest);
-        }
+        m_vectorOfServiceInputs.push_back(0);             // for now, just create vector entries for the inputs, so that if they arrive out of order, we can insert at any index location
       }
     }
   }
-  //DagForwarderApp::SendInterest(string_without_first_element, dagParameterFromInterest);
+  //std::cout << "ServiceA dagServTracker data structure: " << std::setw(2) << m_dagServTracker << '\n';
+
+
+
+  // generate all the interests for required inputs
+  for (auto& serviceInput : m_dagServTracker[(std::string)m_nameUri]["inputsRxed"].items())
+  {
+    if (serviceInput.value() == 0)
+    {
+      // generate the interest for this input
+      std::string dagString = m_dagObject.dump();
+      DagForwarderApp::SendInterest(serviceInput.key(), dagString);
+    }
+  }
 
 
 
@@ -318,27 +292,48 @@ DagForwarderApp::OnData(std::shared_ptr<const ndn::Data> data)
   //m_mapOfServiceInputs[rxedDataName] = (*pServiceInput);
 
   // we keep track of which input is for which interest that was sent out. Data packets may arrive in different order than how interests were sent out.
-  // index = look for rxedDataName in m_mapOfRxedBlocks and figure out what index it is using!
-  unsigned char index = 0;
-  for (auto i = (m_mapOfRxedBlocks[m_service.toUri()]).begin(); i != (m_mapOfRxedBlocks[m_service.toUri()]).end(); ++i) {
-    if ((*i).compare(rxedDataName) == 0) {
-      break;
+  // just read the index from the dagObject JSON structure
+  char index = -1;
+  for (auto& x : m_dagObject["dag"].items())
+  {
+    if (x.key() == rxedDataName)
+    {
+      for (auto& y : m_dagObject["dag"][x.key()].items())
+      {
+        if (y.key() == m_nameUri)
+        {
+          //std::cout << "  HIT, y.key(): " << y.key() << ", y.value(): " << y.value() << '\n';
+          index = y.value().template get<char>();
+        }
+      }
     }
-    index++;
   }
-  m_vectorOfServiceInputs[index] = (*pServiceInput);
+  if (index < 0)
+  {
+    std::cout << "  ERROR!! index for m_vectorOfServiceInputs cannot be negative! Something went wrong!!" << '\n';
+  }
+  else
+  {
+    m_vectorOfServiceInputs[index] = (*pServiceInput);
+  }
 
-  m_numRxedInputs++;
-  //TODO: this just checks for number of inputs received. I should check if all inputs have been received (this won't work if I need two inputs, but I receive the same input twice)
+  // mark this input as having been received
+  m_dagServTracker[m_nameUri]["inputsRxed"][rxedDataName] = 1;
 
   // we have to check if we have received all necessary inputs for this instance of the hosted service!
   //      if so, run the service below and generate new data packet to go downstream.
   //      otherwise, just wait for the other inputs.
-  if (m_numRxedInputs == m_inputTotal)
+  unsigned char allInputsReceived = 1;
+  for (auto& serviceInput : m_dagServTracker[m_nameUri]["inputsRxed"].items())
   {
-
-    m_inputTotal = 0;     // reset for next time service is called? so that we start fresh with next interest?
-    m_numRxedInputs = 0;  // reset for next time service is called? so that we wait for new inputs?
+    if (serviceInput.value() == 0)
+    {
+      allInputsReceived = 0;
+      break;
+    }
+  }
+  if (allInputsReceived == 1)
+  {
 
     //"RUN" the service, and create a new data packet to respond downstream
     //NS_LOG_DEBUG("Fake running service " << m_service);
@@ -390,8 +385,7 @@ DagForwarderApp::OnData(std::shared_ptr<const ndn::Data> data)
   }
   else
   {
-    NS_LOG_DEBUG("    Even though we received data packet, we are still waiting for more inputs! Rxed so far: " << m_numRxedInputs);
-    NS_LOG_DEBUG("    This service needs this many inputs: " << m_inputTotal);
+    NS_LOG_DEBUG("    Even though we received data packet, we are still waiting for more inputs!");
   }
   
 }
