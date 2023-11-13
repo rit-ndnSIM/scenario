@@ -192,7 +192,7 @@ DagOrchestratorA_App::OnInterest(std::shared_ptr<const ndn::Interest> interest)
 
 
   // here we generate just the first interest(s) according to the workflow (not backwards as done in our proposed forwarder-based methodology).
-  // to do this, we must discover which services in the DAG are "root" services (services which don't have inputs coming from other services - sensors excluded).
+  // to do this, we must discover which services in the DAG are "root" services (services which don't have inputs coming from other services, for example: sensors).
 
   for (auto& x : m_dagObject["dag"].items())
   {

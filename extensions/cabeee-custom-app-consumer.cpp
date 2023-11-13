@@ -167,9 +167,18 @@ CustomAppConsumer::SendInterest()
     dagObject["head"] = "/service4"; //TODO: I'm doing this manually right now. I should look at the json input file, and see which service feeds "consumer", and use that instead of hardcoding
     interest->setName("/service4"); //TODO: I'm doing this manually right now. I should look at the json input file, and see which service feeds "consumer", and use that instead of hardcoding
   }
-  else {
+  else if (m_orchestrate == 1){ // orchestration method A
     dagObject["head"] = "/serviceOrchestration";
     interest->setName("/serviceOrchestration");
+  }
+  else if (m_orchestrate == 2){ // orchestration method B
+    dagObject["head"] = "/serviceOrchestration/dag";
+    interest->setName("/serviceOrchestration/dag");
+  }
+  else
+  {
+    NS_LOG_DEBUG("ERROR, this should not happen. m_orchestrate value set out of bounds!" << '\n');
+    return;
   }
 
   std::string dagString = dagObject.dump();
