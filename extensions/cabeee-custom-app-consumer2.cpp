@@ -17,9 +17,9 @@
  * ndnSIM, e.g., in COPYING.md file.  If not, see <http://www.gnu.org/licenses/>.
  **/
 
-// cabeee-custom-app-consumer.cpp
+// cabeee-custom-app-consumer2.cpp
 
-#include "cabeee-custom-app-consumer.hpp"
+#include "cabeee-custom-app-consumer2.hpp"
 //#include "cabeee-dag-forwarder-common.hpp"
 
 #include "ns3/ptr.h"
@@ -46,34 +46,34 @@ using json = nlohmann::json;
 //#include "ns3/ndnSIM/ndn-cxx/encoding/block-helpers.hpp"
 
 
-NS_LOG_COMPONENT_DEFINE("CustomAppConsumer");
+NS_LOG_COMPONENT_DEFINE("CustomAppConsumer2");
 
 namespace ns3 {
 
-NS_OBJECT_ENSURE_REGISTERED(CustomAppConsumer);
+NS_OBJECT_ENSURE_REGISTERED(CustomAppConsumer2);
 
 // register NS-3 type
 TypeId
-CustomAppConsumer::GetTypeId()
+CustomAppConsumer2::GetTypeId()
 {
-  static TypeId tid = TypeId("CustomAppConsumer")
+  static TypeId tid = TypeId("CustomAppConsumer2")
     .SetParent<ndn::App>()
-    .AddConstructor<CustomAppConsumer>()
+    .AddConstructor<CustomAppConsumer2>()
     .AddAttribute("Prefix", "Requested name", StringValue("/dumb-interest"),
-                    ndn::MakeNameAccessor(&CustomAppConsumer::m_name), ndn::MakeNameChecker())
+                    ndn::MakeNameAccessor(&CustomAppConsumer2::m_name), ndn::MakeNameChecker())
     .AddAttribute("Orchestrate", "Requested orchestration", UintegerValue(0),
-                    MakeUintegerAccessor(&CustomAppConsumer::m_orchestrate), MakeUintegerChecker<uint16_t>());
+                    MakeUintegerAccessor(&CustomAppConsumer2::m_orchestrate), MakeUintegerChecker<uint16_t>());
   return tid;
 }
 
-CustomAppConsumer::CustomAppConsumer()
+CustomAppConsumer2::CustomAppConsumer2()
   : m_isRunning(false)
 {
 }
 
 // Processing upon start of the application
 void
-CustomAppConsumer::StartApplication()
+CustomAppConsumer2::StartApplication()
 {
   // initialize ndn::App
   ndn::App::StartApplication();
@@ -88,19 +88,19 @@ CustomAppConsumer::StartApplication()
 
 
   // Schedule send of first interest
-  Simulator::Schedule(Seconds(1.0), &CustomAppConsumer::SendInterest, this);
-  //Simulator::Schedule(Seconds(2.0), &CustomAppConsumer::SendInterest, this);
-  //Simulator::Schedule(Seconds(3.0), &CustomAppConsumer::SendInterest, this);
-  //Simulator::Schedule(Seconds(4.0), &CustomAppConsumer::SendInterest, this);
-  //Simulator::Schedule(Seconds(5.0), &CustomAppConsumer::SendInterest, this);
-  //Simulator::Schedule(Seconds(6.0), &CustomAppConsumer::SendInterest, this);
-  //Simulator::Schedule(Seconds(7.0), &CustomAppConsumer::SendInterest, this);
-  //Simulator::Schedule(Seconds(8.0), &CustomAppConsumer::SendInterest, this);
+  Simulator::Schedule(Seconds(1.0), &CustomAppConsumer2::SendInterest, this);
+  //Simulator::Schedule(Seconds(2.0), &CustomAppConsumer2::SendInterest, this);
+  //Simulator::Schedule(Seconds(3.0), &CustomAppConsumer2::SendInterest, this);
+  //Simulator::Schedule(Seconds(4.0), &CustomAppConsumer2::SendInterest, this);
+  //Simulator::Schedule(Seconds(5.0), &CustomAppConsumer2::SendInterest, this);
+  //Simulator::Schedule(Seconds(6.0), &CustomAppConsumer2::SendInterest, this);
+  //Simulator::Schedule(Seconds(7.0), &CustomAppConsumer2::SendInterest, this);
+  //Simulator::Schedule(Seconds(8.0), &CustomAppConsumer2::SendInterest, this);
 }
 
 // Processing when application is stopped
 void
-CustomAppConsumer::StopApplication()
+CustomAppConsumer2::StopApplication()
 {
   m_isRunning = false;
   // cleanup ndn::App
@@ -108,7 +108,7 @@ CustomAppConsumer::StopApplication()
 }
 
 void
-CustomAppConsumer::SendInterest()
+CustomAppConsumer2::SendInterest()
 {
   if (!m_isRunning)
   {
@@ -162,7 +162,8 @@ CustomAppConsumer::SendInterest()
   */
 
 
-  std::ifstream f("workflows/rpa-dag.json"); //TODO: take input from command line rather than hardcoding the dag file
+  std::ifstream f("workflows/rpa-dag_reuse.json"); //TODO: take input from command line rather than hardcoding the dag file
+  //std::ifstream f("workflows/rpa-dag_reuse2.json"); //TODO: take input from command line rather than hardcoding the dag file
   json dagObject = json::parse(f);
 
   // here we generate just the first interest(s) according to the workflow
@@ -173,7 +174,7 @@ CustomAppConsumer::SendInterest()
   {
     for (auto& y : dagObject["dag"][x.key()].items())
     {
-      if (y.key() == "/consumer")
+      if (y.key() == "/consumer2")
       {
         sinkService = x.key();
       }
@@ -239,7 +240,7 @@ CustomAppConsumer::SendInterest()
 
   if (numOfSinkServices != 1)
   {
-    NS_LOG_DEBUG("ERROR, this should not happen. Consumer found more than one (or none) sink services!" << '\n');
+    NS_LOG_DEBUG("ERROR, this should not happen. Consumer2 found more than one (or none) sink services!" << '\n');
     return;
   }
 
@@ -248,8 +249,8 @@ CustomAppConsumer::SendInterest()
 
 
   if (m_orchestrate == 0) {
-    //dagObject["head"] = "/service4"; //TODO: I'm doing this manually right now. I should look at the json input file, and see which service feeds "consumer", and use that instead of hardcoding
-    //interest->setName("/service4"); //TODO: I'm doing this manually right now. I should look at the json input file, and see which service feeds "consumer", and use that instead of hardcoding
+    //dagObject["head"] = "/service4"; //TODO: I'm doing this manually right now. I should look at the json input file, and see which service feeds "consumer2", and use that instead of hardcoding
+    //interest->setName("/service4"); //TODO: I'm doing this manually right now. I should look at the json input file, and see which service feeds "consumer2", and use that instead of hardcoding
     dagObject["head"] = sinkService;
     interest->setName(sinkService);
   }
@@ -312,21 +313,21 @@ CustomAppConsumer::SendInterest()
   /*
   // These interests are NOT signed. The SHA256 digest added by the application parameters is separate from a signature!
   auto sigPresent = interest->isSigned();
-  NS_LOG_DEBUG("Consumer: Interest is signed: " << sigPresent);
+  NS_LOG_DEBUG("Consumer2: Interest is signed: " << sigPresent);
   auto dagSignatureInfo = interest->getSignatureInfo();
-  //NS_LOG_DEBUG("Consumer: Interest signature info after adding appParams: " << dagSignatureInfo);
+  //NS_LOG_DEBUG("Consumer2: Interest signature info after adding appParams: " << dagSignatureInfo);
   if (dagSignatureInfo) {
     auto dagSignatureType2 = dagSignatureInfo->getSignatureType();
-    NS_LOG_DEBUG("Consumer: Interest signature type after adding appParams: " << dagSignatureType2);
+    NS_LOG_DEBUG("Consumer2: Interest signature type after adding appParams: " << dagSignatureType2);
   }
   auto dagSignatureValue = interest->getSignatureValue();
-  NS_LOG_DEBUG("Consumer: Interest signature value after adding appParams: " << dagSignatureValue);
+  NS_LOG_DEBUG("Consumer2: Interest signature value after adding appParams: " << dagSignatureValue);
   */
 
 
-  //NS_LOG_DEBUG("Consumer: Interest parameters being sent: " << dagStringParameter);
+  //NS_LOG_DEBUG("Consumer2: Interest parameters being sent: " << dagStringParameter);
   //auto dagParameterFromInterest = interest->getApplicationParameters();
-  //NS_LOG_DEBUG("Consumer: Interest parameters being sent: " << dagParameterFromInterest);
+  //NS_LOG_DEBUG("Consumer2: Interest parameters being sent: " << dagParameterFromInterest);
 
 
   NS_LOG_DEBUG("Sending Interest packet for " << *interest);
@@ -340,7 +341,7 @@ CustomAppConsumer::SendInterest()
 
 // Callback that will be called when Interest arrives
 void
-CustomAppConsumer::OnInterest(std::shared_ptr<const ndn::Interest> interest)
+CustomAppConsumer2::OnInterest(std::shared_ptr<const ndn::Interest> interest)
 {
   ndn::App::OnInterest(interest);
 
@@ -363,14 +364,14 @@ CustomAppConsumer::OnInterest(std::shared_ptr<const ndn::Interest> interest)
 
 // Callback that will be called when Data arrives
 void
-CustomAppConsumer::OnData(std::shared_ptr<const ndn::Data> data)
+CustomAppConsumer2::OnData(std::shared_ptr<const ndn::Data> data)
 {
   NS_LOG_DEBUG("Receiving Data packet for " << data->getName());
 
-  std::cout << "\n\n      CONSUMER: DATA received for name " << data->getName() << std::endl << "\n\n";
+  std::cout << "\n\n      CONSUMER2: DATA received for name " << data->getName() << std::endl << "\n\n";
 
   ndn::Block myRxedBlock = data->getContent();
-  //std::cout << "\nCONSUMER: result = " << myRxedBlock << std::endl << "\n\n";
+  //std::cout << "\nCONSUMER2: result = " << myRxedBlock << std::endl << "\n\n";
 
   uint8_t *pContent = (uint8_t *)(myRxedBlock.data()); // this points to the first byte, which is the TLV-TYPE (21 for data packet contet)
   pContent++;  // now this points to the second byte, containing 253 (0xFD), meaning size (1024) is expressed with 2 octets

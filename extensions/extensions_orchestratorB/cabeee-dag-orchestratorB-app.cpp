@@ -104,20 +104,6 @@ DagOrchestratorB_App::StopApplication()
 
 
 
-// TODO: go through this whole file and change functionality from orchestratorA to orchestratorB
-// The orchestrator should receive the interest from the consumer (with JSON DAG as a parameter), and generate the separate interests for each service.
-
-// When a service needs inputs, the orchestrator will generate request for interests, so that the node hosting the service knows to generate an interest for the input.
-// I'll need to make sure that when an input is to be sent to a service, an interest-request interest will need to be sent by the orchestrator to the node hosting the service,
-// so that the service generates the interest for the input, and the orchestrator (or anyone that has it) responds with the input (as a data packet).
-
-// Once a service runs, it will respond with a data packet. The orchestrator will keep track of received data packets before running downstream services.
-
-// When receiving data packets with results of services, we must add prefixes "serviceX/resultServiceX" to the prefix table.
-
-// Eventually, respond to the consumer with the final data.
-
-
 
 
 

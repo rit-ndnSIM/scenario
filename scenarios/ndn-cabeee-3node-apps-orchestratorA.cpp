@@ -62,7 +62,7 @@ namespace ns3 {
 *       \--------/        ----------------------
 *         ^ F9
 *     0ms |
-*         v F10
+*         v FA
 *       /--------\ Fapp   ----------------
 *  node5|  user  |--------| Consumer APP |
 *       \--------/        ----------------
@@ -80,8 +80,8 @@ main(int argc, char* argv[])
 
   // Creating nodes
   AnnotatedTopologyReader topologyReader("", 1);
-  //topologyReader.SetFileName("topologies/topo-cabeee-3node.txt");
   topologyReader.SetFileName("topologies/topo-cabeee-3node-slow.txt");
+  //topologyReader.SetFileName("topologies/topo-cabeee-3node.txt");
   topologyReader.Read();
 
 
@@ -109,13 +109,16 @@ main(int argc, char* argv[])
   ndnHelper.setCsSize(0); // enable/disable content store by setting size
   ndnHelper.Install(producer);
 
-  ndnHelper.setCsSize(0); // enable/disable content store by setting size
+  //ndnHelper.setCsSize(0); // enable/disable content store by setting size
+  ndnHelper.setCsSize(10); // enable/disable content store by setting size
   ndnHelper.Install(router1);
 
-  ndnHelper.setCsSize(0); // enable/disable content store by setting size
+  //ndnHelper.setCsSize(0); // enable/disable content store by setting size
+  ndnHelper.setCsSize(10); // enable/disable content store by setting size
   ndnHelper.Install(router2);
 
-  ndnHelper.setCsSize(0); // enable/disable content store by setting size
+  //ndnHelper.setCsSize(0); // enable/disable content store by setting size
+  ndnHelper.setCsSize(10); // enable/disable content store by setting size
   ndnHelper.Install(router3);
 
   ndnHelper.setCsSize(0); // enable/disable content store by setting size

@@ -100,21 +100,6 @@ DagServiceB_App::StopApplication()
 
 
 
-
-// TODO: go through this whole file and change the functionality from serviceA to serviceB
-
-// received interests will contain the name of the required inputs with the full DAG. This service must then parse the DAG and generate said
-// interest(s) (for inputs).
-// we keep track of received data inputs. Once all interests for data inputs have been fulfilled, we run the service and respond with data.
-// alternatively, we could respond with complete signal for the orchestrator, and host the result data locally.
-
-
-
-
-
-
-
-
 void
 DagServiceB_App::SendInterest(const std::string& interestName, std::string dagString)
 {

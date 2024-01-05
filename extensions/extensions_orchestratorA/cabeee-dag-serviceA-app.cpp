@@ -98,10 +98,7 @@ DagServiceA_App::StopApplication()
 
 
 
-// received interests will contain the name of the required inputs with the full DAG. This service must then parse the DAG and generate said
-// interest(s) (for inputs).
-// we keep track of received data inputs. Once all interests for data inputs have been fulfilled, we run the service and respond with data.
-// alternatively, we could respond with complete signal for the orchestrator, and host the result data locally.
+
 
 
 

@@ -36,21 +36,21 @@ namespace ns3 {
 *         |
 *         v F2
 *       /-------\ Fapp    ---------------------
-*  node1| rtr-1 |---------| DAG Forwarder APP | Service 2
+*  node1| rtr-1 |---------| DAG Forwarder APP | Service 2 & 6
 *       \-------/         ---------------------
 *         ^ F3
 *         |
 *         |
 *         v F4    Fapp    ---------------------
-*       /-------\ --------| DAG Forwarder APP | Service 3
+*       /-------\ --------| DAG Forwarder APP | Service 3 & 7
 *  node2| rtr-2 | Fapp    |-------------------|
-*       \-------/ --------| DAG Forwarder APP | Service 4
+*       \-------/ --------| DAG Forwarder APP | Service 4 & 8
 *         ^ F5            ---------------------
 *         |
 *         |
 *         v F6
 *       /-------\ Fapp    ---------------------
-*  node3| rtr-3 |---------| DAG Forwarder APP | Service 1
+*  node3| rtr-3 |---------| DAG Forwarder APP | Service 1 & 5
 *       \-------/         ---------------------
 *         ^ F7
 *         |
@@ -66,7 +66,7 @@ namespace ns3 {
 *  node5|  user  |--------| Consumer APP |
 *       \--------/        ----------------
 * 
-*     NS_LOG=CustomAppConsumer:CustomAppProducer:DagForwarderApp ./waf --run=ndn-cabeee-3node-apps
+*     NS_LOG=CustomAppConsumer:CustomAppProducer:DagForwarderApp ./waf --run=ndn-cabeee-3node-apps_reuse
 */
 int
 main(int argc, char* argv[])
@@ -139,6 +139,10 @@ main(int argc, char* argv[])
   ndn::StrategyChoiceHelper::InstallAll("/service3", "/localhost/nfd/strategy/multicast");
   ndn::StrategyChoiceHelper::InstallAll("/service2", "/localhost/nfd/strategy/multicast");
   ndn::StrategyChoiceHelper::InstallAll("/service1", "/localhost/nfd/strategy/multicast");
+  ndn::StrategyChoiceHelper::InstallAll("/service8", "/localhost/nfd/strategy/multicast");
+  ndn::StrategyChoiceHelper::InstallAll("/service7", "/localhost/nfd/strategy/multicast");
+  ndn::StrategyChoiceHelper::InstallAll("/service6", "/localhost/nfd/strategy/multicast");
+  ndn::StrategyChoiceHelper::InstallAll("/service5", "/localhost/nfd/strategy/multicast");
   ndn::StrategyChoiceHelper::InstallAll("/sensor", "/localhost/nfd/strategy/multicast");
 
   // Installing global routing interface on all nodes
@@ -162,27 +166,50 @@ main(int argc, char* argv[])
 
   // Custom App for routers
   ndn::AppHelper routerApp("DagForwarderApp");
+
   routerApp.SetPrefix("/service1");
   routerApp.SetAttribute("Service", StringValue("service1"));
-  //routerApp.SetAttribute("Results", StringValue(JSON_DAG)); //TODO: eventually control caching of results like this?
   routerApp.Install(router3).Start(Seconds(0));
+  routerApp.SetPrefix("/service5");
+  routerApp.SetAttribute("Service", StringValue("service5"));
+  routerApp.Install(router3).Start(Seconds(0));
+
   routerApp.SetPrefix("/service2");
   routerApp.SetAttribute("Service", StringValue("service2"));
   routerApp.Install(router1).Start(Seconds(0));
+  routerApp.SetPrefix("/service6");
+  routerApp.SetAttribute("Service", StringValue("service6"));
+  routerApp.Install(router1).Start(Seconds(0));
+
   routerApp.SetPrefix("/service3");
   routerApp.SetAttribute("Service", StringValue("service3"));
   routerApp.Install(router2).Start(Seconds(0));
+  routerApp.SetPrefix("/service7");
+  routerApp.SetAttribute("Service", StringValue("service7"));
+  routerApp.Install(router2).Start(Seconds(0));
+
   routerApp.SetPrefix("/service4");
   routerApp.SetAttribute("Service", StringValue("service4"));
   routerApp.Install(router2).Start(Seconds(0));
+  routerApp.SetPrefix("/service8");
+  routerApp.SetAttribute("Service", StringValue("service8"));
+  routerApp.Install(router2).Start(Seconds(0));
 
-  // Custom App for User(Consumer)
+  // Custom App for User1(Consumer1)
   ndn::AppHelper userApp("CustomAppConsumer");
   //userApp.SetPrefix("/cabeee/sensor/service1/service2/service3");
   //userApp.SetPrefix("/service4/service3/service2/service1/sensor"); // only for linear workflows
   userApp.SetPrefix("/consumer"); // this is only a placeholder. The app will read the JSON workflow, and figure out which service is "last"
   userApp.SetAttribute("Orchestrate", UintegerValue(0));
   userApp.Install(consumer).Start(Seconds(0));
+
+  // Custom App for User2(Consumer2)
+  ndn::AppHelper userApp2("CustomAppConsumer2");
+  //userApp2.SetPrefix("/cabeee/sensor/service1/service2/service3");
+  //userApp2.SetPrefix("/service4/service3/service2/service1/sensor"); // only for linear workflows
+  userApp2.SetPrefix("/consumer2"); // this is only a placeholder. The app will read the JSON workflow, and figure out which service is "last"
+  userApp2.SetAttribute("Orchestrate", UintegerValue(0));
+  userApp2.Install(consumer).Start(Seconds(3));
 
 /*
   // default consumer app
@@ -238,8 +265,8 @@ main(int argc, char* argv[])
 
   Simulator::Stop(Seconds(20.0));
 
-  ndn::L3RateTracer::InstallAll("rate-trace_cabeee-3node-apps.txt", Seconds(0.1));
-  ndn::CsTracer::InstallAll("cs-trace_cabeee-3node-apps.txt", Seconds(0.1));
+  ndn::L3RateTracer::InstallAll("rate-trace_cabeee-3node-apps_reuse.txt", Seconds(0.1));
+  ndn::CsTracer::InstallAll("cs-trace_cabeee-3node-apps_reuse.txt", Seconds(0.1));
 
   Simulator::Run();
   Simulator::Destroy();
