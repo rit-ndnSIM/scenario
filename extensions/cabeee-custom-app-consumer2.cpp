@@ -248,10 +248,31 @@ CustomAppConsumer2::SendInterest()
 */
 
 
+  //std::cout << "Consumer2: Full DAG as read: " << std::setw(2) << dagObject << '\n';
+  //std::cout << "Consumer2: setting head to sinkService: " << sinkService << '\n';
 
   if (m_orchestrate == 0) {
     dagObject["head"] = sinkService;
     interest->setName(sinkService);
+
+    bool consumerFound = false;
+    // now we remove the entry that has the sinkService feeding the consumer. It is not needed, and can't be in the dag if we want caching of intermediate results to work.
+    for (auto& x : dagObject["dag"].items())
+    {
+      //std::cout << "Checking x.key: " << (std::string)x.key() << '\n';
+      for (auto& y : dagObject["dag"][x.key()].items())
+      {
+        //std::cout << "Checking y.key: " << (std::string)y.key() << '\n';
+        if (y.key() == m_name.ndn::Name::toUri())
+        {
+          dagObject["dag"].erase(x.key());
+          consumerFound = true;
+          break;
+        }
+      }
+      if (consumerFound == true)
+        break;
+    }
   }
   else if (m_orchestrate == 1){ // orchestration method A
     dagObject["head"] = "/serviceOrchestration";
@@ -266,6 +287,9 @@ CustomAppConsumer2::SendInterest()
     NS_LOG_DEBUG("ERROR, this should not happen. m_orchestrate value set out of bounds!" << '\n');
     return;
   }
+
+
+  //std::cout << "Consumer2: DAG as trimmed for first interest: " << std::setw(2) << dagObject << '\n';
 
 
 

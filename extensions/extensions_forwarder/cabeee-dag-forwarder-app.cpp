@@ -249,7 +249,7 @@ DagForwarderApp::SendInterest(const std::string& interestName, std::string dagSt
   
 
   dagObject["head"] = interestName;
-  std::cout << "Pruned DAG with new head name: " << std::setw(2) << dagObject << '\n';
+  //std::cout << "Pruned DAG with new head name: " << std::setw(2) << dagObject << '\n';
   std::string updatedDagString = dagObject.dump();
   // in order to convert from std::string to a char[] datatype we do the following (https://stackoverflow.com/questions/7352099/stdstring-to-char):
   char *dagStringParameter = new char[updatedDagString.length() + 1];
@@ -328,13 +328,13 @@ DagForwarderApp::OnInterest(std::shared_ptr<const ndn::Interest> interest)
   //NS_LOG_DEBUG("Interest parameter sensor feeds " << (dagObject["dag"]["/sensor"].size()) << " services: " << dagObject["dag"]["/sensor"]);
   //NS_LOG_DEBUG("Interest parameter s1 feeds " << (dagObject["dag"]["/S1"].size()) << " services: " << dagObject["dag"]["/S1"]);
 
-  std::cout << "Full DAG as received: " << std::setw(2) << m_dagObject << '\n';
+  //std::cout << "Full DAG as received: " << std::setw(2) << m_dagObject << '\n';
 
 
   // create the tracking data structure using JSON
   json nullJson;
   std::string rxedInterestName = (interest->getName()).getPrefix(-1).toUri(); // remove the last component of the name (the parameter digest) so we have just the raw name, and convert to Uri string
-  std::cout << "Forwarder rxedInterestName: " << rxedInterestName << '\n';
+  //std::cout << "Forwarder rxedInterestName: " << rxedInterestName << '\n';
   //m_dagServTracker[m_nameUri].push_back( json::object_t::value_type("inputsRxed", nullJson ) );
   //m_dagServTracker[rxedInterestName].push_back( json::object_t::value_type("inputsRxed", nullJson ) );
   for (auto& x : m_dagObject["dag"].items())
@@ -353,7 +353,7 @@ DagForwarderApp::OnInterest(std::shared_ptr<const ndn::Interest> interest)
       }
     }
   }
-  std::cout << "Forwarder dagServTracker data structure: " << std::setw(2) << m_dagServTracker << '\n';
+  //std::cout << "Forwarder dagServTracker data structure: " << std::setw(2) << m_dagServTracker << '\n';
 
 
 
@@ -471,7 +471,7 @@ DagForwarderApp::OnData(std::shared_ptr<const ndn::Data> data)
   // mark this input as having been received
   m_dagServTracker[m_nameUri]["inputsRxed"][rxedDataName] = 1;
   //m_dagServTracker[head]["inputsRxed"][rxedDataName] = 1;
-  std::cout << "Forwarder dagServTracker data structure: " << std::setw(2) << m_dagServTracker << '\n';
+  //std::cout << "Forwarder dagServTracker data structure: " << std::setw(2) << m_dagServTracker << '\n';
 
   // we have to check if we have received all necessary inputs for this instance of the hosted service!
   //      if so, run the service below and generate new data packet to go downstream.

@@ -247,11 +247,31 @@ CustomAppConsumer::SendInterest()
 
 */
 
-
+  //std::cout << "Consumer: Full DAG as read: " << std::setw(2) << dagObject << '\n';
+  //std::cout << "Consumer: setting head to sinkService: " << sinkService << '\n';
 
   if (m_orchestrate == 0) {
     dagObject["head"] = sinkService;
     interest->setName(sinkService);
+
+    bool consumerFound = false;
+    // now we remove the entry that has the sinkService feeding the consumer. It is not needed, and can't be in the dag if we want caching of intermediate results to work.
+    for (auto& x : dagObject["dag"].items())
+    {
+      //std::cout << "Checking x.key: " << (std::string)x.key() << '\n';
+      for (auto& y : dagObject["dag"][x.key()].items())
+      {
+        //std::cout << "Checking y.key: " << (std::string)y.key() << '\n';
+        if (y.key() == m_name.ndn::Name::toUri())
+        {
+          dagObject["dag"].erase(x.key());
+          consumerFound = true;
+          break;
+        }
+      }
+      if (consumerFound == true)
+        break;
+    }
   }
   else if (m_orchestrate == 1){ // orchestration method A
     dagObject["head"] = "/serviceOrchestration";
@@ -268,6 +288,7 @@ CustomAppConsumer::SendInterest()
   }
 
 
+  //std::cout << "Consumer: DAG as trimmed for first interest: " << std::setw(2) << dagObject << '\n';
 
   std::string dagString = dagObject.dump();
   // in order to convert from std::string to a char[] datatype we do the following (https://stackoverflow.com/questions/7352099/stdstring-to-char):

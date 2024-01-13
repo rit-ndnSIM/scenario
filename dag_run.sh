@@ -10,7 +10,8 @@
 #---------------------------------------------------------
 
 
-
+clear
+./waf clean
 
 #NS_LOG=CustomAppConsumer:CustomAppProducer:DagForwarderApp:ndn.App ./waf --run=ndn-cabeee-3node-apps
 
