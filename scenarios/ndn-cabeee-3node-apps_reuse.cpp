@@ -200,6 +200,7 @@ main(int argc, char* argv[])
   //userApp.SetPrefix("/cabeee/sensor/service1/service2/service3");
   //userApp.SetPrefix("/service4/service3/service2/service1/sensor"); // only for linear workflows
   userApp.SetPrefix("/consumer"); // this is only a placeholder. The app will read the JSON workflow, and figure out which service is "last"
+  userApp.SetAttribute("Workflow", StringValue("workflows/rpa-dag.json")); //TODO: take input from command line rather than hardcoding the dag file here?
   userApp.SetAttribute("Orchestrate", UintegerValue(0));
   userApp.Install(consumer).Start(Seconds(0));
 
@@ -208,6 +209,8 @@ main(int argc, char* argv[])
   //userApp2.SetPrefix("/cabeee/sensor/service1/service2/service3");
   //userApp2.SetPrefix("/service4/service3/service2/service1/sensor"); // only for linear workflows
   userApp2.SetPrefix("/consumer2"); // this is only a placeholder. The app will read the JSON workflow, and figure out which service is "last"
+  userApp2.SetAttribute("Workflow", StringValue("workflows/rpa-dag_reuse.json")); //TODO: take input from command line rather than hardcoding the dag file here?
+  //userApp2.SetAttribute("Workflow", StringValue("workflows/rpa-dag_reuse2.json")); //TODO: test this other dag later
   userApp2.SetAttribute("Orchestrate", UintegerValue(0));
   userApp2.Install(consumer).Start(Seconds(3));
 

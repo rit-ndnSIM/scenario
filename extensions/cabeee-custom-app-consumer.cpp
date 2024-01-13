@@ -61,6 +61,8 @@ CustomAppConsumer::GetTypeId()
     .AddConstructor<CustomAppConsumer>()
     .AddAttribute("Prefix", "Requested name", StringValue("/dumb-interest"),
                     ndn::MakeNameAccessor(&CustomAppConsumer::m_name), ndn::MakeNameChecker())
+    .AddAttribute("Workflow", "Requested workflow", StringValue("/workflows/dummy-workflow"),
+                    MakeStringAccessor(&CustomAppConsumer::m_dagPath), MakeStringChecker())
     .AddAttribute("Orchestrate", "Requested orchestration", UintegerValue(0),
                     MakeUintegerAccessor(&CustomAppConsumer::m_orchestrate), MakeUintegerChecker<uint16_t>());
   return tid;
@@ -162,7 +164,7 @@ CustomAppConsumer::SendInterest()
   */
 
 
-  std::ifstream f("workflows/rpa-dag.json"); //TODO: take input from command line rather than hardcoding the dag file
+  std::ifstream f(m_dagPath);
   json dagObject = json::parse(f);
 
   // here we generate just the first interest(s) according to the workflow
@@ -248,8 +250,6 @@ CustomAppConsumer::SendInterest()
 
 
   if (m_orchestrate == 0) {
-    //dagObject["head"] = "/service4"; //TODO: I'm doing this manually right now. I should look at the json input file, and see which service feeds "consumer", and use that instead of hardcoding
-    //interest->setName("/service4"); //TODO: I'm doing this manually right now. I should look at the json input file, and see which service feeds "consumer", and use that instead of hardcoding
     dagObject["head"] = sinkService;
     interest->setName(sinkService);
   }

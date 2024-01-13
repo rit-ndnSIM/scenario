@@ -70,6 +70,7 @@ private:
   bool m_isRunning;
   ndn::Name m_name;
   uint16_t m_orchestrate;
+  std::string m_dagPath;
 };
 
 } // namespace ns3

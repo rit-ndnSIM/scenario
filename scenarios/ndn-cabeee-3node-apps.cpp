@@ -181,6 +181,7 @@ main(int argc, char* argv[])
   //userApp.SetPrefix("/cabeee/sensor/service1/service2/service3");
   //userApp.SetPrefix("/service4/service3/service2/service1/sensor"); // only for linear workflows
   userApp.SetPrefix("/consumer"); // this is only a placeholder. The app will read the JSON workflow, and figure out which service is "last"
+  userApp.SetAttribute("Workflow", StringValue("workflows/rpa-dag.json")); //TODO: take input from command line rather than hardcoding the dag file here?
   userApp.SetAttribute("Orchestrate", UintegerValue(0));
   userApp.Install(consumer).Start(Seconds(0));
 
