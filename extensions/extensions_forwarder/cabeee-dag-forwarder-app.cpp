@@ -497,30 +497,33 @@ DagForwarderApp::OnData(std::shared_ptr<const ndn::Data> data)
 
     // TODO7: we should use function pointers here, and have each service be a function defined in a separate file. Figure out how to deal with potentially different num of inputs.
 
+    unsigned char servNum = -1;
     if (m_service.ndn::Name::toUri() == "/service1"){
-      serviceOutput = (m_vectorOfServiceInputs[0])*2;
+      servNum = 0;
     }
     if (m_service.ndn::Name::toUri() == "/service2"){
-      serviceOutput = (m_vectorOfServiceInputs[0])+1;
+      servNum = 1;
     }
     if (m_service.ndn::Name::toUri() == "/service3"){
-      serviceOutput = (m_vectorOfServiceInputs[0])+7;
+      servNum = 2;
     }
     if (m_service.ndn::Name::toUri() == "/service4"){
-      serviceOutput = (m_vectorOfServiceInputs[0])*3 + (m_vectorOfServiceInputs[1])*4;
+      servNum = 3;
     }
     if (m_service.ndn::Name::toUri() == "/service5"){
-      serviceOutput = (m_vectorOfServiceInputs[0])*2;
+      servNum = 4;
     }
     if (m_service.ndn::Name::toUri() == "/service6"){
-      serviceOutput = (m_vectorOfServiceInputs[0])+1;
+      servNum = 5;
     }
     if (m_service.ndn::Name::toUri() == "/service7"){
-      serviceOutput = (m_vectorOfServiceInputs[0])+7;
+      servNum = 6;
     }
     if (m_service.ndn::Name::toUri() == "/service8"){
-      serviceOutput = (m_vectorOfServiceInputs[0])*1 + (m_vectorOfServiceInputs[1])*1;
+      servNum = 7;
     }
+
+    serviceOutput = (*service[servNum])(m_vectorOfServiceInputs);
     
     NS_LOG_DEBUG("Service " << m_service.ndn::Name::toUri() << " has output: " << (int)serviceOutput);
   

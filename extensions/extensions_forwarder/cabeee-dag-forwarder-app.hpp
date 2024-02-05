@@ -84,6 +84,10 @@ private:
   //std::map <std::string, std::vector<ndn::Block> > m_mapOfRxedBlocks;
   //std::map <std::string, std::vector<std::string> > m_mapOfRxedBlocks;
   std::vector <unsigned char> m_vectorOfServiceInputs;
+
+  //typedef int (*serv)(int a[], int);
+  //serv service[8] = { &service1, &service2, &service3, &service4, &service5, &service6, &service7, &service8 };
+  unsigned char (*service[8])(std::vector <unsigned char>) = { Service::service1, Service::service2, Service::service3, Service::service4, Service::service5, Service::service6, Service::service7, Service::service8 };
 };
 
 } // namespace ns3
