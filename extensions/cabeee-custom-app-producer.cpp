@@ -114,7 +114,7 @@ CustomAppProducer::OnInterest(std::shared_ptr<const ndn::Interest> interest)
   // Note that Interests send out by the app will not be sent back to the app !
 
   auto data = std::make_shared<ndn::Data>(interest->getName());
-  data->setFreshnessPeriod(ndn::time::milliseconds(3000));
+  data->setFreshnessPeriod(ndn::time::milliseconds(9000));
 
   //data->setContent(std::make_shared< ::ndn::Buffer>(1024));
   unsigned char myBuffer[1024];

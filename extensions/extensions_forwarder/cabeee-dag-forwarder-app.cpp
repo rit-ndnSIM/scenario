@@ -386,7 +386,7 @@ DagForwarderApp::OnInterest(std::shared_ptr<const ndn::Interest> interest)
 
   /*
   auto data = std::make_shared<ndn::Data>(interest->getName());
-  data->setFreshnessPeriod(ndn::time::milliseconds(3000));
+  data->setFreshnessPeriod(ndn::time::milliseconds(9000));
   data->setContent(std::make_shared< ::ndn::Buffer>(1024));
   ndn::StackHelper::getKeyChain().sign(*data);
   NS_LOG_DEBUG("Sending Data packet for " << data->getName());
@@ -521,6 +521,73 @@ DagForwarderApp::OnData(std::shared_ptr<const ndn::Data> data)
     if (m_service.ndn::Name::toUri() == "/service8"){
       serviceOutput = (m_vectorOfServiceInputs[0])*1 + (m_vectorOfServiceInputs[1])*1;
     }
+    if ((m_service.ndn::Name::toUri() == "/serviceL1") ||
+        (m_service.ndn::Name::toUri() == "/serviceL2") ||
+        (m_service.ndn::Name::toUri() == "/serviceL3") ||
+        (m_service.ndn::Name::toUri() == "/serviceL4") ||
+        (m_service.ndn::Name::toUri() == "/serviceL5") ||
+        (m_service.ndn::Name::toUri() == "/serviceL6") ||
+        (m_service.ndn::Name::toUri() == "/serviceL7") ||
+        (m_service.ndn::Name::toUri() == "/serviceL8") ||
+        (m_service.ndn::Name::toUri() == "/serviceL9") ||
+        (m_service.ndn::Name::toUri() == "/serviceL10") ||
+        (m_service.ndn::Name::toUri() == "/serviceL11") ||
+        (m_service.ndn::Name::toUri() == "/serviceL12") ||
+        (m_service.ndn::Name::toUri() == "/serviceL13") ||
+        (m_service.ndn::Name::toUri() == "/serviceL14") ||
+        (m_service.ndn::Name::toUri() == "/serviceL15") ||
+        (m_service.ndn::Name::toUri() == "/serviceL16") ||
+        (m_service.ndn::Name::toUri() == "/serviceL17") ||
+        (m_service.ndn::Name::toUri() == "/serviceL18") ||
+        (m_service.ndn::Name::toUri() == "/serviceL19") ||
+        (m_service.ndn::Name::toUri() == "/serviceL20")){
+      serviceOutput = (m_vectorOfServiceInputs[0])+1;
+    }
+    if ((m_service.ndn::Name::toUri() == "/serviceP1") ||
+        (m_service.ndn::Name::toUri() == "/serviceP2") ||
+        (m_service.ndn::Name::toUri() == "/serviceP3") ||
+        (m_service.ndn::Name::toUri() == "/serviceP4") ||
+        (m_service.ndn::Name::toUri() == "/serviceP5") ||
+        (m_service.ndn::Name::toUri() == "/serviceP6") ||
+        (m_service.ndn::Name::toUri() == "/serviceP7") ||
+        (m_service.ndn::Name::toUri() == "/serviceP8") ||
+        (m_service.ndn::Name::toUri() == "/serviceP9") ||
+        (m_service.ndn::Name::toUri() == "/serviceP10") ||
+        (m_service.ndn::Name::toUri() == "/serviceP11") ||
+        (m_service.ndn::Name::toUri() == "/serviceP12") ||
+        (m_service.ndn::Name::toUri() == "/serviceP13") ||
+        (m_service.ndn::Name::toUri() == "/serviceP14") ||
+        (m_service.ndn::Name::toUri() == "/serviceP15") ||
+        (m_service.ndn::Name::toUri() == "/serviceP16") ||
+        (m_service.ndn::Name::toUri() == "/serviceP17") ||
+        (m_service.ndn::Name::toUri() == "/serviceP18") ||
+        (m_service.ndn::Name::toUri() == "/serviceP19") ||
+        (m_service.ndn::Name::toUri() == "/serviceP20")){
+      serviceOutput = (m_vectorOfServiceInputs[0])+1;
+    }
+    if (m_service.ndn::Name::toUri() == "/serviceP21"){
+      serviceOutput =
+            (m_vectorOfServiceInputs[0])+
+            (m_vectorOfServiceInputs[1])+
+            (m_vectorOfServiceInputs[2])+
+            (m_vectorOfServiceInputs[3])+
+            (m_vectorOfServiceInputs[4])+
+            (m_vectorOfServiceInputs[5])+
+            (m_vectorOfServiceInputs[6])+
+            (m_vectorOfServiceInputs[7])+
+            (m_vectorOfServiceInputs[8])+
+            (m_vectorOfServiceInputs[9])+
+            (m_vectorOfServiceInputs[10])+
+            (m_vectorOfServiceInputs[11])+
+            (m_vectorOfServiceInputs[12])+
+            (m_vectorOfServiceInputs[13])+
+            (m_vectorOfServiceInputs[14])+
+            (m_vectorOfServiceInputs[15])+
+            (m_vectorOfServiceInputs[16])+
+            (m_vectorOfServiceInputs[17])+
+            (m_vectorOfServiceInputs[18])+
+            (m_vectorOfServiceInputs[19]);
+    }
     
     NS_LOG_DEBUG("Service " << m_service.ndn::Name::toUri() << " has output: " << (int)serviceOutput);
   
@@ -535,7 +602,7 @@ DagForwarderApp::OnData(std::shared_ptr<const ndn::Data> data)
 
     //auto new_data = std::make_shared<ndn::Data>(new_name);
     auto new_data = std::make_shared<ndn::Data>(m_nameAndDigest);
-    new_data->setFreshnessPeriod(ndn::time::milliseconds(3000));
+    new_data->setFreshnessPeriod(ndn::time::milliseconds(9000));
 
     //new_data->setContent(std::make_shared< ::ndn::Buffer>(1024));
     unsigned char myBuffer[1024];

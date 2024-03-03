@@ -1,0 +1,58 @@
+# topo-cabeee-20node-linear.txt
+# manually modified by cabeee
+# Jan 2024
+#
+#
+
+router
+
+#node	city	y	x	mpi-partition
+sensor	NA	130	0	1
+rtr-1	NA	120	0	1
+rtr-2	NA	115	0	2
+rtr-3	NA	110	0	3
+rtr-4	NA	105	0	3
+rtr-5	NA	100	0	3
+rtr-6	NA	95	0	3
+rtr-7	NA	90	0	3
+rtr-8	NA	85	0	3
+rtr-9	NA	80	0	3
+rtr-10	NA	75	0	3
+rtr-11	NA	70	0	3
+rtr-12	NA	65	0	3
+rtr-13	NA	60	0	3
+rtr-14	NA	55	0	3
+rtr-15	NA	50	0	3
+rtr-16	NA	45	0	3
+rtr-17	NA	40	0	3
+rtr-18	NA	35	0	3
+rtr-19	NA	30	0	3
+rtr-20	NA	25	0	3
+orch	NA	20	0	0
+user	NA	10	0	0
+
+link
+
+# from	    to		capacity	metric	delay	queue
+sensor	    rtr-1	10Mbps		1	1ms	100
+rtr-1	    rtr-2	10Mbps		1	1ms	100
+rtr-2	    rtr-3	10Mbps		1	1ms	100
+rtr-3	    rtr-4	10Mbps		1	1ms	100
+rtr-4	    rtr-5	10Mbps		1	1ms	100
+rtr-5	    rtr-6	10Mbps		1	1ms	100
+rtr-6	    rtr-7	10Mbps		1	1ms	100
+rtr-7	    rtr-8	10Mbps		1	1ms	100
+rtr-8	    rtr-9	10Mbps		1	1ms	100
+rtr-9	    rtr-10	10Mbps		1	1ms	100
+rtr-10	    rtr-11	10Mbps		1	1ms	100
+rtr-11	    rtr-12	10Mbps		1	1ms	100
+rtr-12	    rtr-13	10Mbps		1	1ms	100
+rtr-13	    rtr-14	10Mbps		1	1ms	100
+rtr-14	    rtr-15	10Mbps		1	1ms	100
+rtr-15	    rtr-16	10Mbps		1	1ms	100
+rtr-16	    rtr-17	10Mbps		1	1ms	100
+rtr-17	    rtr-18	10Mbps		1	1ms	100
+rtr-18	    rtr-19	10Mbps		1	1ms	100
+rtr-19	    rtr-20	10Mbps		1	1ms	100
+rtr-20	    orch	10Mbps		1	1ms	100
+orch	    user	10000Mbps	1	0ms	100

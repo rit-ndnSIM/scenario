@@ -28,6 +28,7 @@
 namespace ns3 {
 
 /**
+*
 *       /------\ Fapp     ----------------
 *  node0|sensor|----------| Producer APP | Sensor Data
 *       \------/          ----------------
@@ -35,38 +36,40 @@ namespace ns3 {
 *         |
 *         |
 *         v F2
-*       /-------\ Fapp    ---------------------
-*  node1| rtr-1 |---------| DAG Forwarder APP | Service 2
-*       \-------/         ---------------------
+*       /-------\ Fapp    ---------------
+*  node1| rtr-1 |---------| Service_A APP | Service 2 & 6
+*       \-------/         ---------------
 *         ^ F3
 *         |
 *         |
-*         v F4    Fapp    ---------------------
-*       /-------\ --------| DAG Forwarder APP | Service 3
-*  node2| rtr-2 | Fapp    |-------------------|
-*       \-------/ --------| DAG Forwarder APP | Service 4
-*         ^ F5            ---------------------
+*         v F4    Fapp    -----------------
+*       /-------\ --------| Service_A APP | Service 3 & 7
+*  node2| rtr-2 | Fapp    |---------------|
+*       \-------/ --------| Service_A APP | Service 4 & 8
+*         ^ F5            -----------------
 *         |
 *         |
 *         v F6
-*       /-------\ Fapp    ---------------------
-*  node3| rtr-3 |---------| DAG Forwarder APP | Service 1
-*       \-------/         ---------------------
+*       /-------\ Fapp    -----------------
+*  node3| rtr-3 |---------| Service_A APP | Service 1 & 5
+*       \-------/         -----------------
 *         ^ F7
 *         |
 *         |
 *         v F8
-*       /--------\ 
-*  node4|  orch  |
-*       \--------/
+*       /--------\ Fapp   ----------------------
+*  node4|  orch  |--------| Orchestrator_A APP | ServiceOrchestration
+*       \--------/        ----------------------
 *         ^ F9
 *     0ms |
 *         v FA
 *       /--------\ Fapp   ----------------
 *  node5|  user  |--------| Consumer APP |
 *       \--------/        ----------------
+*
+*
 * 
-*     NS_LOG=CustomAppConsumer:CustomAppProducer:DagForwarderApp ./waf --run=ndn-cabeee-3node-apps
+*     NS_LOG=CustomAppConsumer:CustomAppProducer:DagForwarderApp ./waf --run=ndn-cabeee-8dag-orchestratorA
 */
 int
 main(int argc, char* argv[])
@@ -77,8 +80,8 @@ main(int argc, char* argv[])
 
   // Creating nodes
   AnnotatedTopologyReader topologyReader("", 1);
-  topologyReader.SetFileName("topologies/topo-cabeee-3node-slow.txt");
-  //topologyReader.SetFileName("topologies/topo-cabeee-3node.txt");
+  //topologyReader.SetFileName("topologies/topo-cabeee-3node-slow.txt");
+  topologyReader.SetFileName("topologies/topo-cabeee-3node.txt");
   topologyReader.Read();
 
 
@@ -93,8 +96,6 @@ main(int argc, char* argv[])
 
   //ndnHelper.InstallAll();
 
-  // figure out how to setup the CS only in select nodes!!
-
   // Getting containers for the nodes
   Ptr<Node> producer = Names::Find<Node>("sensor");
   Ptr<Node> router1 = Names::Find<Node>("rtr-1");
@@ -103,22 +104,22 @@ main(int argc, char* argv[])
   Ptr<Node> orchestrator = Names::Find<Node>("orch");
   Ptr<Node> consumer = Names::Find<Node>("user");
 
-  ndnHelper.setCsSize(0); // disable content store
+  ndnHelper.setCsSize(0); // enable/disable content store by setting size
   ndnHelper.Install(producer);
 
-  //ndnHelper.setCsSize(0); // enable/disable content store
-  ndnHelper.setCsSize(10); // enable/disable content store
+  //ndnHelper.setCsSize(0); // enable/disable content store by setting size
+  ndnHelper.setCsSize(0); // enable/disable content store by setting size
   ndnHelper.Install(router1);
 
-  //ndnHelper.setCsSize(0); // enable/disable content store
-  ndnHelper.setCsSize(10); // enable/disable content store
+  //ndnHelper.setCsSize(0); // enable/disable content store by setting size
+  ndnHelper.setCsSize(0); // enable/disable content store by setting size
   ndnHelper.Install(router2);
 
-  //ndnHelper.setCsSize(0); // enable/disable content store
-  ndnHelper.setCsSize(10); // enable/disable content store
+  //ndnHelper.setCsSize(0); // enable/disable content store by setting size
+  ndnHelper.setCsSize(0); // enable/disable content store by setting size
   ndnHelper.Install(router3);
 
-  ndnHelper.setCsSize(0); // disable content store
+  ndnHelper.setCsSize(0); // enable/disable content store by setting size
   ndnHelper.Install(orchestrator);
 
   ndnHelper.setCsSize(0); // disable content store
@@ -139,7 +140,12 @@ main(int argc, char* argv[])
   ndn::StrategyChoiceHelper::InstallAll("/service3", "/localhost/nfd/strategy/multicast");
   ndn::StrategyChoiceHelper::InstallAll("/service2", "/localhost/nfd/strategy/multicast");
   ndn::StrategyChoiceHelper::InstallAll("/service1", "/localhost/nfd/strategy/multicast");
+  ndn::StrategyChoiceHelper::InstallAll("/service8", "/localhost/nfd/strategy/multicast");
+  ndn::StrategyChoiceHelper::InstallAll("/service7", "/localhost/nfd/strategy/multicast");
+  ndn::StrategyChoiceHelper::InstallAll("/service6", "/localhost/nfd/strategy/multicast");
+  ndn::StrategyChoiceHelper::InstallAll("/service5", "/localhost/nfd/strategy/multicast");
   ndn::StrategyChoiceHelper::InstallAll("/sensor", "/localhost/nfd/strategy/multicast");
+  ndn::StrategyChoiceHelper::InstallAll("/serviceOrchestration", "/localhost/nfd/strategy/multicast");
 
   // Installing global routing interface on all nodes
   //ndn::GlobalRoutingHelper ndnGlobalRoutingHelper;
@@ -161,28 +167,83 @@ main(int argc, char* argv[])
   sensorApp.Install(producer).Start(Seconds(0));
 
   // Custom App for routers
-  ndn::AppHelper routerApp("DagForwarderApp");
-  routerApp.SetPrefix("/service1");
-  routerApp.SetAttribute("Service", StringValue("service1"));
-  routerApp.Install(router3).Start(Seconds(0));
-  routerApp.SetPrefix("/service2");
-  routerApp.SetAttribute("Service", StringValue("service2"));
-  routerApp.Install(router1).Start(Seconds(0));
-  routerApp.SetPrefix("/service3");
-  routerApp.SetAttribute("Service", StringValue("service3"));
-  routerApp.Install(router2).Start(Seconds(0));
-  routerApp.SetPrefix("/service4");
-  routerApp.SetAttribute("Service", StringValue("service4"));
-  routerApp.Install(router2).Start(Seconds(0));
+  ndn::AppHelper serviceApp("DagServiceA_App");
 
+  serviceApp.SetPrefix("/service1");
+  serviceApp.SetAttribute("Service", StringValue("service1"));
+  auto s1 = serviceApp.Install(router3);
+  auto s1b = serviceApp.Install(router3);
+  s1.Start(Seconds(0));
+  s1.Stop(Seconds(4));
+  s1b.Start(Seconds(4));
+  serviceApp.SetPrefix("/service5");
+  serviceApp.SetAttribute("Service", StringValue("service5"));
+  serviceApp.Install(router3).Start(Seconds(0));
+
+  serviceApp.SetPrefix("/service2");
+  serviceApp.SetAttribute("Service", StringValue("service2"));
+  auto s2 = serviceApp.Install(router1);
+  auto s2b = serviceApp.Install(router1);
+  s2.Start(Seconds(0));
+  s2.Stop(Seconds(4));
+  s2b.Start(Seconds(4));
+  serviceApp.SetPrefix("/service6");
+  serviceApp.SetAttribute("Service", StringValue("service6"));
+  serviceApp.Install(router1).Start(Seconds(0));
+
+  serviceApp.SetPrefix("/service3");
+  serviceApp.SetAttribute("Service", StringValue("service3"));
+  auto s3 = serviceApp.Install(router2);
+  auto s3b = serviceApp.Install(router2);
+  s3.Start(Seconds(0));
+  s3.Stop(Seconds(4));
+  s3b.Start(Seconds(4));
+  serviceApp.SetPrefix("/service7");
+  serviceApp.SetAttribute("Service", StringValue("service7"));
+  serviceApp.Install(router2).Start(Seconds(0));
+
+  serviceApp.SetPrefix("/service4");
+  serviceApp.SetAttribute("Service", StringValue("service4"));
+  auto s4 = serviceApp.Install(router2);
+  auto s4b = serviceApp.Install(router2);
+  s4.Start(Seconds(0));
+  s4.Stop(Seconds(4));
+  s4b.Start(Seconds(4));
+  serviceApp.SetPrefix("/service8");
+  serviceApp.SetAttribute("Service", StringValue("service8"));
+  serviceApp.Install(router2).Start(Seconds(0));
+
+
+  // FOR FIRST USER
+  ndn::AppHelper orchestratorApp("DagOrchestratorA_App");
+  orchestratorApp.SetPrefix("/serviceOrchestration");
+  orchestratorApp.SetAttribute("Service", StringValue("serviceOrchestration"));
+  //orchestratorApp.SetAttribute("Results", StringValue("/sensor/service1/service2/service3/service4"));
+  auto orchApp = orchestratorApp.Install(orchestrator);
+  orchApp.Start(Seconds(0));
+  orchApp.Stop(Seconds(4));
+  
   // Custom App for User(Consumer)
   ndn::AppHelper userApp("CustomAppConsumer");
-  //userApp.SetPrefix("/cabeee/sensor/service1/service2/service3");
-  //userApp.SetPrefix("/service4/service3/service2/service1/sensor"); // only for linear workflows
   userApp.SetPrefix("/consumer"); // this is only a placeholder. The app will read the JSON workflow, and figure out which service is "last"
-  userApp.SetAttribute("Workflow", StringValue("workflows/rpa-dag.json"));
-  userApp.SetAttribute("Orchestrate", UintegerValue(0));
+  userApp.SetAttribute("Workflow", StringValue("workflows/4dag.json"));
+  userApp.SetAttribute("Orchestrate", UintegerValue(1)); // This enables the "orchestrator" by having the consumer set the head service to /serviceOrchestration
   userApp.Install(consumer).Start(Seconds(0));
+
+
+  // FOR SECOND USER - we need a new Orchestrator app, because of the tracker data structures. OR we could simply reset the tracker once we generate the last data packet to the consumer.
+  ndn::AppHelper orchestratorApp2("DagOrchestratorA_App");
+  orchestratorApp2.SetPrefix("/serviceOrchestration");
+  orchestratorApp2.SetAttribute("Service", StringValue("serviceOrchestration"));
+  //orchestratorApp2.SetAttribute("Results", StringValue("/sensor/service1/service2/service3/service4"));
+  orchestratorApp2.Install(orchestrator).Start(Seconds(4));
+
+  // Custom App for User2(Consumer2)
+  ndn::AppHelper userApp2("CustomAppConsumer2");
+  userApp2.SetPrefix("/consumer2"); // this is only a placeholder. The app will read the JSON workflow, and figure out which service is "last"
+  userApp2.SetAttribute("Workflow", StringValue("workflows/8dag.json"));
+  userApp2.SetAttribute("Orchestrate", UintegerValue(1)); // This enables the "orchestrator" by having the consumer set the head service to /serviceOrchestration
+  userApp2.Install(consumer).Start(Seconds(4));
 
 /*
   // default consumer app
@@ -236,10 +297,10 @@ main(int argc, char* argv[])
 
 
 
-  Simulator::Stop(Seconds(20.0));
+  Simulator::Stop(Seconds(8.0));
 
-  ndn::L3RateTracer::InstallAll("rate-trace_cabeee-3node-apps.txt", Seconds(0.1));
-  ndn::CsTracer::InstallAll("cs-trace_cabeee-3node-apps.txt", Seconds(0.1));
+  ndn::L3RateTracer::InstallAll("rate-trace_cabeee-8dag-orchestratorA.txt", Seconds(0.1));
+  ndn::CsTracer::InstallAll("cs-trace_cabeee-8dag-orchestratorA.txt", Seconds(0.1));
 
   Simulator::Run();
   Simulator::Destroy();

@@ -11,14 +11,40 @@
 
 
 clear
-./waf clean
+#./waf clean
 
-#NS_LOG=CustomAppConsumer:CustomAppProducer:DagForwarderApp:ndn.App ./waf --run=ndn-cabeee-3node-apps
+# 4 DAG
+#NS_LOG=CustomAppConsumer:CustomAppProducer:DagOrchestratorA_App:DagServiceA_App:ndn.App ./waf --run=ndn-cabeee-4dag-orchestratorA
+#NS_LOG=CustomAppConsumer:CustomAppProducer:DagOrchestratorB_App:DagServiceB_App:ndn.App ./waf --run=ndn-cabeee-4dag-orchestratorB
+#NS_LOG=CustomAppConsumer:CustomAppProducer:DagForwarderApp:ndn.App ./waf --run=ndn-cabeee-4dag
 
-NS_LOG=CustomAppConsumer:CustomAppConsumer2:CustomAppProducer:DagForwarderApp:ndn.App ./waf --run=ndn-cabeee-3node-apps_reuse
+# 20 Linear
+#NS_LOG=CustomAppConsumer:CustomAppProducer:DagOrchestratorA_App:DagServiceA_App:ndn.App ./waf --run=ndn-cabeee-20node-linear-orchestratorA
+#NS_LOG=CustomAppConsumer:CustomAppProducer:DagOrchestratorB_App:DagServiceB_App:ndn.App ./waf --run=ndn-cabeee-20node-linear-orchestratorB
+#NS_LOG=CustomAppConsumer:CustomAppProducer:DagForwarderApp:ndn.App ./waf --run=ndn-cabeee-20node-linear
 
 
-#NS_LOG=CustomAppConsumer:CustomAppProducer:DagOrchestratorB_App:DagServiceB_App:ndn.App ./waf --run=ndn-cabeee-3node-apps-orchestratorB
-#NS_LOG=CustomAppConsumer:CustomAppProducer:DagOrchestratorA_App:DagServiceA_App:ndn.App ./waf --run=ndn-cabeee-3node-apps-orchestratorA
+# 20 Parallel (broken)
+NS_LOG=CustomAppConsumer:CustomAppProducer:DagOrchestratorA_App:DagServiceA_App:ndn.App ./waf --run=ndn-cabeee-20node-parallel-orchestratorA
+#NS_LOG=CustomAppConsumer:CustomAppProducer:DagOrchestratorB_App:DagServiceB_App:ndn.App ./waf --run=ndn-cabeee-20node-parallel-orchestratorB
+#NS_LOG=CustomAppConsumer:CustomAppProducer:DagForwarderApp:ndn.App ./waf --run=ndn-cabeee-20node-parallel
 
+
+# 8 DAG
+#NS_LOG=CustomAppConsumer:CustomAppProducer:DagOrchestratorA_App:DagServiceA_App:ndn.App ./waf --run=ndn-cabeee-8dag-orchestratorA
+#NS_LOG=CustomAppConsumer:CustomAppProducer:DagOrchestratorB_App:DagServiceB_App:ndn.App ./waf --run=ndn-cabeee-8dag-orchestratorB
+#NS_LOG=CustomAppConsumer:CustomAppProducer:DagForwarderApp:ndn.App ./waf --run=ndn-cabeee-8dag
+
+
+# 8 DAG w/ caching
+#NS_LOG=CustomAppConsumer:CustomAppProducer:DagOrchestratorA_App:DagServiceA_App:ndn.App ./waf --run=ndn-cabeee-8dag-caching-orchestratorA
+#NS_LOG=CustomAppConsumer:CustomAppProducer:DagOrchestratorB_App:DagServiceB_App:ndn.App ./waf --run=ndn-cabeee-8dag-caching-orchestratorB
+#NS_LOG=CustomAppConsumer:CustomAppProducer:DagForwarderApp:ndn.App ./waf --run=ndn-cabeee-8dag-caching
+
+
+
+
+
+
+#NS_LOG=CustomAppConsumer:CustomAppConsumer2:CustomAppProducer:DagForwarderApp:ndn.App ./waf --run=ndn-cabeee-8dag-reuse
 

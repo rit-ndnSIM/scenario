@@ -245,7 +245,7 @@ DagServiceB_App::OnInterest(std::shared_ptr<const ndn::Interest> interest)
       // send stored result
       //auto new_data = std::make_shared<ndn::Data>(new_name);
       auto new_data = std::make_shared<ndn::Data>(m_nameAndDigest);
-      new_data->setFreshnessPeriod(ndn::time::milliseconds(3000));
+      new_data->setFreshnessPeriod(ndn::time::milliseconds(9000));
       //new_data->setContent(std::make_shared< ::ndn::Buffer>(1024));
       unsigned char myBuffer[1024];
       // write to the buffer
@@ -407,6 +407,85 @@ DagServiceB_App::OnData(std::shared_ptr<const ndn::Data> data)
     if (m_service.ndn::Name::toUri() == "/service4"){
       m_serviceOutput = (m_vectorOfServiceInputs[0])*3 + (m_vectorOfServiceInputs[1])*4;
     }
+    if (m_service.ndn::Name::toUri() == "/service5"){
+      m_serviceOutput = (m_vectorOfServiceInputs[0])*2;
+    }
+    if (m_service.ndn::Name::toUri() == "/service6"){
+      m_serviceOutput = (m_vectorOfServiceInputs[0])+1;
+    }
+    if (m_service.ndn::Name::toUri() == "/service7"){
+      m_serviceOutput = (m_vectorOfServiceInputs[0])+7;
+    }
+    if (m_service.ndn::Name::toUri() == "/service8"){
+      m_serviceOutput = (m_vectorOfServiceInputs[0])*1 + (m_vectorOfServiceInputs[1])*1;
+    }
+    if ((m_service.ndn::Name::toUri() == "/serviceL1") ||
+        (m_service.ndn::Name::toUri() == "/serviceL2") ||
+        (m_service.ndn::Name::toUri() == "/serviceL3") ||
+        (m_service.ndn::Name::toUri() == "/serviceL4") ||
+        (m_service.ndn::Name::toUri() == "/serviceL5") ||
+        (m_service.ndn::Name::toUri() == "/serviceL6") ||
+        (m_service.ndn::Name::toUri() == "/serviceL7") ||
+        (m_service.ndn::Name::toUri() == "/serviceL8") ||
+        (m_service.ndn::Name::toUri() == "/serviceL9") ||
+        (m_service.ndn::Name::toUri() == "/serviceL10") ||
+        (m_service.ndn::Name::toUri() == "/serviceL11") ||
+        (m_service.ndn::Name::toUri() == "/serviceL12") ||
+        (m_service.ndn::Name::toUri() == "/serviceL13") ||
+        (m_service.ndn::Name::toUri() == "/serviceL14") ||
+        (m_service.ndn::Name::toUri() == "/serviceL15") ||
+        (m_service.ndn::Name::toUri() == "/serviceL16") ||
+        (m_service.ndn::Name::toUri() == "/serviceL17") ||
+        (m_service.ndn::Name::toUri() == "/serviceL18") ||
+        (m_service.ndn::Name::toUri() == "/serviceL19") ||
+        (m_service.ndn::Name::toUri() == "/serviceL20")){
+      m_serviceOutput = (m_vectorOfServiceInputs[0])+1;
+    }
+    if ((m_service.ndn::Name::toUri() == "/serviceP1") ||
+        (m_service.ndn::Name::toUri() == "/serviceP2") ||
+        (m_service.ndn::Name::toUri() == "/serviceP3") ||
+        (m_service.ndn::Name::toUri() == "/serviceP4") ||
+        (m_service.ndn::Name::toUri() == "/serviceP5") ||
+        (m_service.ndn::Name::toUri() == "/serviceP6") ||
+        (m_service.ndn::Name::toUri() == "/serviceP7") ||
+        (m_service.ndn::Name::toUri() == "/serviceP8") ||
+        (m_service.ndn::Name::toUri() == "/serviceP9") ||
+        (m_service.ndn::Name::toUri() == "/serviceP10") ||
+        (m_service.ndn::Name::toUri() == "/serviceP11") ||
+        (m_service.ndn::Name::toUri() == "/serviceP12") ||
+        (m_service.ndn::Name::toUri() == "/serviceP13") ||
+        (m_service.ndn::Name::toUri() == "/serviceP14") ||
+        (m_service.ndn::Name::toUri() == "/serviceP15") ||
+        (m_service.ndn::Name::toUri() == "/serviceP16") ||
+        (m_service.ndn::Name::toUri() == "/serviceP17") ||
+        (m_service.ndn::Name::toUri() == "/serviceP18") ||
+        (m_service.ndn::Name::toUri() == "/serviceP19") ||
+        (m_service.ndn::Name::toUri() == "/serviceP20")){
+      m_serviceOutput = (m_vectorOfServiceInputs[0])+1;
+    }
+    if (m_service.ndn::Name::toUri() == "/serviceP21"){
+      m_serviceOutput =
+            (m_vectorOfServiceInputs[0])+
+            (m_vectorOfServiceInputs[1])+
+            (m_vectorOfServiceInputs[2])+
+            (m_vectorOfServiceInputs[3])+
+            (m_vectorOfServiceInputs[4])+
+            (m_vectorOfServiceInputs[5])+
+            (m_vectorOfServiceInputs[6])+
+            (m_vectorOfServiceInputs[7])+
+            (m_vectorOfServiceInputs[8])+
+            (m_vectorOfServiceInputs[9])+
+            (m_vectorOfServiceInputs[10])+
+            (m_vectorOfServiceInputs[11])+
+            (m_vectorOfServiceInputs[12])+
+            (m_vectorOfServiceInputs[13])+
+            (m_vectorOfServiceInputs[14])+
+            (m_vectorOfServiceInputs[15])+
+            (m_vectorOfServiceInputs[16])+
+            (m_vectorOfServiceInputs[17])+
+            (m_vectorOfServiceInputs[18])+
+            (m_vectorOfServiceInputs[19]);
+    }
     
     // we stored the result so we can respond later when the main service interest comes in!!
 
@@ -423,7 +502,7 @@ DagServiceB_App::OnData(std::shared_ptr<const ndn::Data> data)
 
     //auto new_data = std::make_shared<ndn::Data>(new_name);
     auto new_data = std::make_shared<ndn::Data>(m_nameAndDigest);
-    new_data->setFreshnessPeriod(ndn::time::milliseconds(3000));
+    new_data->setFreshnessPeriod(ndn::time::milliseconds(9000));
     //new_data->setContent(std::make_shared< ::ndn::Buffer>(1024));
     unsigned char myBuffer[1024];
     // write to the buffer
@@ -443,7 +522,7 @@ DagServiceB_App::OnData(std::shared_ptr<const ndn::Data> data)
     // so now, we do the same for the copy that we store in m_data as we did for new_data above
     m_done = true;
     //m_data.ndn::setName(m_nameAndDigest);
-    //m_data.setFreshnessPeriod(ndn::time::milliseconds(3000));
+    //m_data.setFreshnessPeriod(ndn::time::milliseconds(9000));
     //m_data.setContent(myBuffer, 1024);
     //ndn::StackHelper::getKeyChain().sign(*m_data);
 */

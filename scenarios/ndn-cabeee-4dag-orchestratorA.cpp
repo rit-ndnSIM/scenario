@@ -69,7 +69,7 @@ namespace ns3 {
 *
 *
 * 
-*     NS_LOG=CustomAppConsumer:CustomAppProducer:DagForwarderApp ./waf --run=ndn-cabeee-3node-apps
+*     NS_LOG=CustomAppConsumer:CustomAppProducer:DagForwarderApp ./waf --run=ndn-cabeee-4dag-orchestratorA
 */
 int
 main(int argc, char* argv[])
@@ -80,8 +80,8 @@ main(int argc, char* argv[])
 
   // Creating nodes
   AnnotatedTopologyReader topologyReader("", 1);
-  topologyReader.SetFileName("topologies/topo-cabeee-3node-slow.txt");
-  //topologyReader.SetFileName("topologies/topo-cabeee-3node.txt");
+  //topologyReader.SetFileName("topologies/topo-cabeee-3node-slow.txt");
+  topologyReader.SetFileName("topologies/topo-cabeee-3node.txt");
   topologyReader.Read();
 
 
@@ -96,8 +96,6 @@ main(int argc, char* argv[])
 
   //ndnHelper.InstallAll();
 
-  // figure out how to setup the CS only in select nodes!!
-
   // Getting containers for the nodes
   Ptr<Node> producer = Names::Find<Node>("sensor");
   Ptr<Node> router1 = Names::Find<Node>("rtr-1");
@@ -110,15 +108,15 @@ main(int argc, char* argv[])
   ndnHelper.Install(producer);
 
   //ndnHelper.setCsSize(0); // enable/disable content store by setting size
-  ndnHelper.setCsSize(10); // enable/disable content store by setting size
+  ndnHelper.setCsSize(0); // enable/disable content store by setting size
   ndnHelper.Install(router1);
 
   //ndnHelper.setCsSize(0); // enable/disable content store by setting size
-  ndnHelper.setCsSize(10); // enable/disable content store by setting size
+  ndnHelper.setCsSize(0); // enable/disable content store by setting size
   ndnHelper.Install(router2);
 
   //ndnHelper.setCsSize(0); // enable/disable content store by setting size
-  ndnHelper.setCsSize(10); // enable/disable content store by setting size
+  ndnHelper.setCsSize(0); // enable/disable content store by setting size
   ndnHelper.Install(router3);
 
   ndnHelper.setCsSize(0); // enable/disable content store by setting size
@@ -190,7 +188,7 @@ main(int argc, char* argv[])
   //userApp.SetPrefix("/cabeee/sensor/service1/service2/service3");
   //userApp.SetPrefix("/service4/service3/service2/service1/sensor"); // only for linear workflows
   userApp.SetPrefix("/consumer"); // this is only a placeholder. The app will read the JSON workflow, and figure out which service is "last"
-  userApp.SetAttribute("Workflow", StringValue("workflows/rpa-dag.json"));
+  userApp.SetAttribute("Workflow", StringValue("workflows/4dag.json"));
   userApp.SetAttribute("Orchestrate", UintegerValue(1)); // This enables the "orchestrator" by having the consumer set the head service to /serviceOrchestration
   userApp.Install(consumer).Start(Seconds(0));
 
@@ -246,10 +244,10 @@ main(int argc, char* argv[])
 
 
 
-  Simulator::Stop(Seconds(20.0));
+  Simulator::Stop(Seconds(1.1));
 
-  ndn::L3RateTracer::InstallAll("rate-trace_cabeee-3node-apps-orchestratorA.txt", Seconds(0.1));
-  ndn::CsTracer::InstallAll("cs-trace_cabeee-3node-apps-orchestratorA.txt", Seconds(0.1));
+  ndn::L3RateTracer::InstallAll("rate-trace_cabeee-4dag-orchestratorA.txt", Seconds(0.0005));
+  ndn::CsTracer::InstallAll("cs-trace_cabeee-4dag-orchestratorA.txt", Seconds(0.0005));
 
   Simulator::Run();
   Simulator::Destroy();

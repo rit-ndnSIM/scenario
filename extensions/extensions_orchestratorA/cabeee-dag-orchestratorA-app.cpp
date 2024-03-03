@@ -278,7 +278,7 @@ DagOrchestratorA_App::OnInterest(std::shared_ptr<const ndn::Interest> interest)
 
   /*
   auto data = std::make_shared<ndn::Data>(interest->getName());
-  data->setFreshnessPeriod(ndn::time::milliseconds(3000));
+  data->setFreshnessPeriod(ndn::time::milliseconds(9000));
   data->setContent(std::make_shared< ::ndn::Buffer>(1024));
   ndn::StackHelper::getKeyChain().sign(*data);
   NS_LOG_DEBUG("Sending Data packet for " << data->getName());
@@ -374,7 +374,7 @@ DagOrchestratorA_App::OnData(std::shared_ptr<const ndn::Data> data)
         NS_LOG_DEBUG("Final data packet! Creating data for name: " << m_nameAndDigest);   // m_name doesn't have the sha256 digest, so it doesn't match the original interest!
                                                                                           // We use m_nameAndDigest to store the old name with the digest.
         auto new_data = std::make_shared<ndn::Data>(m_nameAndDigest);
-        new_data->setFreshnessPeriod(ndn::time::milliseconds(3000));
+        new_data->setFreshnessPeriod(ndn::time::milliseconds(9000));
 
         new_data->setContent(data->getContent());
         ndn::StackHelper::getKeyChain().sign(*new_data);
