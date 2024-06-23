@@ -324,10 +324,10 @@ main(int argc, char* argv[])
 
 
 
-  Simulator::Stop(Seconds(1.1));
+  Simulator::Stop(Seconds(3));
 
-  ndn::L3RateTracer::InstallAll("rate-trace_cabeee-20-parallel.txt", Seconds(0.0005));
-  ndn::CsTracer::InstallAll("cs-trace_cabeee-20-parallel.txt", Seconds(0.0005));
+  ndn::L3RateTracer::InstallAll("rate-trace_cabeee-20-parallel.txt", Seconds(0.1));
+  ndn::CsTracer::InstallAll("cs-trace_cabeee-20-parallel.txt", Seconds(0.1));
 
   Simulator::Run();
   Simulator::Destroy();
