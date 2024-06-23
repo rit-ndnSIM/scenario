@@ -272,7 +272,7 @@ DagServiceA_App::OnInterest(std::shared_ptr<const ndn::Interest> interest)
 void
 DagServiceA_App::OnData(std::shared_ptr<const ndn::Data> data)
 {
-  NS_LOG_DEBUG("Receiving Data packet for " << data->getName());
+  NS_LOG_DEBUG("Serv: Receiving Data packet for " << data->getName());
 
   //std::cout << "DATA received for name " << data->getName() << std::endl;
 

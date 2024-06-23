@@ -71,6 +71,8 @@ private:
   ndn::Name m_name;
   uint16_t m_orchestrate;
   std::string m_dagPath;
+  Time m_startTime;
+  Time m_endTime;
 };
 
 } // namespace ns3

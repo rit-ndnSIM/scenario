@@ -118,6 +118,8 @@ CustomAppConsumer::SendInterest()
     return;
   }
 
+  m_startTime = Simulator::Now();
+
   /////////////////////////////////////
   // Sending one Interest packet out //
   /////////////////////////////////////
@@ -399,6 +401,11 @@ CustomAppConsumer::OnData(std::shared_ptr<const ndn::Data> data)
   pContent++;  // now this points to the second size octet
   pContent++;  // now we are pointing at the first byte of the true content
   std::cout << "\n  The final answer is: " <<  (int)(*pContent) << std::endl << "\n\n";
+
+  m_endTime = Simulator::Now();
+  Time serviceLatency = m_endTime - m_startTime;
+  std::cout << "\n  Service Latency: " <<  serviceLatency.GetMilliSeconds() << " milliseconds." << std::endl;
+  std::cout << "\n  Service Latency: " <<  serviceLatency.GetMicroSeconds() << " microseconds." << std::endl;
 
 }
 
