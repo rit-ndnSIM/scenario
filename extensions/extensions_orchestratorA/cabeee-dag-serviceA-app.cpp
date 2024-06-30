@@ -174,7 +174,7 @@ DagServiceA_App::OnInterest(std::shared_ptr<const ndn::Interest> interest)
     NS_LOG_DEBUG("    ServiceA: We already ran this service before. Responding with internally stored result!");
     // send stored result
     //auto new_data = std::make_shared<ndn::Data>(new_name);
-    auto new_data = std::make_shared<ndn::Data>(m_nameAndDigest);
+    auto new_data = std::make_shared<ndn::Data>(interest->getName());
     new_data->setFreshnessPeriod(ndn::time::milliseconds(9000));
     //new_data->setContent(std::make_shared< ::ndn::Buffer>(1024));
     unsigned char myBuffer[1024];
