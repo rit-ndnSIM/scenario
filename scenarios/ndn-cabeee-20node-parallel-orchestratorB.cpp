@@ -36,31 +36,31 @@ namespace ns3 {
 *         |                |               |
 *         |                |               v F2
 *         |                |             /-------\ Fapp   ---------------------
-*         |                |       node20| rtr-20|--------| DAG Forwarder APP | Service 20
+*         |                |       node20| rtr-20|--------| Service_B APP     | Service 20
 *         |                |             \-------/        ---------------------
 *         |                |               ^
 *         |                v F6            |
 *         |              /-------\ Fapp    |              ---------------------
-*         |         noden| rtr-n |---------|--------------| DAG Forwarder APP | Service n
+*         |         noden| rtr-n |---------|--------------| Service_B APP     | Service n
 *         |              \-------/         |              ---------------------
 *         |                ^               |
 *         v F6             |               | 
 *       /-------\ Fapp     |               |              ---------------------
-*  node1| rtr-1 |----------|---------------|--------------| DAG Forwarder APP | Service 1
+*  node1| rtr-1 |----------|---------------|--------------| Service_B APP     | Service 1
 *       \-------/          |               |              ---------------------
 *         ^ F7             |               |
 *         |                |               |
 *         |                |               |
 *         v F8             v               v
 *       /--------------------------------------\ Fapp     ---------------------
-* node21|              rtr-21                  |----------| DAG Forwarder APP | Service 21
+* node21|              rtr-21                  |----------| Service_B APP     | Service 21
 *       \--------------------------------------/          ---------------------
 *         ^ F7
 *         |
 *         v F6
-*       /--------\
-* node22|  orch  |
-*       \--------/
+*       /--------\ Fapp                                   ----------------------
+* node22|  orch  |----------------------------------------| Orchestrator_B APP | ServiceOrchestration
+*       \--------/                                        ----------------------
 *         ^ F9
 *     0ms |
 *         v FA
@@ -68,7 +68,7 @@ namespace ns3 {
 * node23|  user  |--------| Consumer APP |
 *       \--------/        ----------------
 * 
-*     NS_LOG=CustomAppConsumer:CustomAppProducer:DagForwarderApp ./waf --run=ndn-cabeee-20node-parallel-orchestratorA
+*     NS_LOG=CustomAppConsumer:CustomAppProducer:DagForwarderApp ./waf --run=ndn-cabeee-20node-parallel-orchestratorB
 */
 int
 main(int argc, char* argv[])

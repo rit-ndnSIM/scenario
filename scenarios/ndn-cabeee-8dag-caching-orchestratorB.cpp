@@ -37,28 +37,28 @@ namespace ns3 {
 *         |
 *         v F2
 *       /-------\ Fapp    ---------------
-*  node1| rtr-1 |---------| Service_A APP | Service 2 & 6
+*  node1| rtr-1 |---------| Service_B APP | Service 2 & 6
 *       \-------/         ---------------
 *         ^ F3
 *         |
 *         |
 *         v F4    Fapp    -----------------
-*       /-------\ --------| Service_A APP | Service 3 & 7
+*       /-------\ --------| Service_B APP | Service 3 & 7
 *  node2| rtr-2 | Fapp    |---------------|
-*       \-------/ --------| Service_A APP | Service 4 & 8
+*       \-------/ --------| Service_B APP | Service 4 & 8
 *         ^ F5            -----------------
 *         |
 *         |
 *         v F6
 *       /-------\ Fapp    -----------------
-*  node3| rtr-3 |---------| Service_A APP | Service 1 & 5
+*  node3| rtr-3 |---------| Service_B APP | Service 1 & 5
 *       \-------/         -----------------
 *         ^ F7
 *         |
 *         |
 *         v F8
 *       /--------\ Fapp   ----------------------
-*  node4|  orch  |--------| Orchestrator_A APP | ServiceOrchestration
+*  node4|  orch  |--------| Orchestrator_B APP | ServiceOrchestration
 *       \--------/        ----------------------
 *         ^ F9
 *     0ms |
@@ -69,7 +69,7 @@ namespace ns3 {
 *
 *
 * 
-*     NS_LOG=CustomAppConsumer:CustomAppProducer:DagForwarderApp ./waf --run=ndn-cabeee-8dag-orchestratorB
+*     NS_LOG=CustomAppConsumer:CustomAppProducer:DagForwarderApp ./waf --run=ndn-cabeee-8dag-caching-orchestratorB
 */
 int
 main(int argc, char* argv[])
@@ -169,46 +169,47 @@ main(int argc, char* argv[])
   serviceApp.SetPrefix("/service1");
   serviceApp.SetAttribute("Service", StringValue("service1"));
   auto s1 = serviceApp.Install(router3);
-  auto s1b = serviceApp.Install(router3);
   s1.Start(Seconds(0));
-  s1.Stop(Seconds(4));
-  s1b.Start(Seconds(4));
+  //s1.Stop(Seconds(4));
+
   serviceApp.SetPrefix("/service5");
   serviceApp.SetAttribute("Service", StringValue("service5"));
-  serviceApp.Install(router3).Start(Seconds(0));
+  auto s5 = serviceApp.Install(router3);
+  s5.Start(Seconds(0));
 
   serviceApp.SetPrefix("/service2");
   serviceApp.SetAttribute("Service", StringValue("service2"));
   auto s2 = serviceApp.Install(router1);
-  auto s2b = serviceApp.Install(router1);
   s2.Start(Seconds(0));
-  s2.Stop(Seconds(4));
-  s2b.Start(Seconds(4));
+  //s2.Stop(Seconds(4));
+
   serviceApp.SetPrefix("/service6");
   serviceApp.SetAttribute("Service", StringValue("service6"));
-  serviceApp.Install(router1).Start(Seconds(0));
+  auto s6 = serviceApp.Install(router1);
+  s6.Start(Seconds(0));
 
   serviceApp.SetPrefix("/service3");
   serviceApp.SetAttribute("Service", StringValue("service3"));
   auto s3 = serviceApp.Install(router2);
-  auto s3b = serviceApp.Install(router2);
   s3.Start(Seconds(0));
-  s3.Stop(Seconds(4));
-  s3b.Start(Seconds(4));
+  //s3.Stop(Seconds(4));
+
   serviceApp.SetPrefix("/service7");
   serviceApp.SetAttribute("Service", StringValue("service7"));
-  serviceApp.Install(router2).Start(Seconds(0));
+  auto s7 = serviceApp.Install(router2);
+  s7.Start(Seconds(0));
 
   serviceApp.SetPrefix("/service4");
   serviceApp.SetAttribute("Service", StringValue("service4"));
   auto s4 = serviceApp.Install(router2);
-  auto s4b = serviceApp.Install(router2);
   s4.Start(Seconds(0));
-  s4.Stop(Seconds(4));
-  s4b.Start(Seconds(4));
+  //s4.Stop(Seconds(4));
+
   serviceApp.SetPrefix("/service8");
   serviceApp.SetAttribute("Service", StringValue("service8"));
-  serviceApp.Install(router2).Start(Seconds(0));
+  auto s8 = serviceApp.Install(router2);
+  s8.Start(Seconds(0));
+
 
 
   // FOR FIRST USER
@@ -218,7 +219,7 @@ main(int argc, char* argv[])
   //orchestratorApp.SetAttribute("Results", StringValue("/sensor/service1/service2/service3/service4"));
   auto orchApp = orchestratorApp.Install(orchestrator);
   orchApp.Start(Seconds(0));
-  orchApp.Stop(Seconds(4));
+  orchApp.Stop(Seconds(3));
   
   // Custom App for User(Consumer)
   ndn::AppHelper userApp("CustomAppConsumer");
@@ -241,35 +242,6 @@ main(int argc, char* argv[])
   userApp2.SetAttribute("Workflow", StringValue("workflows/8dag.json"));
   userApp2.SetAttribute("Orchestrate", UintegerValue(2)); // This enables the "orchestrator" by having the consumer set the head service to /serviceOrchestration/dag
   userApp2.Install(consumer).Start(Seconds(4));
-
-
-/*
-  // default consumer app
-  ndn::AppHelper consumerHelper("ns3::ndn::ConsumerCbr");
-  // Consumer will request /prefix/0, /prefix/1, ...
-  consumerHelper.SetPrefix("/prefix");
-  consumerHelper.SetAttribute("Frequency", StringValue("1")); // 1 interests per second
-  auto apps = consumerHelper.Install(consumer);
-  apps.Start(Seconds(1.0));
-  apps.Stop(Seconds(4.0)); // stop the consumer app at 3 seconds mark
-
-  // cabeee - install another consumer app to see if items are retrieved from the content store.
-  ndn::AppHelper consumerHelper2("ns3::ndn::ConsumerCbr");
-  // Consumer will request /prefix/0, /prefix/1, ...
-  consumerHelper2.SetPrefix("/prefix");
-  //consumerHelper2.SetAttribute("Frequency", StringValue("0.5")); // 0.5 interests per second
-  consumerHelper2.SetAttribute("Frequency", StringValue("1")); // 1 interests per second
-  auto apps2 = consumerHelper2.Install(consumer);
-  apps2.Start(Seconds(5.0));
-  apps2.Stop(Seconds(7.0)); // stop the consumer app at 6 seconds mark
-
-  // default producer app
-  ndn::AppHelper producerHelper("ns3::ndn::Producer");
-  // Producer will reply to all requests starting with /prefix
-  producerHelper.SetPrefix("/prefix");
-  producerHelper.SetAttribute("PayloadSize", StringValue("1024"));
-  producerHelper.Install(producer);
-*/
 
 
 

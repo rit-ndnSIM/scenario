@@ -36,7 +36,7 @@ namespace ns3 {
 *         |
 *         v F2
 *       /-------\ Fapp    ---------------------
-*  node1| rtr-1 |---------| DAG Forwarder APP | Service 1
+*  node1| rtr-1 |---------| Service_B APP     | Service 1
 *       \-------/         ---------------------
 *         ^ F3
 *         |
@@ -46,7 +46,7 @@ namespace ns3 {
 *         |
 *         v F6
 *       /-------\ Fapp    ---------------------
-*  noden| rtr-n |---------| DAG Forwarder APP | Service n
+*  noden| rtr-n |---------| Service_B APP     | Service n
 *       \-------/         ---------------------
 *         ^ F7
 *         |
@@ -56,15 +56,15 @@ namespace ns3 {
 *         |
 *         v F6
 *       /-------\ Fapp    ---------------------
-*  node?| rtr-20|---------| DAG Forwarder APP | Service 20
+*  node?| rtr-20|---------| Service_B APP     | Service 20
 *       \-------/         ---------------------
 *         ^ F7
 *         |
 *         |
 *         v F8
-*       /--------\ 
-*  node?|  orch  |
-*       \--------/
+*       /--------\ Fapp   ----------------------
+*  node?|  orch  |--------| Orchestrator_B APP | ServiceOrchestration
+*       \--------/        ----------------------
 *         ^ F9
 *     0ms |
 *         v FA
