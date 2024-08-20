@@ -68,7 +68,8 @@ private:
   
 private:
   bool m_isRunning;
-  ndn::Name m_name;
+  ndn::Name m_prefix;
+  ndn::Name m_service;
   uint16_t m_orchestrate;
   std::string m_dagPath;
   Time m_startTime;

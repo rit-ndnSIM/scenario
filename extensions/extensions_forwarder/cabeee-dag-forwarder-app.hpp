@@ -73,6 +73,7 @@ private:
   
 private:
   bool m_isRunning;
+  ndn::Name m_prefix;
   ndn::Name m_name;
   std::string m_nameUri;
   ndn::Name m_nameAndDigest;

@@ -1,0 +1,98 @@
+# topo-cabeee-20node-parallel.txt
+# manually modified by cabeee
+# Jan 2024
+#
+#
+
+router
+
+#node	city	y	x	mpi-partition
+sensor-1	NA	30	10	1
+sensor-2	NA	30	15	1
+sensor-3	NA	30	20	1
+sensor-4	NA	30	25	1
+sensor-5	NA	30	30	1
+sensor-6	NA	30	35	1
+sensor-7	NA	30	40	1
+sensor-8	NA	30	45	1
+sensor-9	NA	30	50	1
+sensor-10	NA	30	55	1
+sensor-11	NA	30	60	1
+sensor-12	NA	30	65	1
+sensor-13	NA	30	70	1
+sensor-14	NA	30	75	1
+sensor-15	NA	30	80	1
+sensor-16	NA	30	85	1
+sensor-17	NA	30	90	1
+sensor-18	NA	30	95	1
+sensor-19	NA	30	100	1
+sensor-20	NA	30	105	1
+rtr-1	NA	20	10	1
+rtr-2	NA	20	15	2
+rtr-3	NA	20	20	3
+rtr-4	NA	20	25	3
+rtr-5	NA	20	30	3
+rtr-6	NA	20	35	3
+rtr-7	NA	20	40	3
+rtr-8	NA	20	45	3
+rtr-9	NA	20	50	3
+rtr-10	NA	20	55	3
+rtr-11	NA	20	60	3
+rtr-12	NA	20	65	3
+rtr-13	NA	20	70	3
+rtr-14	NA	20	75	3
+rtr-15	NA	20	80	3
+rtr-16	NA	20	85	3
+rtr-17	NA	20	90	3
+rtr-18	NA	20	95	3
+rtr-19	NA	20	100	3
+rtr-20	NA	20	105	3
+rtr-21	NA	10	50	3
+orch	NA	5	50	0
+user	NA	0	50	0
+
+link
+
+# from	    to		capacity	metric	delay	queue
+sensor-1	    rtr-1	10Mbps		1	1ms	100
+sensor-2	    rtr-2	10Mbps		1	1ms	100
+sensor-3	    rtr-3	10Mbps		1	1ms	100
+sensor-4	    rtr-4	10Mbps		1	1ms	100
+sensor-5	    rtr-5	10Mbps		1	1ms	100
+sensor-6	    rtr-6	10Mbps		1	1ms	100
+sensor-7	    rtr-7	10Mbps		1	1ms	100
+sensor-8	    rtr-8	10Mbps		1	1ms	100
+sensor-9	    rtr-9	10Mbps		1	1ms	100
+sensor-10	    rtr-10	10Mbps		1	1ms	100
+sensor-11	    rtr-11	10Mbps		1	1ms	100
+sensor-12	    rtr-12	10Mbps		1	1ms	100
+sensor-13	    rtr-13	10Mbps		1	1ms	100
+sensor-14	    rtr-14	10Mbps		1	1ms	100
+sensor-15	    rtr-15	10Mbps		1	1ms	100
+sensor-16	    rtr-16	10Mbps		1	1ms	100
+sensor-17	    rtr-17	10Mbps		1	1ms	100
+sensor-18	    rtr-18	10Mbps		1	1ms	100
+sensor-19	    rtr-19	10Mbps		1	1ms	100
+sensor-20	    rtr-20	10Mbps		1	1ms	100
+rtr-1	    rtr-21	10Mbps		1	1ms	100
+rtr-2	    rtr-21	10Mbps		1	1ms	100
+rtr-3	    rtr-21	10Mbps		1	1ms	100
+rtr-4	    rtr-21	10Mbps		1	1ms	100
+rtr-5	    rtr-21	10Mbps		1	1ms	100
+rtr-6	    rtr-21	10Mbps		1	1ms	100
+rtr-7	    rtr-21	10Mbps		1	1ms	100
+rtr-8	    rtr-21	10Mbps		1	1ms	100
+rtr-9	    rtr-21	10Mbps		1	1ms	100
+rtr-10	    rtr-21	10Mbps		1	1ms	100
+rtr-11	    rtr-21	10Mbps		1	1ms	100
+rtr-12	    rtr-21	10Mbps		1	1ms	100
+rtr-13	    rtr-21	10Mbps		1	1ms	100
+rtr-14	    rtr-21	10Mbps		1	1ms	100
+rtr-15	    rtr-21	10Mbps		1	1ms	100
+rtr-16	    rtr-21	10Mbps		1	1ms	100
+rtr-17	    rtr-21	10Mbps		1	1ms	100
+rtr-18	    rtr-21	10Mbps		1	1ms	100
+rtr-19	    rtr-21	10Mbps		1	1ms	100
+rtr-20	    rtr-21	10Mbps		1	1ms	100
+rtr-21	    orch	10Mbps		1	1ms	100
+orch	    user	10000Mbps	1	0ms	100

@@ -24,6 +24,7 @@
 #include "ns3/ndnSIM-module.h"
 #include "ns3/string.h"
 
+#define PREFIX "/interCACHE"
 
 namespace ns3 {
 
@@ -124,24 +125,25 @@ main(int argc, char* argv[])
 
 
 
+  std::string Prefix(PREFIX);
 
   // Choosing forwarding strategy
   //ndn::StrategyChoiceHelper::InstallAll("/prefix", "/localhost/nfd/strategy/best-route");
   //ndn::StrategyChoiceHelper::InstallAll("/prefix", "/localhost/nfd/strategy/multicast");
-  //ndn::StrategyChoiceHelper::InstallAll("/service4", "/localhost/nfd/strategy/best-route");
-  //ndn::StrategyChoiceHelper::InstallAll("/service3", "/localhost/nfd/strategy/best-route");
-  //ndn::StrategyChoiceHelper::InstallAll("/service2", "/localhost/nfd/strategy/best-route");
-  //ndn::StrategyChoiceHelper::InstallAll("/service1", "/localhost/nfd/strategy/best-route");
-  //ndn::StrategyChoiceHelper::InstallAll("/sensor", "/localhost/nfd/strategy/best-route");
-  ndn::StrategyChoiceHelper::InstallAll("/service4", "/localhost/nfd/strategy/multicast");
-  ndn::StrategyChoiceHelper::InstallAll("/service3", "/localhost/nfd/strategy/multicast");
-  ndn::StrategyChoiceHelper::InstallAll("/service2", "/localhost/nfd/strategy/multicast");
-  ndn::StrategyChoiceHelper::InstallAll("/service1", "/localhost/nfd/strategy/multicast");
-  ndn::StrategyChoiceHelper::InstallAll("/service8", "/localhost/nfd/strategy/multicast");
-  ndn::StrategyChoiceHelper::InstallAll("/service7", "/localhost/nfd/strategy/multicast");
-  ndn::StrategyChoiceHelper::InstallAll("/service6", "/localhost/nfd/strategy/multicast");
-  ndn::StrategyChoiceHelper::InstallAll("/service5", "/localhost/nfd/strategy/multicast");
-  ndn::StrategyChoiceHelper::InstallAll("/sensor", "/localhost/nfd/strategy/multicast");
+  //ndn::StrategyChoiceHelper::InstallAll(Prefix + "/service4", "/localhost/nfd/strategy/best-route");
+  //ndn::StrategyChoiceHelper::InstallAll(Prefix + "/service3", "/localhost/nfd/strategy/best-route");
+  //ndn::StrategyChoiceHelper::InstallAll(Prefix + "/service2", "/localhost/nfd/strategy/best-route");
+  //ndn::StrategyChoiceHelper::InstallAll(Prefix + "/service1", "/localhost/nfd/strategy/best-route");
+  //ndn::StrategyChoiceHelper::InstallAll(Prefix + "/sensor", "/localhost/nfd/strategy/best-route");
+  ndn::StrategyChoiceHelper::InstallAll(Prefix + "/service4", "/localhost/nfd/strategy/multicast");
+  ndn::StrategyChoiceHelper::InstallAll(Prefix + "/service3", "/localhost/nfd/strategy/multicast");
+  ndn::StrategyChoiceHelper::InstallAll(Prefix + "/service2", "/localhost/nfd/strategy/multicast");
+  ndn::StrategyChoiceHelper::InstallAll(Prefix + "/service1", "/localhost/nfd/strategy/multicast");
+  ndn::StrategyChoiceHelper::InstallAll(Prefix + "/service8", "/localhost/nfd/strategy/multicast");
+  ndn::StrategyChoiceHelper::InstallAll(Prefix + "/service7", "/localhost/nfd/strategy/multicast");
+  ndn::StrategyChoiceHelper::InstallAll(Prefix + "/service6", "/localhost/nfd/strategy/multicast");
+  ndn::StrategyChoiceHelper::InstallAll(Prefix + "/service5", "/localhost/nfd/strategy/multicast");
+  ndn::StrategyChoiceHelper::InstallAll(Prefix + "/sensor", "/localhost/nfd/strategy/multicast");
 
   // Installing global routing interface on all nodes
   //ndn::GlobalRoutingHelper ndnGlobalRoutingHelper;
@@ -159,50 +161,55 @@ main(int argc, char* argv[])
 
   // Custom App for Sensor(Producer)
   ndn::AppHelper sensorApp("CustomAppProducer");
-  sensorApp.SetPrefix("/sensor");
+  sensorApp.SetPrefix(Prefix);
+  sensorApp.SetAttribute("Service", StringValue("sensor"));
   sensorApp.Install(producer).Start(Seconds(0));
 
   // Custom App for routers
   ndn::AppHelper routerApp("DagForwarderApp");
 
-  routerApp.SetPrefix("/service1");
+  routerApp.SetPrefix(Prefix);
   routerApp.SetAttribute("Service", StringValue("service1"));
   routerApp.Install(router3).Start(Seconds(0));
-  routerApp.SetPrefix("/service5");
+  routerApp.SetPrefix(Prefix);
   routerApp.SetAttribute("Service", StringValue("service5"));
   routerApp.Install(router3).Start(Seconds(0));
 
-  routerApp.SetPrefix("/service2");
+  routerApp.SetPrefix(Prefix);
   routerApp.SetAttribute("Service", StringValue("service2"));
   routerApp.Install(router1).Start(Seconds(0));
-  routerApp.SetPrefix("/service6");
+  routerApp.SetPrefix(Prefix);
   routerApp.SetAttribute("Service", StringValue("service6"));
   routerApp.Install(router1).Start(Seconds(0));
 
-  routerApp.SetPrefix("/service3");
+  routerApp.SetPrefix(Prefix);
   routerApp.SetAttribute("Service", StringValue("service3"));
   routerApp.Install(router2).Start(Seconds(0));
-  routerApp.SetPrefix("/service7");
+  routerApp.SetPrefix(Prefix);
   routerApp.SetAttribute("Service", StringValue("service7"));
   routerApp.Install(router2).Start(Seconds(0));
 
-  routerApp.SetPrefix("/service4");
+  routerApp.SetPrefix(Prefix);
   routerApp.SetAttribute("Service", StringValue("service4"));
   routerApp.Install(router2).Start(Seconds(0));
-  routerApp.SetPrefix("/service8");
+  routerApp.SetPrefix(Prefix);
   routerApp.SetAttribute("Service", StringValue("service8"));
   routerApp.Install(router2).Start(Seconds(0));
 
+  /* in the non-caching scenario, we don't need to run the 4dag workflow first.
   // Custom App for User1(Consumer1)
   ndn::AppHelper userApp("CustomAppConsumer");
-  userApp.SetPrefix("/consumer"); // this is only a placeholder. The app will read the JSON workflow, and figure out which service is "last"
+  userApp.SetPrefix(Prefix); // this is only a placeholder. The app will read the JSON workflow, and figure out which service is "last"
+  userApp.SetAttribute("Service", StringValue("consumer"));
   userApp.SetAttribute("Workflow", StringValue("workflows/4dag.json"));
   userApp.SetAttribute("Orchestrate", UintegerValue(0));
   userApp.Install(consumer).Start(Seconds(0));
+  */
 
   // Custom App for User2(Consumer2)
   ndn::AppHelper userApp2("CustomAppConsumer2");
-  userApp2.SetPrefix("/consumer2"); // this is only a placeholder. The app will read the JSON workflow, and figure out which service is "last"
+  userApp2.SetPrefix(Prefix); // this is only a placeholder. The app will read the JSON workflow, and figure out which service is "last"
+  userApp2.SetAttribute("Service", StringValue("consumer2"));
   userApp2.SetAttribute("Workflow", StringValue("workflows/8dag.json"));
   //userApp2.SetAttribute("Workflow", StringValue("workflows/rpa-dag_reuse2.json")); //TODO: test this other dag later
   userApp2.SetAttribute("Orchestrate", UintegerValue(0));

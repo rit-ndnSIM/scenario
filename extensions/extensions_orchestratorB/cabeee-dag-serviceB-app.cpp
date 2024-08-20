@@ -56,8 +56,8 @@ DagServiceB_App::GetTypeId()
   static TypeId tid = TypeId("DagServiceB_App")
     .SetParent<ndn::App>()
     .AddConstructor<DagServiceB_App>()
-    .AddAttribute("Prefix", "Requested name", StringValue("/dumb-interest"),
-                    ndn::MakeNameAccessor(&DagServiceB_App::m_name), ndn::MakeNameChecker())
+    .AddAttribute("Prefix", "Requested prefix", StringValue("/dumb-interest"),
+                    ndn::MakeNameAccessor(&DagServiceB_App::m_prefix), ndn::MakeNameChecker())
     .AddAttribute("Service", "Requested service", StringValue("dumb-service"),
                     ndn::MakeNameAccessor(&DagServiceB_App::m_service), ndn::MakeNameChecker());
   return tid;
@@ -76,6 +76,8 @@ DagServiceB_App::StartApplication()
   ndn::App::StartApplication();
   m_isRunning = true;
 
+  m_name = m_prefix.ndn::Name::toUri() + m_service.ndn::Name::toUri();
+
   // Add entry to FIB for `/prefix/sub`
   //ndn::FibHelper::AddRoute(GetNode(), "/prefix/sub", m_face, 0); //cabeee took this out, let the global router figure it out.
   ndn::FibHelper::AddRoute(GetNode(), m_name, m_face, 0);
@@ -83,7 +85,7 @@ DagServiceB_App::StartApplication()
 
   m_done = false;
   m_extracted = false;
-  m_nameUri = m_name.ndn::Name::toUri();
+  m_nameUri = m_service.ndn::Name::toUri();
 
 }
 
@@ -116,7 +118,7 @@ DagServiceB_App::SendInterest(const std::string& interestName, std::string dagSt
   // Create and configure ndn::Interest
   //auto interest = std::make_shared<ndn::Interest>("/prefix/sub");
   //auto interest = std::make_shared<ndn::Interest>(m_name); // must take it in as an argument, not just use m_name!!
-  auto interest = std::make_shared<ndn::Interest>(interestName);
+  auto interest = std::make_shared<ndn::Interest>(m_prefix.ndn::Name::toUri() + interestName);
   Ptr<UniformRandomVariable> rand = CreateObject<UniformRandomVariable>();
   interest->setNonce(rand->GetValue(0, std::numeric_limits<uint32_t>::max()));
   interest->setInterestLifetime(ndn::time::seconds(5));
@@ -213,12 +215,14 @@ DagServiceB_App::OnInterest(std::shared_ptr<const ndn::Interest> interest)
   // IF we received a data request interest (ex: /service1/dataRequest/0/sensor), then generate the interest
   //else, continue below since it is a regular interest for the service itself
   ndn::Name nameAndDigest = interest->getName();  // store the name with digest
-  std::string nameUri = nameAndDigest.getSubName(1,1).toUri(); // extract 1 component starting from component 1, and then convert to Uri string
+  //std::string nameUri = nameAndDigest.getSubName(1,1).toUri(); // extract 1 component starting from component 1, and then convert to Uri string
+  std::string nameUri = nameAndDigest.getSubName(2,1).toUri(); // extract 1 component starting from component 2 (skip /interCACHE prefix), and then convert to Uri string
   NS_LOG_DEBUG("  NAME COMPONENT 1: " << nameUri);
   if (nameUri == "/dataRequest")
   {
     //generate interest for sensor
-    std::string requestNameUri = nameAndDigest.getSubName(2,2).toUri(); // extract 2 components starting from component 2, and then convert to Uri string
+    //std::string requestNameUri = nameAndDigest.getSubName(2,2).toUri(); // extract 2 components starting from component 2, and then convert to Uri string
+    std::string requestNameUri = nameAndDigest.getSubName(3,2).toUri(); // extract 2 components starting from component 3 (skip /interCACHE prefix), and then convert to Uri string
     requestNameUri = "/serviceOrchestration/data" + requestNameUri + m_nameUri; // ask for requestNameUri data, and let the orchestrator know who it's coming from (so it can me marked as txed when it responds)
     NS_LOG_DEBUG("Interest was for dataRequest, thus generating interest for " << requestNameUri);
 
@@ -304,7 +308,8 @@ DagServiceB_App::OnData(std::shared_ptr<const ndn::Data> data)
   //        for example: /serviceOrchestration/data/0/sensor/service1
   //        if the name starts with serviceOrcehstration/data, then we must treat them differently than a regular data packet
   ndn::Name nameAndDigest = (data->getName()).getPrefix(-1); // remove the last component of the name (the parameter digest) so we have just the raw name
-  std::string firstTwo = nameAndDigest.getSubName(0,2).toUri(); // extract 2 components starting from component 0, and then convert to Uri string
+  //std::string firstTwo = nameAndDigest.getSubName(0,2).toUri(); // extract 2 components starting from component 0, and then convert to Uri string
+  std::string firstTwo = nameAndDigest.getSubName(1,2).toUri(); // extract 2 components starting from component 1 (skip /interCACHE prefix), and then convert to Uri string
 
   std::string inputNumString;
   std::string requestedService;
@@ -312,9 +317,12 @@ DagServiceB_App::OnData(std::shared_ptr<const ndn::Data> data)
   unsigned char inputNum;
   if (firstTwo == "/serviceOrchestration/data")
   {
-    inputNumString   = nameAndDigest.getSubName(2,1).toUri(); // extract 1 components starting from component 2, and then convert to Uri string
-    requestedService = nameAndDigest.getSubName(3,1).toUri(); // extract 1 components starting from component 3, and then convert to Uri string
-    requestorService = nameAndDigest.getSubName(4,1).toUri(); // extract 1 components starting from component 4, and then convert to Uri string
+    //inputNumString   = nameAndDigest.getSubName(2,1).toUri(); // extract 1 components starting from component 2, and then convert to Uri string
+    //requestedService = nameAndDigest.getSubName(3,1).toUri(); // extract 1 components starting from component 3, and then convert to Uri string
+    //requestorService = nameAndDigest.getSubName(4,1).toUri(); // extract 1 components starting from component 4, and then convert to Uri string
+    inputNumString   = nameAndDigest.getSubName(3,1).toUri(); // extract 1 components starting from component 3 (skip /interCACHE prefix), and then convert to Uri string
+    requestedService = nameAndDigest.getSubName(4,1).toUri(); // extract 1 components starting from component 4 (skip /interCACHE prefix), and then convert to Uri string
+    requestorService = nameAndDigest.getSubName(5,1).toUri(); // extract 1 components starting from component 5 (skip /interCACHE prefix), and then convert to Uri string
     inputNumString = inputNumString.erase(0,1); // remove the "/" at the beginning of the Uri Name, to leave just the number (still as a string)
     inputNum = stoi(inputNumString);
     NS_LOG_DEBUG("Service received data for: " << firstTwo << ", requested service name: " << requestedService << ", stored at index " << inputNumString << ", by requestor: " << requestorService);
@@ -323,7 +331,11 @@ DagServiceB_App::OnData(std::shared_ptr<const ndn::Data> data)
 
   else
   {
-    rxedDataName = (data->getName()).getPrefix(-1).toUri(); // remove the last component of the name (the parameter digest) so we have just the raw name, and convert to Uri string
+    ndn::Name simpleName;
+    simpleName = (data->getName()).getPrefix(-1); // remove the last component of the name (the parameter digest) so we have just the raw name, and convert to Uri string
+    simpleName = simpleName.getSubName(1); // remove the first component of the name (/interCACHE)
+    //rxedDataName = (data->getName()).getPrefix(-1).toUri(); // remove the last component of the name (the parameter digest) so we have just the raw name, and convert to Uri string
+    rxedDataName = simpleName.toUri();
   }
 
   // TODO: this is a HACK. I need a better way to get to the first byte of the content. Right now, I'm just incrementing the pointer past the TLV type, and size.

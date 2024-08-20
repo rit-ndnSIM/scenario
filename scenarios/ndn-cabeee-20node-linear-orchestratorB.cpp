@@ -24,6 +24,7 @@
 #include "ns3/ndnSIM-module.h"
 #include "ns3/string.h"
 
+#define PREFIX "/interCACHE"
 
 namespace ns3 {
 
@@ -155,32 +156,33 @@ main(int argc, char* argv[])
 
 
 
+  std::string Prefix(PREFIX);
 
 
   // Choosing forwarding strategy
-  //ndn::StrategyChoiceHelper::InstallAll("/serviceOrchestration", "/localhost/nfd/strategy/best-route");
-  ndn::StrategyChoiceHelper::InstallAll("/serviceOrchestration", "/localhost/nfd/strategy/multicast");
-  ndn::StrategyChoiceHelper::InstallAll("/sensor", "/localhost/nfd/strategy/multicast");
-  ndn::StrategyChoiceHelper::InstallAll("/serviceL1", "/localhost/nfd/strategy/multicast");
-  ndn::StrategyChoiceHelper::InstallAll("/serviceL2", "/localhost/nfd/strategy/multicast");
-  ndn::StrategyChoiceHelper::InstallAll("/serviceL3", "/localhost/nfd/strategy/multicast");
-  ndn::StrategyChoiceHelper::InstallAll("/serviceL4", "/localhost/nfd/strategy/multicast");
-  ndn::StrategyChoiceHelper::InstallAll("/serviceL5", "/localhost/nfd/strategy/multicast");
-  ndn::StrategyChoiceHelper::InstallAll("/serviceL6", "/localhost/nfd/strategy/multicast");
-  ndn::StrategyChoiceHelper::InstallAll("/serviceL7", "/localhost/nfd/strategy/multicast");
-  ndn::StrategyChoiceHelper::InstallAll("/serviceL8", "/localhost/nfd/strategy/multicast");
-  ndn::StrategyChoiceHelper::InstallAll("/serviceL9", "/localhost/nfd/strategy/multicast");
-  ndn::StrategyChoiceHelper::InstallAll("/serviceL10", "/localhost/nfd/strategy/multicast");
-  ndn::StrategyChoiceHelper::InstallAll("/serviceL11", "/localhost/nfd/strategy/multicast");
-  ndn::StrategyChoiceHelper::InstallAll("/serviceL12", "/localhost/nfd/strategy/multicast");
-  ndn::StrategyChoiceHelper::InstallAll("/serviceL13", "/localhost/nfd/strategy/multicast");
-  ndn::StrategyChoiceHelper::InstallAll("/serviceL14", "/localhost/nfd/strategy/multicast");
-  ndn::StrategyChoiceHelper::InstallAll("/serviceL15", "/localhost/nfd/strategy/multicast");
-  ndn::StrategyChoiceHelper::InstallAll("/serviceL16", "/localhost/nfd/strategy/multicast");
-  ndn::StrategyChoiceHelper::InstallAll("/serviceL17", "/localhost/nfd/strategy/multicast");
-  ndn::StrategyChoiceHelper::InstallAll("/serviceL18", "/localhost/nfd/strategy/multicast");
-  ndn::StrategyChoiceHelper::InstallAll("/serviceL19", "/localhost/nfd/strategy/multicast");
-  ndn::StrategyChoiceHelper::InstallAll("/serviceL20", "/localhost/nfd/strategy/multicast");
+  //ndn::StrategyChoiceHelper::InstallAll(Prefix + "/serviceOrchestration", "/localhost/nfd/strategy/best-route");
+  ndn::StrategyChoiceHelper::InstallAll(Prefix + "/serviceOrchestration", "/localhost/nfd/strategy/multicast");
+  ndn::StrategyChoiceHelper::InstallAll(Prefix + "/sensor", "/localhost/nfd/strategy/multicast");
+  ndn::StrategyChoiceHelper::InstallAll(Prefix + "/serviceL1", "/localhost/nfd/strategy/multicast");
+  ndn::StrategyChoiceHelper::InstallAll(Prefix + "/serviceL2", "/localhost/nfd/strategy/multicast");
+  ndn::StrategyChoiceHelper::InstallAll(Prefix + "/serviceL3", "/localhost/nfd/strategy/multicast");
+  ndn::StrategyChoiceHelper::InstallAll(Prefix + "/serviceL4", "/localhost/nfd/strategy/multicast");
+  ndn::StrategyChoiceHelper::InstallAll(Prefix + "/serviceL5", "/localhost/nfd/strategy/multicast");
+  ndn::StrategyChoiceHelper::InstallAll(Prefix + "/serviceL6", "/localhost/nfd/strategy/multicast");
+  ndn::StrategyChoiceHelper::InstallAll(Prefix + "/serviceL7", "/localhost/nfd/strategy/multicast");
+  ndn::StrategyChoiceHelper::InstallAll(Prefix + "/serviceL8", "/localhost/nfd/strategy/multicast");
+  ndn::StrategyChoiceHelper::InstallAll(Prefix + "/serviceL9", "/localhost/nfd/strategy/multicast");
+  ndn::StrategyChoiceHelper::InstallAll(Prefix + "/serviceL10", "/localhost/nfd/strategy/multicast");
+  ndn::StrategyChoiceHelper::InstallAll(Prefix + "/serviceL11", "/localhost/nfd/strategy/multicast");
+  ndn::StrategyChoiceHelper::InstallAll(Prefix + "/serviceL12", "/localhost/nfd/strategy/multicast");
+  ndn::StrategyChoiceHelper::InstallAll(Prefix + "/serviceL13", "/localhost/nfd/strategy/multicast");
+  ndn::StrategyChoiceHelper::InstallAll(Prefix + "/serviceL14", "/localhost/nfd/strategy/multicast");
+  ndn::StrategyChoiceHelper::InstallAll(Prefix + "/serviceL15", "/localhost/nfd/strategy/multicast");
+  ndn::StrategyChoiceHelper::InstallAll(Prefix + "/serviceL16", "/localhost/nfd/strategy/multicast");
+  ndn::StrategyChoiceHelper::InstallAll(Prefix + "/serviceL17", "/localhost/nfd/strategy/multicast");
+  ndn::StrategyChoiceHelper::InstallAll(Prefix + "/serviceL18", "/localhost/nfd/strategy/multicast");
+  ndn::StrategyChoiceHelper::InstallAll(Prefix + "/serviceL19", "/localhost/nfd/strategy/multicast");
+  ndn::StrategyChoiceHelper::InstallAll(Prefix + "/serviceL20", "/localhost/nfd/strategy/multicast");
 
   // Installing global routing interface on all nodes
   //ndn::GlobalRoutingHelper ndnGlobalRoutingHelper;
@@ -198,74 +200,75 @@ main(int argc, char* argv[])
 
   // Custom App for Sensor(Producer)
   ndn::AppHelper sensorApp("CustomAppProducer");
-  sensorApp.SetPrefix("/sensor");
+  sensorApp.SetPrefix(Prefix);
+  sensorApp.SetAttribute("Service", StringValue("sensor"));
   sensorApp.Install(producer).Start(Seconds(0));
 
   // Custom App for routers
   ndn::AppHelper serviceApp("DagServiceB_App");
-  serviceApp.SetPrefix("/serviceL1");
+  serviceApp.SetPrefix(Prefix);
   serviceApp.SetAttribute("Service", StringValue("serviceL1"));
   serviceApp.Install(router1).Start(Seconds(0));
-  serviceApp.SetPrefix("/serviceL2");
+  serviceApp.SetPrefix(Prefix);
   serviceApp.SetAttribute("Service", StringValue("serviceL2"));
   serviceApp.Install(router2).Start(Seconds(0));
-  serviceApp.SetPrefix("/serviceL3");
+  serviceApp.SetPrefix(Prefix);
   serviceApp.SetAttribute("Service", StringValue("serviceL3"));
   serviceApp.Install(router3).Start(Seconds(0));
-  serviceApp.SetPrefix("/serviceL4");
+  serviceApp.SetPrefix(Prefix);
   serviceApp.SetAttribute("Service", StringValue("serviceL4"));
   serviceApp.Install(router4).Start(Seconds(0));
-  serviceApp.SetPrefix("/serviceL5");
+  serviceApp.SetPrefix(Prefix);
   serviceApp.SetAttribute("Service", StringValue("serviceL5"));
   serviceApp.Install(router5).Start(Seconds(0));
-  serviceApp.SetPrefix("/serviceL6");
+  serviceApp.SetPrefix(Prefix);
   serviceApp.SetAttribute("Service", StringValue("serviceL6"));
   serviceApp.Install(router6).Start(Seconds(0));
-  serviceApp.SetPrefix("/serviceL7");
+  serviceApp.SetPrefix(Prefix);
   serviceApp.SetAttribute("Service", StringValue("serviceL7"));
   serviceApp.Install(router7).Start(Seconds(0));
-  serviceApp.SetPrefix("/serviceL8");
+  serviceApp.SetPrefix(Prefix);
   serviceApp.SetAttribute("Service", StringValue("serviceL8"));
   serviceApp.Install(router8).Start(Seconds(0));
-  serviceApp.SetPrefix("/serviceL9");
+  serviceApp.SetPrefix(Prefix);
   serviceApp.SetAttribute("Service", StringValue("serviceL9"));
   serviceApp.Install(router9).Start(Seconds(0));
-  serviceApp.SetPrefix("/serviceL10");
+  serviceApp.SetPrefix(Prefix);
   serviceApp.SetAttribute("Service", StringValue("serviceL10"));
   serviceApp.Install(router10).Start(Seconds(0));
-  serviceApp.SetPrefix("/serviceL11");
+  serviceApp.SetPrefix(Prefix);
   serviceApp.SetAttribute("Service", StringValue("serviceL11"));
   serviceApp.Install(router11).Start(Seconds(0));
-  serviceApp.SetPrefix("/serviceL12");
+  serviceApp.SetPrefix(Prefix);
   serviceApp.SetAttribute("Service", StringValue("serviceL12"));
   serviceApp.Install(router12).Start(Seconds(0));
-  serviceApp.SetPrefix("/serviceL13");
+  serviceApp.SetPrefix(Prefix);
   serviceApp.SetAttribute("Service", StringValue("serviceL13"));
   serviceApp.Install(router13).Start(Seconds(0));
-  serviceApp.SetPrefix("/serviceL14");
+  serviceApp.SetPrefix(Prefix);
   serviceApp.SetAttribute("Service", StringValue("serviceL14"));
   serviceApp.Install(router14).Start(Seconds(0));
-  serviceApp.SetPrefix("/serviceL15");
+  serviceApp.SetPrefix(Prefix);
   serviceApp.SetAttribute("Service", StringValue("serviceL15"));
   serviceApp.Install(router15).Start(Seconds(0));
-  serviceApp.SetPrefix("/serviceL16");
+  serviceApp.SetPrefix(Prefix);
   serviceApp.SetAttribute("Service", StringValue("serviceL16"));
   serviceApp.Install(router16).Start(Seconds(0));
-  serviceApp.SetPrefix("/serviceL17");
+  serviceApp.SetPrefix(Prefix);
   serviceApp.SetAttribute("Service", StringValue("serviceL17"));
   serviceApp.Install(router17).Start(Seconds(0));
-  serviceApp.SetPrefix("/serviceL18");
+  serviceApp.SetPrefix(Prefix);
   serviceApp.SetAttribute("Service", StringValue("serviceL18"));
   serviceApp.Install(router18).Start(Seconds(0));
-  serviceApp.SetPrefix("/serviceL19");
+  serviceApp.SetPrefix(Prefix);
   serviceApp.SetAttribute("Service", StringValue("serviceL19"));
   serviceApp.Install(router19).Start(Seconds(0));
-  serviceApp.SetPrefix("/serviceL20");
+  serviceApp.SetPrefix(Prefix);
   serviceApp.SetAttribute("Service", StringValue("serviceL20"));
   serviceApp.Install(router20).Start(Seconds(0));
 
   ndn::AppHelper orchestratorApp("DagOrchestratorB_App");
-  orchestratorApp.SetPrefix("/serviceOrchestration");
+  orchestratorApp.SetPrefix(Prefix);
   orchestratorApp.SetAttribute("Service", StringValue("serviceOrchestration"));
   orchestratorApp.Install(orchestrator).Start(Seconds(0));
 
@@ -273,7 +276,8 @@ main(int argc, char* argv[])
   ndn::AppHelper userApp("CustomAppConsumer");
   //userApp.SetPrefix("/cabeee/sensor/service1/service2/service3");
   //userApp.SetPrefix("/service4/service3/service2/service1/sensor"); // only for linear workflows
-  userApp.SetPrefix("/consumer"); // this is only a placeholder. The app will read the JSON workflow, and figure out which service is "last"
+  userApp.SetPrefix(Prefix);
+  userApp.SetAttribute("Service", StringValue("consumer"));
   userApp.SetAttribute("Workflow", StringValue("workflows/20-linear.json"));
   userApp.SetAttribute("Orchestrate", UintegerValue(2)); // This enables the "orchestrator" by having the consumer set the head service to /serviceOrchestration/dag
   userApp.Install(consumer).Start(Seconds(0));

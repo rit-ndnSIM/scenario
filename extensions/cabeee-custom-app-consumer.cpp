@@ -59,8 +59,10 @@ CustomAppConsumer::GetTypeId()
   static TypeId tid = TypeId("CustomAppConsumer")
     .SetParent<ndn::App>()
     .AddConstructor<CustomAppConsumer>()
-    .AddAttribute("Prefix", "Requested name", StringValue("/dumb-interest"),
-                    ndn::MakeNameAccessor(&CustomAppConsumer::m_name), ndn::MakeNameChecker())
+    .AddAttribute("Prefix", "Requested prefix", StringValue("/dumb-interest"),
+                    ndn::MakeNameAccessor(&CustomAppConsumer::m_prefix), ndn::MakeNameChecker())
+    .AddAttribute("Service", "Requested service", StringValue("/dumb-interest"),
+                    ndn::MakeNameAccessor(&CustomAppConsumer::m_service), ndn::MakeNameChecker())
     .AddAttribute("Workflow", "Requested workflow", StringValue("/workflows/dummy-workflow"),
                     MakeStringAccessor(&CustomAppConsumer::m_dagPath), MakeStringChecker())
     .AddAttribute("Orchestrate", "Requested orchestration", UintegerValue(0),
@@ -126,7 +128,7 @@ CustomAppConsumer::SendInterest()
 
   // Create and configure ndn::Interest
   //auto interest = std::make_shared<ndn::Interest>("/prefix/sub");
-  auto interest = std::make_shared<ndn::Interest>(m_name); // cabeee - it is now set externally from the scenario
+  auto interest = std::make_shared<ndn::Interest>(m_prefix); // this name is just a placeholder
   Ptr<UniformRandomVariable> rand = CreateObject<UniformRandomVariable>();
   interest->setNonce(rand->GetValue(0, std::numeric_limits<uint32_t>::max()));
   interest->setInterestLifetime(ndn::time::seconds(5));
@@ -254,7 +256,7 @@ CustomAppConsumer::SendInterest()
 
   if (m_orchestrate == 0) {
     dagObject["head"] = sinkService;
-    interest->setName(sinkService);
+    interest->setName(m_prefix.ndn::Name::toUri() + sinkService);
 
     bool consumerFound = false;
     // now we remove the entry that has the sinkService feeding the consumer. It is not needed, and can't be in the dag if we want caching of intermediate results to work.
@@ -264,7 +266,7 @@ CustomAppConsumer::SendInterest()
       for (auto& y : dagObject["dag"][x.key()].items())
       {
         //std::cout << "Checking y.key: " << (std::string)y.key() << '\n';
-        if (y.key() == m_name.ndn::Name::toUri())
+        if (y.key() == m_service.ndn::Name::toUri())
         {
           dagObject["dag"].erase(x.key());
           consumerFound = true;
@@ -277,11 +279,11 @@ CustomAppConsumer::SendInterest()
   }
   else if (m_orchestrate == 1){ // orchestration method A
     dagObject["head"] = "/serviceOrchestration";
-    interest->setName("/serviceOrchestration");
+    interest->setName(m_prefix.ndn::Name::toUri() + "/serviceOrchestration");
   }
   else if (m_orchestrate == 2){ // orchestration method B
     dagObject["head"] = "/serviceOrchestration/dag";
-    interest->setName("/serviceOrchestration/dag");
+    interest->setName(m_prefix.ndn::Name::toUri() + "/serviceOrchestration/dag");
   }
   else
   {

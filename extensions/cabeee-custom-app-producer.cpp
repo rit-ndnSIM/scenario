@@ -45,8 +45,10 @@ CustomAppProducer::GetTypeId()
   static TypeId tid = TypeId("CustomAppProducer")
     .SetParent<ndn::App>()
     .AddConstructor<CustomAppProducer>()
-    .AddAttribute("Prefix", "Requested name", StringValue("/dumb-interest"),
-                    ndn::MakeNameAccessor(&CustomAppProducer::m_name), ndn::MakeNameChecker());
+    .AddAttribute("Prefix", "Requested prefix", StringValue("/dumb-interest"),
+                    ndn::MakeNameAccessor(&CustomAppProducer::m_prefix), ndn::MakeNameChecker())
+    .AddAttribute("Service", "Requested service", StringValue("dumb-service"),
+                    ndn::MakeNameAccessor(&CustomAppProducer::m_service), ndn::MakeNameChecker());
   return tid;
 }
 
@@ -62,6 +64,8 @@ CustomAppProducer::StartApplication()
   // initialize ndn::App
   ndn::App::StartApplication();
   m_isRunning = true;
+
+  m_name = m_prefix.ndn::Name::toUri() + m_service.ndn::Name::toUri();
 
   // Add entry to FIB for `/prefix/sub`
   //ndn::FibHelper::AddRoute(GetNode(), "/prefix/sub", m_face, 0);

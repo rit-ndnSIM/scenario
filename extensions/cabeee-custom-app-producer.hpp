@@ -69,6 +69,8 @@ private:
 private:
   bool m_isRunning;
   ndn::Name m_name;
+  ndn::Name m_prefix;
+  ndn::Name m_service;
 };
 
 } // namespace ns3

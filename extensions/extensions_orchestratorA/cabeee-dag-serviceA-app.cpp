@@ -56,8 +56,8 @@ DagServiceA_App::GetTypeId()
   static TypeId tid = TypeId("DagServiceA_App")
     .SetParent<ndn::App>()
     .AddConstructor<DagServiceA_App>()
-    .AddAttribute("Prefix", "Requested name", StringValue("/dumb-interest"),
-                    ndn::MakeNameAccessor(&DagServiceA_App::m_name), ndn::MakeNameChecker())
+    .AddAttribute("Prefix", "Requested prefix", StringValue("/dumb-interest"),
+                    ndn::MakeNameAccessor(&DagServiceA_App::m_prefix), ndn::MakeNameChecker())
     .AddAttribute("Service", "Requested service", StringValue("dumb-service"),
                     ndn::MakeNameAccessor(&DagServiceA_App::m_service), ndn::MakeNameChecker());
   return tid;
@@ -76,13 +76,15 @@ DagServiceA_App::StartApplication()
   ndn::App::StartApplication();
   m_isRunning = true;
 
+  m_name = m_prefix.ndn::Name::toUri() + m_service.ndn::Name::toUri();
+
   // Add entry to FIB for `/prefix/sub`
   //ndn::FibHelper::AddRoute(GetNode(), "/prefix/sub", m_face, 0); //cabeee took this out, let the global router figure it out.
   ndn::FibHelper::AddRoute(GetNode(), m_name, m_face, 0);
 
 
   m_done = false;
-  m_nameUri = m_name.ndn::Name::toUri();
+  m_nameUri = m_service.ndn::Name::toUri();
 
 }
 
@@ -118,7 +120,7 @@ DagServiceA_App::SendInterest(const std::string& interestName, std::string dagSt
   // Create and configure ndn::Interest
   //auto interest = std::make_shared<ndn::Interest>("/prefix/sub");
   //auto interest = std::make_shared<ndn::Interest>(m_name); // must take it in as an argument, not just use m_name!!
-  auto interest = std::make_shared<ndn::Interest>(interestName);
+  auto interest = std::make_shared<ndn::Interest>(m_prefix.ndn::Name::toUri() + interestName);
   Ptr<UniformRandomVariable> rand = CreateObject<UniformRandomVariable>();
   interest->setNonce(rand->GetValue(0, std::numeric_limits<uint32_t>::max()));
   interest->setInterestLifetime(ndn::time::seconds(5));
@@ -278,7 +280,11 @@ DagServiceA_App::OnData(std::shared_ptr<const ndn::Data> data)
 
   //std::cout << "content = " << data->getContent() << std::endl;
 
-  std::string rxedDataName = (data->getName()).getPrefix(-1).toUri(); // remove the last component of the name (the parameter digest) so we have just the raw name
+  ndn::Name simpleName;
+  simpleName = (data->getName()).getPrefix(-1); // remove the last component of the name (the parameter digest) so we have just the raw name, and convert to Uri string
+  simpleName = simpleName.getSubName(1); // remove the first component of the name (/interCACHE)
+  //std::string rxedDataName = (data->getName()).getPrefix(-1).toUri(); // remove the last component of the name (the parameter digest) so we have just the raw name
+  std::string rxedDataName = simpleName.toUri();
 
 
   // TODO: this is a HACK. I need a better way to get to the first byte of the content. Right now, I'm just incrementing the pointer past the TLV type, and size.
