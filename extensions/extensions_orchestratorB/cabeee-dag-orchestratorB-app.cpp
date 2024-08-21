@@ -405,7 +405,7 @@ DagOrchestratorB_App::OnData(std::shared_ptr<const ndn::Data> data)
   std::string rxedDataName = simpleName.toUri();
 
 
-  std::cout << "Storing the received result at m_vectorOfServiceInputs[" << std::to_string(m_serviceInputIndex) << "]\n";
+  //std::cout << "Storing the received result at m_vectorOfServiceInputs[" << std::to_string(m_serviceInputIndex) << "]\n";
   // store the received result, so we can later send it to downstream services
   // TODO: this is a HACK. I need a better way to get to the first byte of the content. Right now, I'm just incrementing the pointer past the TLV type, and size.
   // and then getting to the first byte (which is all I'm using for data)
@@ -422,7 +422,7 @@ DagOrchestratorB_App::OnData(std::shared_ptr<const ndn::Data> data)
 
 
 
-  std::cout << "Marking down this input as having been received\n";
+  //std::cout << "Marking down this input as having been received\n";
   // mark down this input as having been received for all services that use this data as an input
   // default object value is -1 (not received)
   // any other value (0 and up) means it has been received, and has been stored at the index specified by that value
@@ -490,8 +490,8 @@ DagOrchestratorB_App::OnData(std::shared_ptr<const ndn::Data> data)
           }
           else
           {
-            std::cout << "Generating interest request for data inputs for service " << (std::string)service.key() << '\n';
-            std::cout << "Request will have name: " << service.key() << "/dataRequest/" << std::to_string(inputNum) << (std::string)serviceInput.key() << '\n';
+            //std::cout << "Generating interest request for data inputs for service " << (std::string)service.key() << '\n';
+            //std::cout << "Request will have name: " << service.key() << "/dataRequest/" << std::to_string(inputNum) << (std::string)serviceInput.key() << '\n';
             std::string interestRequestName = (std::string)service.key() + "/dataRequest/" + std::to_string(inputNum) + (std::string)serviceInput.key();
             //name = /service1/dataRequest/sensor
             //name = /service.key()/dataRequest/serviceInput.key()
