@@ -48,6 +48,7 @@ rtr-18	NA	20	95	3
 rtr-19	NA	20	100	3
 rtr-20	NA	20	105	3
 rtr-21	NA	10	50	3
+orch	NA	5	50	0
 user	NA	0	50	0
 
 link
@@ -93,4 +94,5 @@ rtr-17	    rtr-21	10Mbps		1	1ms	100
 rtr-18	    rtr-21	10Mbps		1	1ms	100
 rtr-19	    rtr-21	10Mbps		1	1ms	100
 rtr-20	    rtr-21	10Mbps		1	1ms	100
-rtr-21	    user	10Mbps		1	1ms	100
+rtr-21	    orch	10Mbps		1	1ms	100
+orch	    user	10000Mbps	1	0ms	100

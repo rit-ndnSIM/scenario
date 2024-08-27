@@ -29,6 +29,12 @@
 #                      |
 #                      v
 #			      /--------\
+#			      |  orch  |
+#                 \--------/
+#                      ^
+#                      |
+#                      v
+#			      /--------\
 #			      |  user  |
 #                 \--------/
 #
@@ -40,6 +46,7 @@ sensor	NA	80	0	1
 rtr-1	NA	60	20	1
 rtr-2	NA	60	-20	2
 rtr-3	NA	40	0	3
+orch	NA	20	0	0
 user	NA	10	0	0
 
 link
@@ -48,4 +55,5 @@ link
 sensor	    rtr-1	10Mbps		1	1ms	100
 rtr-1	    rtr-2	10Mbps		1	1ms	100
 rtr-2	    rtr-3	10Mbps		1	1ms	100
-rtr-3	    user	10Mbps		1	1ms	100
+rtr-3	    orch	10Mbps		1	1ms	100
+orch	    user	10000Mbps	1	0ms	100

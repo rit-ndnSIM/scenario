@@ -29,7 +29,7 @@ LOGS=${LOGS}:ndn-cxx.nfd.Forwarder
 # 4 DAG
 #NS_LOG=${LOGS} ./waf --run=ndn-cabeee-4dag-orchestratorA |& tee log.txt
 #NS_LOG=${LOGS} ./waf --run=ndn-cabeee-4dag-orchestratorB |& tee log.txt
-NS_LOG=${LOGS} ./waf --run=ndn-cabeee-4dag |& tee log.txt
+#NS_LOG=${LOGS} ./waf --run=ndn-cabeee-4dag |& tee log.txt
 
 # 20 Linear
 #NS_LOG=${LOGS} ./waf --run=ndn-cabeee-20node-linear-orchestratorA |& tee log.txt
@@ -39,7 +39,7 @@ NS_LOG=${LOGS} ./waf --run=ndn-cabeee-4dag |& tee log.txt
 
 # 20 Parallel
 #NS_LOG=${LOGS} ./waf --run=ndn-cabeee-20node-parallel-orchestratorA |& tee log.txt
-#NS_LOG=${LOGS} ./waf --run=ndn-cabeee-20node-parallel-orchestratorB |& tee log.txt
+NS_LOG=${LOGS} ./waf --run=ndn-cabeee-20node-parallel-orchestratorB |& tee log.txt
 #NS_LOG=${LOGS} ./waf --run=ndn-cabeee-20node-parallel |& tee log.txt
 
 

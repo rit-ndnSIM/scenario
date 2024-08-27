@@ -137,7 +137,7 @@ main(int argc, char* argv[])
   Ptr<Node> router19 = Names::Find<Node>("rtr-19");
   Ptr<Node> router20 = Names::Find<Node>("rtr-20");
   Ptr<Node> router21 = Names::Find<Node>("rtr-21");
-  Ptr<Node> orchestrator = Names::Find<Node>("orch");
+  //Ptr<Node> orchestrator = Names::Find<Node>("orch");
   Ptr<Node> consumer = Names::Find<Node>("user");
 
   ndnHelper.setCsSize(0); // disable content store
@@ -161,8 +161,8 @@ main(int argc, char* argv[])
   ndnHelper.Install(producer18);
   ndnHelper.Install(producer19);
   ndnHelper.Install(producer20);
-  ndnHelper.setCsSize(0); // disable content store
-  ndnHelper.Install(orchestrator);
+  //ndnHelper.setCsSize(0); // disable content store
+  //ndnHelper.Install(orchestrator);
   ndnHelper.setCsSize(0); // disable content store
   ndnHelper.Install(consumer);
 

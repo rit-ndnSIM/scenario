@@ -102,7 +102,7 @@ main(int argc, char* argv[])
   Ptr<Node> router1 = Names::Find<Node>("rtr-1");
   Ptr<Node> router2 = Names::Find<Node>("rtr-2");
   Ptr<Node> router3 = Names::Find<Node>("rtr-3");
-  Ptr<Node> orchestrator = Names::Find<Node>("orch");
+  //Ptr<Node> orchestrator = Names::Find<Node>("orch");
   Ptr<Node> consumer = Names::Find<Node>("user");
 
   ndnHelper.setCsSize(0); // enable/disable content store by setting size
@@ -117,8 +117,8 @@ main(int argc, char* argv[])
   ndnHelper.setCsSize(0); // enable/disable content store by setting size
   ndnHelper.Install(router3);
 
-  ndnHelper.setCsSize(0); // enable/disable content store by setting size
-  ndnHelper.Install(orchestrator);
+  //ndnHelper.setCsSize(0); // enable/disable content store by setting size
+  //ndnHelper.Install(orchestrator);
 
   ndnHelper.setCsSize(0); // disable content store
   ndnHelper.Install(consumer);
@@ -236,7 +236,8 @@ main(int argc, char* argv[])
   ndn::AppHelper orchestratorApp2("DagOrchestratorB_App");
   orchestratorApp2.SetPrefix(Prefix);
   orchestratorApp2.SetAttribute("Service", StringValue("serviceOrchestration"));
-  orchestratorApp2.Install(orchestrator).Start(Seconds(4));
+  //orchestratorApp2.Install(orchestrator).Start(Seconds(4));
+  orchestratorApp2.Install(consumer).Start(Seconds(4));
 
   // Custom App for User2(Consumer2)
   ndn::AppHelper userApp2("CustomAppConsumer2");
