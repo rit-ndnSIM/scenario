@@ -1,6 +1,9 @@
 #! /bin/bash
 
-cd ~
+INSTALL_DIR=~
+#INSTALL_DIR=/opt/ndn/
+
+cd $INSTALL_DIR
 if [ ! -d "ndnSIM" ]; then
   mkdir ndnSIM
 fi
