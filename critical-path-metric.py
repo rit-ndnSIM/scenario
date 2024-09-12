@@ -4,7 +4,10 @@ import json
 import re
 import copy
 
-from collections import defaultdict
+from collections import defaultdict, deque, namedtuple
+
+# TODO: add caching
+# generally make more optimized??
 
 class Scenario(object):
     """ All scenario information, including workflow and topology """
@@ -14,12 +17,63 @@ class Scenario(object):
         self.topology = Topology(topology)
         self.hosting = Hosting(hosting)
 
-    def critical_path(self, consumer):
-        current_workflow = copy.deepcopy(self.workflow)
+    def build_interest_tree(self, router, consumer):
+        """ Builds an interest tree for the scenario """
 
-        print(current_workflow)
-        current_workflow.prune_upstream(consumer)
-        print(current_workflow)
+        workflow = self.workflow.clone()
+        tree = Graph([], True)
+        Branch = namedtuple('Branch', ['router', 'service', 'time'])
+        branches = deque()
+        branches.appendleft(Branch(router, consumer, 0))
+
+        while len(branches) > 0:
+            current_branch = branches.pop()
+            router, interest_service, time = current_branch
+
+            for hosted_service in self.hosting.get_connections(router):
+                for upstream_service in workflow.get_nodes(hosted_service):
+                    next_router = self.next_hop(router, upstream_service)
+                    if next_router == router:
+                        next_branch = Branch(router, upstream_service, time)
+                        branches.append(next_branch)
+                    else:
+                        next_branch = Branch(next_router, upstream_service, time+1)
+                        branches.appendleft(next_branch)
+                    workflow.remove_connection(upstream_service, hosted_service)
+                    tree.add(current_branch, next_branch)
+
+            if not self.hosting.is_connected(router, interest_service):
+                next_router = self.next_hop(router, interest_service)
+                next_branch = Branch(next_router, interest_service, time+1)
+                branches.appendleft(next_branch)
+                tree.add(current_branch, next_branch)
+
+        return tree
+
+    def get_critical_path_metric(self, router, consumer):
+        tree = self.build_interest_tree(router, consumer)
+
+        terminations = tree.get_connections() - tree.get_nodes()
+
+        metric = max(branch.time for branch in terminations)
+
+        return metric
+
+    def next_hop(self, router, service):
+        """ Returns the next closest router to service """
+
+        if self.hosting.is_connected(router, service):
+            return router
+
+        paths = []
+
+        for dest_router in self.hosting.get_nodes(service):
+            paths.append(self.topology.shortest_path(router, dest_router))
+
+        shortest_path = min(paths, key=len)
+
+        return shortest_path[0]
+
 
     def __str__(self):
         return '{}({}, {}, {})'.format(self.__class__.__name__, self.workflow, self.topology, self.hosting)
@@ -29,10 +83,15 @@ class Scenario(object):
 class Graph(object):
     """ Graph data structure, undirected by default. """
 
-    def __init__(self, connections, directed=False):
+    def __init__(self, connections=[], directed=False):
         self._graph = defaultdict(set)
         self._directed = directed
         self.add_connections(connections)
+
+    def clone(self):
+        """ Create a clone of the object """
+
+        return __class__([(node, service) for node, services in self._graph.items() for service in services], self._directed)
 
     def add_connections(self, connections):
         """ Add connections (list of tuple pairs) to graph """
@@ -62,6 +121,17 @@ class Graph(object):
             del self._graph[n]
 
         if node in self._graph:
+            del self._graph[node]
+
+    def remove_connection(self, node, connection):
+        """ Remove a connection between nodes """
+
+        cxns = self._graph[node]
+
+        if connection in cxns:
+            cxns.remove(connection)
+
+        if not cxns:
             del self._graph[node]
 
     def is_connected(self, node=None, connection=None):
@@ -95,10 +165,10 @@ class Graph(object):
         if node is None:
             return set(node for nodes in self._graph.values() for node in nodes)
 
-        if node not in self._hosting:
+        if node not in self._graph:
             return set()
 
-        return self._hosting[node]
+        return self._graph[node]
 
     def get_nodes(self, connection=None):
         """ Get all nodes with a connection """
@@ -123,6 +193,43 @@ class Graph(object):
                     return new_path
         return None
 
+    # TODO: some sort of state to not re-do work each time we call this
+    def shortest_path(self, source, target):
+        """ Find the shortest path using Djikstra's algorithm """
+
+        unvisited_nodes = self.get_nodes() & self.get_connections()
+        dist = {node: float('inf') for node in unvisited_nodes}
+        dist[source] = 0
+        prev = dict()
+
+        while len(unvisited_nodes) > 0:
+            node = min(unvisited_nodes, key=dist.get)
+            unvisited_nodes.remove(node)
+
+            if node == target:
+                break
+
+            for neighbor in self.get_connections(node):
+                alt = dist[node] + 1
+                if alt < dist[neighbor]:
+                    dist[neighbor] = alt
+                    prev[neighbor] = node
+
+        # return a list of nodes to take
+
+        if target not in prev:
+            return None
+
+        path = []
+        node = target
+        while node != source:
+            path.append(node)
+            node = prev[node]
+
+        path.reverse()
+
+        return path
+
     def __str__(self):
         return '{}({})'.format(self.__class__.__name__, dict(self._graph))
 
@@ -133,6 +240,11 @@ class Workflow(Graph):
     def __init__(self, connections):
         super().__init__(connections, True)
 
+    def clone(self):
+        """ Create a clone of the object """
+
+        return __class__([(node, service) for node, services in self._graph.items() for service in services])
+
     def get_roots(self):
         return self.get_nodes() - self.get_connections()
 
@@ -141,7 +253,7 @@ class Workflow(Graph):
 
     def prune_downstream(self, service):
         if not self.contains(service):
-            return
+            return None
 
         sinks = self.get_sinks()
         while (sinks):
@@ -150,9 +262,11 @@ class Workflow(Graph):
                 self.remove(sink)
                 sinks.update(self.get_sinks())
 
+        return self
+
     def prune_upstream(self, service):
         if not self.contains(service):
-            return
+            return None
 
         roots = self.get_roots()
         while (roots):
@@ -161,9 +275,19 @@ class Workflow(Graph):
                 self.remove(root)
                 roots.update(self.get_roots())
 
+        return self
+
+    def prune_split(self, service):
+        return (self.clone().prune_downstream(service), self.clone().prune_upstream(service))
+
 
 class Topology(Graph):
     """ Topology data structure, undirected graph """
+
+    def clone(self):
+        """ Create a clone of the object """
+
+        return __class__([(node, service) for node, services in self._graph.items() for service in services])
 
     def __init__(self, connections):
         super().__init__(connections, False)
@@ -171,6 +295,11 @@ class Topology(Graph):
 
 class Hosting(Graph):
     """ Hosting data structure """
+
+    def clone(self):
+        """ Create a clone of the object """
+
+        return __class__([(node, service) for node, services in self._graph.items() for service in services])
 
     def __init__(self, connections):
         super().__init__(connections, True)
@@ -228,14 +357,13 @@ def main():
 
     scenario = scenario_from_files(workflow_file, topology_file, hosting_file)
 
-    workflow = Workflow(workflow_connections_from_file(workflow_file))
+    tree = scenario.build_interest_tree("user", "/consumer")
 
-    print(workflow)
-    workflow.prune_upstream("/sensor")
-    print(workflow)
+    print(tree)
 
-    #scenario.critical_path("/consumer")
+    metric = scenario.get_critical_path_metric("user", "/consumer")
 
+    print(f"metric is {metric}")
 
 if __name__ == '__main__':
     main()
