@@ -24,6 +24,9 @@
 #include "ns3/ndnSIM-module.h"
 #include "ns3/string.h"
 
+#include "../extensions/extensions_forwarder/cabeee-dag-forwarder-opt.hpp"
+#include "../extensions/extensions_forwarder/cabeee-dag-forwarder-opt-starter.hpp"
+
 #define PREFIX "/interCACHE"
 
 namespace ns3 {
@@ -69,6 +72,7 @@ namespace ns3 {
 * 
 *     NS_LOG=CustomAppConsumer:CustomAppProducer:DagForwarderApp ./waf --run=ndn-cabeee-4dag
 */
+NS_OBJECT_ENSURE_REGISTERED(DagForwarderAppOptStarter);
 int
 main(int argc, char* argv[])
 {
@@ -164,7 +168,7 @@ main(int argc, char* argv[])
   sensorApp.Install(producer).Start(Seconds(0));
 
   // Custom App for routers
-  ndn::AppHelper routerApp("DagForwarderApp");
+  ndn::AppHelper routerApp("DagForwarderAppOptStarter");
   routerApp.SetPrefix(Prefix);
   routerApp.SetAttribute("Service", StringValue("service1"));
   routerApp.Install(router3).Start(Seconds(0));

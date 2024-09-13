@@ -15,21 +15,24 @@ clear
 #./waf clean
 
 LOGS=CustomAppConsumer
-LOGS=${LOGS}:CustomAppConsumer2
-LOGS=${LOGS}:CustomAppProducer
+#LOGS=${LOGS}:CustomAppConsumer2
+#LOGS=${LOGS}:CustomAppProducer
 LOGS=${LOGS}:DagForwarderApp
 LOGS=${LOGS}:ndn.App
-LOGS=${LOGS}:DagOrchestratorA_App
-LOGS=${LOGS}:DagServiceA_App
-LOGS=${LOGS}:DagOrchestratorB_App
-LOGS=${LOGS}:DagServiceB_App
+#LOGS=${LOGS}:DagOrchestratorA_App
+#LOGS=${LOGS}:DagServiceA_App
+#LOGS=${LOGS}:DagOrchestratorB_App
+#LOGS=${LOGS}:DagServiceB_App
 LOGS=${LOGS}:ndn-cxx.nfd.Forwarder
 
 
 # 4 DAG
 #NS_LOG=${LOGS} ./waf --run=ndn-cabeee-4dag-orchestratorA |& tee log.txt
 #NS_LOG=${LOGS} ./waf --run=ndn-cabeee-4dag-orchestratorB |& tee log.txt
-#NS_LOG=${LOGS} ./waf --run=ndn-cabeee-4dag |& tee log.txt
+NS_LOG=${LOGS} ./waf --run=ndn-cabeee-4dag |& tee log.txt
+
+#LOGS=${LOGS}:DagForwarderAppOpt
+#NS_LOG=${LOGS} ./waf --run=ndn-cabeee-4dag_OPT |& tee log.txt # issue with this version: since we don't add the route for the prefix, NFD doesn't register it in the FIB, and no /interCACHE/serviceX interests go to the applications.
 
 # 20 Linear
 #NS_LOG=${LOGS} ./waf --run=ndn-cabeee-20node-linear-orchestratorA |& tee log.txt
@@ -39,7 +42,7 @@ LOGS=${LOGS}:ndn-cxx.nfd.Forwarder
 
 # 20 Parallel
 #NS_LOG=${LOGS} ./waf --run=ndn-cabeee-20node-parallel-orchestratorA |& tee log.txt
-NS_LOG=${LOGS} ./waf --run=ndn-cabeee-20node-parallel-orchestratorB |& tee log.txt
+#NS_LOG=${LOGS} ./waf --run=ndn-cabeee-20node-parallel-orchestratorB |& tee log.txt
 #NS_LOG=${LOGS} ./waf --run=ndn-cabeee-20node-parallel |& tee log.txt
 
 
