@@ -30,8 +30,8 @@ class Scenario(object):
             current_branch = branches.pop()
             router, interest_service, time = current_branch
 
-            for hosted_service in self.hosting.get_connections(router):
-                for upstream_service in workflow.get_nodes(hosted_service):
+            for hosted_service in self.hosting.get_hosting(router):
+                for upstream_service in workflow.get_incoming(hosted_service):
                     next_router = self.next_hop(router, upstream_service)
                     if next_router == router:
                         next_branch = Branch(router, upstream_service, time)
@@ -42,7 +42,7 @@ class Scenario(object):
                     workflow.remove_connection(upstream_service, hosted_service)
                     tree.add(current_branch, next_branch)
 
-            if not self.hosting.is_connected(router, interest_service):
+            if not self.hosting.is_hosting(router, interest_service):
                 next_router = self.next_hop(router, interest_service)
                 next_branch = Branch(next_router, interest_service, time+1)
                 branches.appendleft(next_branch)
@@ -53,14 +53,14 @@ class Scenario(object):
     def critical_path_metric(self, user, consumer):
         tree = self.build_interest_tree(user, consumer)
 
-        terminations = tree.get_connections() - tree.get_nodes()
+        terminations = tree.get_sinks()
 
         metric = max(branch.time for branch in terminations)
 
         return metric
 
-    def orchestratorA_critical_path_metric(self, user, consumer):
-        """ """
+    def orch_a_critical_path_metric(self, user, consumer):
+        """ Get critical path metric for orchestrator A """
 
         branches = deque()
         dist = {}
@@ -68,7 +68,7 @@ class Scenario(object):
         roots = self.workflow.get_roots()
         for root in roots:
             dist[root] = len(self.shortest_service_path(user, root))
-            branches.extendleft(self.workflow.get_connections(root))
+            branches.extendleft(self.workflow.get_outgoing(root))
 
         while len(branches) > 0:
             service = branches.pop()
@@ -81,7 +81,7 @@ class Scenario(object):
             # reflexive interest, interest for inputs, interest for service
             hops = len(path)
 
-            upstream_services = self.workflow.get_nodes(service)
+            upstream_services = self.workflow.get_incoming(service)
             # account for previous hops
             hops += max(dist[upstream] for upstream in upstream_services)
             # account for inputs to service (sent from this node)
@@ -93,12 +93,12 @@ class Scenario(object):
 
             dist[service] = hops
 
-            branches.extendleft(self.workflow.get_connections(service))
+            branches.extendleft(self.workflow.get_outgoing(service))
 
         return dist[consumer]
 
-    def orchestratorB_critical_path_metric(self, user, consumer):
-        """ """
+    def orch_b_critical_path_metric(self, user, consumer):
+        """ Get critical path metric for orchestrator B """
 
         branches = deque()
         dist = {}
@@ -106,7 +106,7 @@ class Scenario(object):
         roots = self.workflow.get_roots()
         for root in roots:
             dist[root] = len(self.shortest_service_path(user, root))
-            branches.extendleft(self.workflow.get_connections(root))
+            branches.extendleft(self.workflow.get_outgoing(root))
 
         while len(branches) > 0:
             service = branches.pop()
@@ -115,25 +115,25 @@ class Scenario(object):
             # reflexive interest, interest for inputs, interest for service
             hops = 3 * len(path)
 
-            upstream_services = self.workflow.get_nodes(service)
+            upstream_services = self.workflow.get_incoming(service)
             # account for previous hops
             hops += max(dist[upstream] for upstream in upstream_services)
 
             dist[service] = hops
 
-            branches.extendleft(self.workflow.get_connections(service))
+            branches.extendleft(self.workflow.get_outgoing(service))
 
         return dist[consumer]
 
     def shortest_service_path(self, router, service):
         """ Returns an array of routers to visit to reach the nearest router hosting service """
 
-        if self.hosting.is_connected(router, service):
+        if self.hosting.is_hosting(router, service):
             return []
 
         paths = []
 
-        for dest_router in self.hosting.get_nodes(service):
+        for dest_router in self.hosting.get_hosts(service):
             paths.append(self.topology.shortest_path(router, dest_router))
 
         shortest_path = min(paths, key=len)
@@ -143,10 +143,10 @@ class Scenario(object):
     def next_hop(self, router, service):
         """ Returns the next closest router to service """
 
-        if self.hosting.is_connected(router, service):
+        if self.hosting.is_hosting(router, service):
             return router
 
-        return self.path_to_service[0]
+        return self.shortest_service_path(router, service)[0]
 
     def __str__(self):
         return '{}({}, {}, {})'.format(self.__class__.__name__, self.workflow, self.topology, self.hosting)
@@ -196,30 +196,33 @@ class Graph(object):
         if node in self._graph:
             del self._graph[node]
 
-    def remove_connection(self, node, connection):
-        """ Remove a connection between nodes """
+    def remove_connection(self, upstream, downstream):
+        """ Remove a downstream between upstreams """
 
-        cxns = self._graph[node]
+        cxns = self._graph[upstream]
 
-        if connection in cxns:
-            cxns.remove(connection)
+        if downstream in cxns:
+            cxns.remove(downstream)
 
         if not cxns:
-            del self._graph[node]
+            del self._graph[upstream]
 
-    def is_connected(self, node=None, connection=None):
-        """ Is node1 directly connected to node2 """
+    def is_connected(self, upstream=None, downstream=None):
+        """
+            Is upstream directly connected to downstream
+            If an argument is none, check against all nodes
+        """
 
-        if node is None and connection is None:
+        if upstream is None and downstream is None:
             return bool(self._graph)
 
-        if connection is None:
-            return bool(self.get_connections(node))
+        if downstream is None:
+            return bool(self.get_outgoing(upstream))
 
-        if node is None:
-            return bool(self.get_nodes(connection))
+        if upstream is None:
+            return bool(self.get_incoming(downstream))
 
-        return node in self._graph and connection in self._graph[node]
+        return upstream in self._graph and downstream in self._graph[upstream]
 
     def contains(self, node):
         """ Does graph contain node """
@@ -232,47 +235,54 @@ class Graph(object):
 
         return False
 
-    # should probably be called get_downstream
-    def get_connections(self, node=None):
-        """ Get all connections of node """
+    def get_outgoing(self, node=None):
+        """
+            Get all outgoing connections of node
+            Passing no argument will get outgoing connections of all nodes
+        """
 
         if node is None:
-            return set(node for nodes in self._graph.values() for node in nodes)
+            return set(node for cxns in self._graph.values() for node in cxns)
 
         if node not in self._graph:
             return set()
 
         return self._graph[node]
 
-    # should probably be called get_upstream
-    def get_nodes(self, connection=None):
-        """ Get all nodes with a connection """
+    def get_incoming(self, node=None):
+        """
+            Get all incoming nodes of node
+            Passing no argument will get outgoing nodes of all nodes
+        """
 
-        if connection is None:
+        if node is None:
             return set(self._graph.keys())
 
-        return set(node for node, cxns in self._graph.items() if connection in cxns)
+        return set(incoming for incoming, cxns in self._graph.items() if node in cxns)
 
-    def find_path(self, node1, node2, path=[]):
-        """ Find any path between node1 and node2 (may not be shortest) """
+    def get_roots(self):
+        """ Get roots, which are any nodes without incoming connections """
 
-        path = path + [node1]
-        if node1 == node2:
-            return path
-        if not self.contains():
-            return None
-        for node in self._graph[node1]:
-            if node not in path:
-                new_path = self.find_path(node, node2, path)
-                if new_path:
-                    return new_path
-        return None
+        return self.get_incoming() - self.get_outgoing()
+
+    def get_sinks(self):
+        """ Get sinks, which are any nodes without outgoing connections """
+        return self.get_outgoing() - self.get_incoming()
+
+    def get_nodes(self):
+        """ Get all nodes in graph """
+
+        # if a node is in the graph but has no outgoing connections, self._graph[node] will not exist
+        return self.get_outgoing() & self.get_incoming()
 
     # TODO: some sort of state to not re-do work each time we call this
+    # may or may not be necessary for complex topologies
+    # only implement caching if we have a performance issue
+    # premature optimization is the root of all evil
     def shortest_path(self, source, target):
         """ Find the shortest path using Djikstra's algorithm """
 
-        unvisited_nodes = self.get_nodes() & self.get_connections()
+        unvisited_nodes = self.get_incoming() & self.get_outgoing()
         dist = {node: float('inf') for node in unvisited_nodes}
         dist[source] = 0
         prev = dict()
@@ -284,7 +294,7 @@ class Graph(object):
             if node == target:
                 break
 
-            for neighbor in self.get_connections(node):
+            for neighbor in self.get_outgoing(node):
                 alt = dist[node] + 1
                 if alt < dist[neighbor]:
                     dist[neighbor] = alt
@@ -319,12 +329,6 @@ class Workflow(Graph):
         """ Create a clone of the object """
 
         return __class__([(node, service) for node, services in self._graph.items() for service in services])
-
-    def get_roots(self):
-        return self.get_nodes() - self.get_connections()
-
-    def get_sinks(self):
-        return self.get_connections() - self.get_nodes()
 
     def prune_downstream(self, service):
         if not self.contains(service):
@@ -378,6 +382,9 @@ class Hosting(Graph):
 
     def __init__(self, connections):
         super().__init__(connections, True)
+        self.get_hosts = self.get_incoming
+        self.get_hosting = self.get_outgoing
+        self.is_hosting = self.is_connected
 
 
 def workflow_connections_from_file(workflow_path):
@@ -438,9 +445,13 @@ def main():
 
     #metric = scenario.critical_path_metric("user", "/consumer")
 
-    metric = scenario.orchestratorA_critical_path_metric("user", "/consumer")
+    metric_intercache = scenario.critical_path_metric("user", "/consumer")
+    metric_a = scenario.orch_a_critical_path_metric("user", "/consumer")
+    metric_b = scenario.orch_b_critical_path_metric("user", "/consumer")
 
-    print(f"metric is {metric}")
+    print(f"interCACHE is {metric_intercache}")
+    print(f"orch_a is {metric_a}")
+    print(f"orch_b is {metric_b}")
 
 if __name__ == '__main__':
     main()
