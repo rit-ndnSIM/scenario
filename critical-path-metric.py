@@ -17,14 +17,14 @@ class Scenario(object):
         self.topology = Topology(topology)
         self.hosting = Hosting(hosting)
 
-    def build_interest_tree(self, router, consumer):
+    def build_interest_tree(self, user, consumer):
         """ Builds an interest tree for the scenario """
 
         workflow = self.workflow.clone()
         tree = Graph([], True)
         Branch = namedtuple('Branch', ['router', 'service', 'time'])
         branches = deque()
-        branches.appendleft(Branch(router, consumer, 0))
+        branches.appendleft(Branch(user, consumer, 0))
 
         while len(branches) > 0:
             current_branch = branches.pop()
@@ -50,8 +50,8 @@ class Scenario(object):
 
         return tree
 
-    def get_critical_path_metric(self, router, consumer):
-        tree = self.build_interest_tree(router, consumer)
+    def critical_path_metric(self, user, consumer):
+        tree = self.build_interest_tree(user, consumer)
 
         terminations = tree.get_connections() - tree.get_nodes()
 
@@ -59,11 +59,77 @@ class Scenario(object):
 
         return metric
 
-    def next_hop(self, router, service):
-        """ Returns the next closest router to service """
+    def orchestratorA_critical_path_metric(self, user, consumer):
+        """ """
+
+        branches = deque()
+        dist = {}
+
+        roots = self.workflow.get_roots()
+        for root in roots:
+            dist[root] = len(self.shortest_service_path(user, root))
+            branches.extendleft(self.workflow.get_connections(root))
+
+        while len(branches) > 0:
+            service = branches.pop()
+
+            path = self.shortest_service_path(user, service)
+            if path:
+                router = path[-1]
+            else:
+                router = user
+            # reflexive interest, interest for inputs, interest for service
+            hops = len(path)
+
+            upstream_services = self.workflow.get_nodes(service)
+            # account for previous hops
+            hops += max(dist[upstream] for upstream in upstream_services)
+            # account for inputs to service (sent from this node)
+            # assuming it does this in parallel? i see no reason why it would not
+            # also, assume consumer is hosted on orchestrator and these don't need grabbed
+            # probably a better way to handle this
+            if service != consumer:
+                hops += max(len(self.shortest_service_path(router, upstream)) for upstream in upstream_services)
+
+            dist[service] = hops
+
+            branches.extendleft(self.workflow.get_connections(service))
+
+        return dist[consumer]
+
+    def orchestratorB_critical_path_metric(self, user, consumer):
+        """ """
+
+        branches = deque()
+        dist = {}
+
+        roots = self.workflow.get_roots()
+        for root in roots:
+            dist[root] = len(self.shortest_service_path(user, root))
+            branches.extendleft(self.workflow.get_connections(root))
+
+        while len(branches) > 0:
+            service = branches.pop()
+
+            path = self.shortest_service_path(user, service)
+            # reflexive interest, interest for inputs, interest for service
+            hops = 3 * len(path)
+
+            upstream_services = self.workflow.get_nodes(service)
+            # account for previous hops
+            hops += max(dist[upstream] for upstream in upstream_services)
+
+            dist[service] = hops
+
+            branches.extendleft(self.workflow.get_connections(service))
+
+        return dist[consumer]
+
+    def shortest_service_path(self, router, service):
+        """ Returns an array of routers to visit to reach the nearest router hosting service """
 
         if self.hosting.is_connected(router, service):
-            return router
+            return []
 
         paths = []
 
@@ -72,8 +138,15 @@ class Scenario(object):
 
         shortest_path = min(paths, key=len)
 
-        return shortest_path[0]
+        return shortest_path
 
+    def next_hop(self, router, service):
+        """ Returns the next closest router to service """
+
+        if self.hosting.is_connected(router, service):
+            return router
+
+        return self.path_to_service[0]
 
     def __str__(self):
         return '{}({}, {}, {})'.format(self.__class__.__name__, self.workflow, self.topology, self.hosting)
@@ -159,6 +232,7 @@ class Graph(object):
 
         return False
 
+    # should probably be called get_downstream
     def get_connections(self, node=None):
         """ Get all connections of node """
 
@@ -170,6 +244,7 @@ class Graph(object):
 
         return self._graph[node]
 
+    # should probably be called get_upstream
     def get_nodes(self, connection=None):
         """ Get all nodes with a connection """
 
@@ -357,11 +432,13 @@ def main():
 
     scenario = scenario_from_files(workflow_file, topology_file, hosting_file)
 
-    tree = scenario.build_interest_tree("user", "/consumer")
+    #tree = scenario.build_interest_tree("user", "/consumer")
 
-    print(tree)
+    #print(tree)
 
-    metric = scenario.get_critical_path_metric("user", "/consumer")
+    #metric = scenario.critical_path_metric("user", "/consumer")
+
+    metric = scenario.orchestratorA_critical_path_metric("user", "/consumer")
 
     print(f"metric is {metric}")
 
