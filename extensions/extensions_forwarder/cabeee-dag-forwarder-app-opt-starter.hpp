@@ -17,10 +17,10 @@
  * ndnSIM, e.g., in COPYING.md file.  If not, see <http://www.gnu.org/licenses/>.
  **/
 
-#ifndef NDNSIM_CABEEE_DAG_FORWARDER_OPT_APP_STARTER_HPP
-#define NDNSIM_CABEEE_DAG_FORWARDER_OPT_APP_STARTER_HPP
+#ifndef NDNSIM_CABEEE_DAG_FORWARDER_APP_OPT_STARTER_HPP
+#define NDNSIM_CABEEE_DAG_FORWARDER_APP_OPT_STARTER_HPP
 
-#include "cabeee-dag-forwarder-opt.hpp"
+#include "cabeee-dag-forwarder-app-opt.hpp"
 
 
 #include "ns3/ndnSIM/helper/ndn-stack-helper.hpp"
@@ -98,4 +98,4 @@ private:
 
 } // namespace ns3
 
-#endif // NDNSIM_CABEEE_DAG_FORWARDER_OPT_APP_STARTER_HPP
+#endif // NDNSIM_CABEEE_DAG_FORWARDER_APP_OPT_STARTER_HPP

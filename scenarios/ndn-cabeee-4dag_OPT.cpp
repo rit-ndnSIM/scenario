@@ -24,8 +24,8 @@
 #include "ns3/ndnSIM-module.h"
 #include "ns3/string.h"
 
-#include "../extensions/extensions_forwarder/cabeee-dag-forwarder-opt.hpp"
-#include "../extensions/extensions_forwarder/cabeee-dag-forwarder-opt-starter.hpp"
+#include "../extensions/extensions_forwarder/cabeee-dag-forwarder-app-opt.hpp"
+#include "../extensions/extensions_forwarder/cabeee-dag-forwarder-app-opt-starter.hpp"
 
 #define PREFIX "/interCACHE"
 

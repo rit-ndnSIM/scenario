@@ -17,8 +17,8 @@
  * ndnSIM, e.g., in COPYING.md file.  If not, see <http://www.gnu.org/licenses/>.
  **/
 
-#ifndef NDNSIM_CABEEE_DAG_FORWARDER_OPT_APP_HPP
-#define NDNSIM_CABEEE_DAG_FORWARDER_OPT_APP_HPP
+#ifndef NDNSIM_CABEEE_DAG_FORWARDER_APP_OPT_HPP
+#define NDNSIM_CABEEE_DAG_FORWARDER_APP_OPT_HPP
 
 #include <ndn-cxx/face.hpp>
 #include <ndn-cxx/interest.hpp>
@@ -726,4 +726,4 @@ private:
 
 } // namespace app
 
-#endif // NDNSIM_CABEEE_DAG_FORWARDER_OPT_APP_HPP
+#endif // NDNSIM_CABEEE_DAG_FORWARDER_APP_OPT_HPP

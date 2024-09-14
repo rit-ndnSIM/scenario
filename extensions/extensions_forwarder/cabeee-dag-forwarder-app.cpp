@@ -82,7 +82,7 @@ DagForwarderApp::StartApplication()
   //ndn::FibHelper::AddRoute(GetNode(), "/prefix/sub", m_face, 0); //cabeee took this out, let the global router figure it out.
   ndn::FibHelper::AddRoute(GetNode(), m_name, m_face, 0);
 
-  ndn::FibHelper::AddRoute(GetNode(), "/interCACHE/shortcutOPT", m_face, 0);
+  //ndn::FibHelper::AddRoute(GetNode(), "/interCACHE/shortcutOPT", m_face, 0);
   //NS_LOG_DEBUG("   cabeee application CABEEEshortcutOPT" << m_service << " is showing faceID: " << m_face->getId());
   //ndn::Face::setInterestFilter("/interCACHE/shortcutOPT", std::bind(&DagForwarderApp::OnInterest, this, _2));
   //m_face->setInterestFilter("/interCACHE/shortcutOPT", &DagForwarderApp::OnInterest);
