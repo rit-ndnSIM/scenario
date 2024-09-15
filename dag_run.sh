@@ -1,4 +1,4 @@
-#! /bin/bash
+#!/bin/bash
 
 
 #----- THIS ONLY NEEDS TO BE RUN ONCE --------------------
@@ -9,64 +9,115 @@
 #CXXFLAGS="-std=c++17" ./waf configure --debug
 #---------------------------------------------------------
 
-#rm logit.txt
-
-clear
-#./waf clean
+set -e
 
 LOGS=CustomAppConsumer
-#LOGS=${LOGS}:CustomAppConsumer2
-#LOGS=${LOGS}:CustomAppProducer
-LOGS=${LOGS}:DagForwarderApp
-LOGS=${LOGS}:ndn.App
-#LOGS=${LOGS}:DagOrchestratorA_App
-#LOGS=${LOGS}:DagServiceA_App
-#LOGS=${LOGS}:DagOrchestratorB_App
-#LOGS=${LOGS}:DagServiceB_App
-LOGS=${LOGS}:ndn-cxx.nfd.Forwarder
+LOGS=$LOGS:CustomAppConsumer2
+LOGS=$LOGS:CustomAppProducer
+LOGS=$LOGS:DagForwarderApp
+LOGS=$LOGS:ndn.App
+LOGS=$LOGS:DagOrchestratorA_App
+LOGS=$LOGS:DagServiceA_App
+LOGS=$LOGS:DagOrchestratorB_App
+LOGS=$LOGS:DagServiceB_App
+LOGS=$LOGS:ndn-cxx.nfd.Forwarder
 
+export NS_LOG="$LOGS"
 
+NDNSIM_HOME="$HOME/ndnSIM"
+SCENARIO_DIR="$HOME/ndnSIM/scenario"
+
+scenarios=(
 # 4 DAG
-NS_LOG=${LOGS} ./waf --run=ndn-cabeee-4dag-orchestratorA |& tee log.txt
-#NS_LOG=${LOGS} ./waf --run=ndn-cabeee-4dag-orchestratorB |& tee log.txt
-#NS_LOG=${LOGS} ./waf --run=ndn-cabeee-4dag |& tee log.txt
-
-#LOGS=${LOGS}:DagForwarderAppOpt
-#NS_LOG=${LOGS} ./waf --run=ndn-cabeee-4dag_OPT |& tee log.txt # issue with this version: since we don't add the route for the prefix, NFD doesn't register it in the FIB, and no /interCACHE/serviceX interests go to the applications.
-
+#"ndn-cabeee-4dag-orchestratorA"
+#"ndn-cabeee-4dag-orchestratorB"
+"ndn-cabeee-4dag"
 # 20 Linear
-#NS_LOG=${LOGS} ./waf --run=ndn-cabeee-20node-linear-orchestratorA |& tee log.txt
-#NS_LOG=${LOGS} ./waf --run=ndn-cabeee-20node-linear-orchestratorB |& tee log.txt
-#NS_LOG=${LOGS} ./waf --run=ndn-cabeee-20node-linear |& tee log.txt
-
-
+#"ndn-cabeee-20node-linear-orchestratorA"
+#"ndn-cabeee-20node-linear-orchestratorB"
+#"ndn-cabeee-20node-linear"
 # 20 Parallel
-#NS_LOG=${LOGS} ./waf --run=ndn-cabeee-20node-parallel-orchestratorA |& tee log.txt
-#NS_LOG=${LOGS} ./waf --run=ndn-cabeee-20node-parallel-orchestratorB |& tee log.txt
-#NS_LOG=${LOGS} ./waf --run=ndn-cabeee-20node-parallel |& tee log.txt
-
-
+#"ndn-cabeee-20node-parallel-orchestratorA"
+#"ndn-cabeee-20node-parallel-orchestratorB"
+#"ndn-cabeee-20node-parallel"
 # 20 Sensor (Parallel)
-#NS_LOG=${LOGS} ./waf --run=ndn-cabeee-20sensor-orchestratorA |& tee log.txt
-#NS_LOG=${LOGS} ./waf --run=ndn-cabeee-20sensor-orchestratorB |& tee log.txt
-#NS_LOG=${LOGS} ./waf --run=ndn-cabeee-20sensor |& tee log.txt
-
-
+#"ndn-cabeee-20sensor-orchestratorA"
+#"ndn-cabeee-20sensor-orchestratorB"
+#"ndn-cabeee-20sensor"
 # 8 DAG
-#NS_LOG=${LOGS} ./waf --run=ndn-cabeee-8dag-orchestratorA |& tee log.txt
-#NS_LOG=${LOGS} ./waf --run=ndn-cabeee-8dag-orchestratorB |& tee log.txt
-#NS_LOG=${LOGS} ./waf --run=ndn-cabeee-8dag |& tee log.txt
-
-
+#"ndn-cabeee-8dag-orchestratorA"
+#"ndn-cabeee-8dag-orchestratorB"
+#"ndn-cabeee-8dag"
 # 8 DAG w/ caching
-#NS_LOG=${LOGS} ./waf --run=ndn-cabeee-8dag-caching-orchestratorA |& tee log.txt
-#NS_LOG=${LOGS} ./waf --run=ndn-cabeee-8dag-caching-orchestratorB |& tee log.txt
-#NS_LOG=${LOGS} ./waf --run=ndn-cabeee-8dag-caching |& tee log.txt
+#"ndn-cabeee-8dag-caching-orchestratorA"
+#"ndn-cabeee-8dag-caching-orchestratorB"
+#"ndn-cabeee-8dag-caching"
+# Misc
+#"ndn-cabeee-8dag-reuse"
+)
 
+scenario_log="$SCENARIO_DIR/scenario.log"
+csv_out="$SCENARIO_DIR/perf-results-simulation.csv"
+header="Example, Interest Packets Generated, Data Packets Generated, Interest Packets Transmitted, Data Packets Transmitted, Service Latency, Time, ns-3 commit, pybindgen commit, scenario commit, ndnSIM commit"
 
+if [ ! -f "$csv_out" ]; then
+	echo "$header" > "$csv_out"
+elif ! grep -q -F "$header" "$csv_out"; then
+	mv "$csv_out" "$csv_out.bak"
+	echo "Overwriting csv..."
+	echo "$header" > "$csv_out"
+else
+	cp "$csv_out" "$csv_out.bak"
+fi
 
+for scenario in "${scenarios[@]}"
+do
+	echo "Scenaraio: $scenario"
 
-#NS_LOG=${LOGS} ./waf --run=ndn-cabeee-8dag-reuse |& tee log.txt
+	now="$(date -Iseconds)"
 
+	ns_3_hash="$(git -C "$NDNSIM_HOME/ns-3" rev-parse HEAD)"
+	pybindgen_hash="$(git -C "$NDNSIM_HOME/pybindgen" rev-parse HEAD)"
+	scenario_hash="$(git -C "$NDNSIM_HOME/scenario" rev-parse HEAD)"
+	ndnsim_hash="$(git -C "$NDNSIM_HOME/ns-3/src/ndnSIM" rev-parse HEAD)"
 
-python process_nfd_logs.py
+	echo "Running..."
+	parse_out=$( \
+		"$SCENARIO_DIR/waf" --run="$scenario" |& tee "$scenario_log" | sed -n \
+		-e 's/^\s*The final answer is: \([0-9]*\)$/\1,/p' \
+		-e 's/^\s*Service Latency: \([0-9\.]*\) microseconds.$/\1,/p' \
+		| tr -d '\n' \
+	)
+
+	echo "Parsing logs..."
+	result="$(echo "$parse_out" | cut -d',' -f1)"
+	latency="$(echo "$parse_out" | cut -d',' -f2)"
+
+	packets=$( \
+		python process_nfd_logs.py | sed -n \
+		-e 's/^Interest Packets Generated: \([0-9]*\) interests$/\1,/p' \
+		-e 's/^Data Packets Generated: \([0-9]*\) data$/\1,/p' \
+		-e 's/^Interest Packets Transmitted: \([0-9]*\) interests$/\1,/p' \
+		-e 's/^Data Packets Transmitted: \([0-9]*\) data/\1,/p' \
+		| tr -d '\n' \
+	)
+
+	interest_gen="$(echo "$packets" | cut -d',' -f1)"
+	data_gen="$(echo "$packets" | cut -d',' -f2)"
+	interest_trans="$(echo "$packets" | cut -d',' -f3)"
+	data_trans="$(echo "$packets" | cut -d',' -f4)"
+
+	row="$scenario, $interest_gen, $data_gen, $interest_trans, $data_trans, $latency, $result, $now, $ns_3_hash, $pybindgen_hash, $scenario_hash, $ndnsim_hash"
+
+	echo "Dumping to csv..."
+	line_num="$(grep -n -F "$scenario," "$csv_out" | cut -d: -f1 | head -1)"
+	if [ -n "$line_num" ]; then
+		sed --in-place -e "${line_num}c\\$row" "$csv_out"
+	else
+		echo "$row" >> "$csv_out"
+	fi
+
+	echo ""
+done
+
+echo "All scenarios ran"
