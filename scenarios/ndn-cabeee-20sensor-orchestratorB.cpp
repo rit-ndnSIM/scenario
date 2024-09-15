@@ -24,7 +24,7 @@
 #include "ns3/ndnSIM-module.h"
 #include "ns3/string.h"
 
-#define PREFIX "/interCACHE"
+#define PREFIX "/orchB"
 
 namespace ns3 {
 

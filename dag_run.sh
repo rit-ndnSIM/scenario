@@ -27,9 +27,9 @@ LOGS=${LOGS}:ndn-cxx.nfd.Forwarder
 
 
 # 4 DAG
-#NS_LOG=${LOGS} ./waf --run=ndn-cabeee-4dag-orchestratorA |& tee log.txt
+NS_LOG=${LOGS} ./waf --run=ndn-cabeee-4dag-orchestratorA |& tee log.txt
 #NS_LOG=${LOGS} ./waf --run=ndn-cabeee-4dag-orchestratorB |& tee log.txt
-NS_LOG=${LOGS} ./waf --run=ndn-cabeee-4dag |& tee log.txt
+#NS_LOG=${LOGS} ./waf --run=ndn-cabeee-4dag |& tee log.txt
 
 #LOGS=${LOGS}:DagForwarderAppOpt
 #NS_LOG=${LOGS} ./waf --run=ndn-cabeee-4dag_OPT |& tee log.txt # issue with this version: since we don't add the route for the prefix, NFD doesn't register it in the FIB, and no /interCACHE/serviceX interests go to the applications.
