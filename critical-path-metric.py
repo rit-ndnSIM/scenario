@@ -433,9 +433,9 @@ def scenario_from_files(workflow_path, topology_path, hosting_path):
 
 
 def main():
-    workflow_file = "workflows/4dag.json"
+    workflow_file = "workflows/8dag.json"
     topology_file = "topologies/topo-cabeee-3node.txt"
-    hosting_file = "workflows/4dag.hosting"
+    hosting_file = "workflows/8dag.hosting"
 
     scenario = scenario_from_files(workflow_file, topology_file, hosting_file)
 

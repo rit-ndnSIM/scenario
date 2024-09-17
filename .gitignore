@@ -6,3 +6,13 @@
 .lock*
 build/
 *.pyc
+app-delays*.txt
+cs-trace*.txt
+rate-trace*.txt
+*.orig
+graphs/
+log.txt
+perf-results*.*
+results.txt
+reuse.vim
+scenario.log
