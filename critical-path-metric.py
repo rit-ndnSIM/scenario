@@ -51,6 +51,10 @@ class Scenario(object):
         return tree
 
     def critical_path_metric(self, user, consumer):
+        """ Get critical path for distributed orchestration """
+
+        self.check_scenario(user, consumer)
+
         tree = self.build_interest_tree(user, consumer)
 
         terminations = tree.get_sinks()
@@ -61,6 +65,8 @@ class Scenario(object):
 
     def orch_a_critical_path_metric(self, user, consumer):
         """ Get critical path metric for orchestrator A """
+
+        self.check_scenario(user, consumer)
 
         branches = deque()
         dist = {}
@@ -100,6 +106,8 @@ class Scenario(object):
     def orch_b_critical_path_metric(self, user, consumer):
         """ Get critical path metric for orchestrator B """
 
+        self.check_scenario(user, consumer)
+
         branches = deque()
         dist = {}
 
@@ -124,6 +132,17 @@ class Scenario(object):
             branches.extendleft(self.workflow.get_outgoing(service))
 
         return dist[consumer]
+
+    def check_scenario(self, user, consumer):
+        if not self.hosting.is_hosting(user, consumer):
+            raise ValueError(f"Specified user host '{user}' not hosting consumer '{consumer}'")
+
+        if consumer not in self.workflow.get_nodes():
+            print(self.workflow)
+            raise ValueError(f"Specified consumer '{consumer}' not in workflow")
+
+        if user not in self.topology.get_nodes():
+            raise ValueError(f"Specified user host '{user}' not in topology")
 
     def shortest_service_path(self, router, service):
         """ Returns an array of routers to visit to reach the nearest router hosting service """
@@ -273,7 +292,7 @@ class Graph(object):
         """ Get all nodes in graph """
 
         # if a node is in the graph but has no outgoing connections, self._graph[node] will not exist
-        return self.get_outgoing() & self.get_incoming()
+        return self.get_outgoing() | self.get_incoming()
 
     # TODO: some sort of state to not re-do work each time we call this
     # may or may not be necessary for complex topologies
@@ -445,9 +464,11 @@ def main():
 
     #metric = scenario.critical_path_metric("user", "/consumer")
 
-    metric_intercache = scenario.critical_path_metric("user", "/consumer")
-    metric_a = scenario.orch_a_critical_path_metric("user", "/consumer")
-    metric_b = scenario.orch_b_critical_path_metric("user", "/consumer")
+    metric_intercache = scenario.critical_path_metric("user", "/consumer2")
+    metric_a = scenario.orch_a_critical_path_metric("user", "/consumer2")
+    metric_b = scenario.orch_b_critical_path_metric("user", "/consumer2")
+
+    tree = scenario.build_interest_tree("user", "/consumer2")
 
     print(f"interCACHE is {metric_intercache}")
     print(f"orch_a is {metric_a}")
@@ -455,3 +476,5 @@ def main():
 
 if __name__ == '__main__':
     main()
+
+# vim: tw=0 shiftwidth=4 expandtab tabstop=8 softtabstop=8 smarttab autoindent
