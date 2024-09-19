@@ -452,9 +452,25 @@ def scenario_from_files(workflow_path, topology_path, hosting_path):
 
 
 def main():
-    workflow_file = "workflows/8dag.json"
-    topology_file = "topologies/topo-cabeee-3node.txt"
-    hosting_file = "workflows/8dag.hosting"
+    #workflow_file = "workflows/4dag.json"
+    #topology_file = "topologies/topo-cabeee-3node.txt"
+    #hosting_file = "workflows/4dag.hosting"
+
+    #workflow_file = "workflows/8dag.json"
+    #topology_file = "topologies/topo-cabeee-3node.txt"
+    #hosting_file = "workflows/8dag.hosting"
+    
+    #workflow_file = "workflows/20-parallel.json"
+    #topology_file = "topologies/topo-cabeee-20node-parallel.txt"
+    #hosting_file = "workflows/20-parallel.hosting"
+    
+    workflow_file = "workflows/20-sensor.json"
+    topology_file = "topologies/topo-cabeee-20sensor.txt"
+    hosting_file = "workflows/20-sensor.hosting"
+
+    #workflow_file = "workflows/20-linear.json"
+    #topology_file = "topologies/topo-cabeee-3node.txt"
+    #hosting_file = "workflows/20-linear-in3node.hosting"
 
     scenario = scenario_from_files(workflow_file, topology_file, hosting_file)
 
@@ -464,11 +480,11 @@ def main():
 
     #metric = scenario.critical_path_metric("user", "/consumer")
 
-    metric_intercache = scenario.critical_path_metric("user", "/consumer2")
-    metric_a = scenario.orch_a_critical_path_metric("user", "/consumer2")
-    metric_b = scenario.orch_b_critical_path_metric("user", "/consumer2")
+    metric_intercache = scenario.critical_path_metric("user", "/consumer")
+    metric_a = scenario.orch_a_critical_path_metric("user", "/consumer")
+    metric_b = scenario.orch_b_critical_path_metric("user", "/consumer")
 
-    tree = scenario.build_interest_tree("user", "/consumer2")
+    tree = scenario.build_interest_tree("user", "/consumer")
 
     print(f"interCACHE is {metric_intercache}")
     print(f"orch_a is {metric_a}")
