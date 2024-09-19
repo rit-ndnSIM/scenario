@@ -464,13 +464,17 @@ def main():
     #topology_file = "topologies/topo-cabeee-20node-parallel.txt"
     #hosting_file = "workflows/20-parallel.hosting"
     
-    workflow_file = "workflows/20-sensor.json"
-    topology_file = "topologies/topo-cabeee-20sensor.txt"
-    hosting_file = "workflows/20-sensor.hosting"
+    #workflow_file = "workflows/20-sensor.json"
+    #topology_file = "topologies/topo-cabeee-20sensor.txt"
+    #hosting_file = "workflows/20-sensor.hosting"
 
     #workflow_file = "workflows/20-linear.json"
     #topology_file = "topologies/topo-cabeee-3node.txt"
     #hosting_file = "workflows/20-linear-in3node.hosting"
+
+    workflow_file = "workflows/20-linear.json"
+    topology_file = "topologies/topo-cabeee-20node-linear.txt"
+    hosting_file = "workflows/20-linear.hosting"
 
     scenario = scenario_from_files(workflow_file, topology_file, hosting_file)
 
