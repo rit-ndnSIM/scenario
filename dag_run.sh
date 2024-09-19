@@ -31,19 +31,7 @@ scenarios=(
 # 4 DAG
 #"ndn-cabeee-4dag-orchestratorA"
 #"ndn-cabeee-4dag-orchestratorB"
-"ndn-cabeee-4dag"
-# 20 Linear
-#"ndn-cabeee-20node-linear-orchestratorA"
-#"ndn-cabeee-20node-linear-orchestratorB"
-#"ndn-cabeee-20node-linear"
-# 20 Parallel
-#"ndn-cabeee-20node-parallel-orchestratorA"
-#"ndn-cabeee-20node-parallel-orchestratorB"
-#"ndn-cabeee-20node-parallel"
-# 20 Sensor (Parallel)
-#"ndn-cabeee-20sensor-orchestratorA"
-#"ndn-cabeee-20sensor-orchestratorB"
-#"ndn-cabeee-20sensor"
+#"ndn-cabeee-4dag"
 # 8 DAG
 #"ndn-cabeee-8dag-orchestratorA"
 #"ndn-cabeee-8dag-orchestratorB"
@@ -52,6 +40,22 @@ scenarios=(
 #"ndn-cabeee-8dag-caching-orchestratorA"
 #"ndn-cabeee-8dag-caching-orchestratorB"
 #"ndn-cabeee-8dag-caching"
+# 20 Parallel
+#"ndn-cabeee-20node-parallel-orchestratorA"
+#"ndn-cabeee-20node-parallel-orchestratorB"
+#"ndn-cabeee-20node-parallel"
+# 20 Sensor (Parallel)
+#"ndn-cabeee-20sensor-orchestratorA"
+#"ndn-cabeee-20sensor-orchestratorB"
+#"ndn-cabeee-20sensor"
+# 20-Node Linear
+#"ndn-cabeee-20node-linear-orchestratorA"
+#"ndn-cabeee-20node-linear-orchestratorB"
+#"ndn-cabeee-20node-linear"
+# 20 Linear (new hosting using 3node topology)
+"ndn-cabeee-20linear-orchestratorA"
+"ndn-cabeee-20linear-orchestratorB"
+"ndn-cabeee-20linear"
 # Misc
 #"ndn-cabeee-8dag-reuse"
 )

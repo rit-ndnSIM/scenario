@@ -6,3 +6,8 @@
 .lock*
 build/
 *.pyc
+app-delays*
+cs-trace*
+graphs/
+rate-trace*
+*.vim
