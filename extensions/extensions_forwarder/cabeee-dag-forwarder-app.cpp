@@ -82,10 +82,10 @@ DagForwarderApp::StartApplication()
   //ndn::FibHelper::AddRoute(GetNode(), "/prefix/sub", m_face, 0); //cabeee took this out, let the global router figure it out.
   ndn::FibHelper::AddRoute(GetNode(), m_name, m_face, 0);
 
-  //ndn::FibHelper::AddRoute(GetNode(), "/interCACHE/shortcutOPT", m_face, 0);
+  //ndn::FibHelper::AddRoute(GetNode(), "/nesco/shortcutOPT", m_face, 0);
   //NS_LOG_DEBUG("   cabeee application CABEEEshortcutOPT" << m_service << " is showing faceID: " << m_face->getId());
-  //ndn::Face::setInterestFilter("/interCACHE/shortcutOPT", std::bind(&DagForwarderApp::OnInterest, this, _2));
-  //m_face->setInterestFilter("/interCACHE/shortcutOPT", &DagForwarderApp::OnInterest);
+  //ndn::Face::setInterestFilter("/nesco/shortcutOPT", std::bind(&DagForwarderApp::OnInterest, this, _2));
+  //m_face->setInterestFilter("/nesco/shortcutOPT", &DagForwarderApp::OnInterest);
 
   m_nameUri = m_service.ndn::Name::toUri();
 
@@ -340,7 +340,7 @@ DagForwarderApp::OnInterest(std::shared_ptr<const ndn::Interest> interest)
   json nullJson;
   ndn::Name simpleName;
   simpleName = (interest->getName()).getPrefix(-1); // remove the last component of the name (the parameter digest) so we have just the raw name, and convert to Uri string
-  simpleName = simpleName.getSubName(1); // remove the first component of the name (/interCACHE)
+  simpleName = simpleName.getSubName(1,1); // remove the zeroeth component of the name (/nesco). starting at component 1, keep 1 component
   //std::string rxedInterestName = (interest->getName()).getPrefix(-1).toUri(); // remove the last component of the name (the parameter digest) so we have just the raw name, and convert to Uri string
   std::string rxedInterestName = simpleName.toUri();
   //std::cout << "Forwarder rxedInterestName: " << rxedInterestName << '\n';
@@ -502,7 +502,7 @@ DagForwarderApp::OnData(std::shared_ptr<const ndn::Data> data)
 
   ndn::Name simpleName;
   simpleName = (data->getName()).getPrefix(-1); // remove the last component of the name (the parameter digest) so we have just the raw name, and convert to Uri string
-  simpleName = simpleName.getSubName(1); // remove the first component of the name (/interCACHE)
+  simpleName = simpleName.getSubName(1); // remove the first component of the name (/nesco)
   //std::string rxedDataName = (data->getName()).getPrefix(-1).toUri(); // remove the last component of the name (the parameter digest) so we have just the raw name
   std::string rxedDataName = simpleName.toUri();
 

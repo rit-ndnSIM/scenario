@@ -29,35 +29,43 @@ SCENARIO_DIR="$HOME/ndnSIM/scenario"
 
 scenarios=(
 # 4 DAG
-#"ndn-cabeee-4dag-orchestratorA"
-#"ndn-cabeee-4dag-orchestratorB"
-#"ndn-cabeee-4dag"
+"ndn-cabeee-4dag-orchestratorA"
+"ndn-cabeee-4dag-orchestratorB"
+"ndn-cabeee-4dag-nesco"
+"ndn-cabeee-4dag-nescoSCOPT"
 # 8 DAG
-#"ndn-cabeee-8dag-orchestratorA"
-#"ndn-cabeee-8dag-orchestratorB"
-#"ndn-cabeee-8dag"
+"ndn-cabeee-8dag-orchestratorA"
+"ndn-cabeee-8dag-orchestratorB"
+"ndn-cabeee-8dag-nesco"
+"ndn-cabeee-8dag-nescoSCOPT"
 # 8 DAG w/ caching
-#"ndn-cabeee-8dag-caching-orchestratorA"
-#"ndn-cabeee-8dag-caching-orchestratorB"
-#"ndn-cabeee-8dag-caching"
+"ndn-cabeee-8dag-caching-orchestratorA"
+"ndn-cabeee-8dag-caching-orchestratorB"
+"ndn-cabeee-8dag-caching-nesco"
+"ndn-cabeee-8dag-caching-nescoSCOPT"
 # 20 Parallel
-#"ndn-cabeee-20node-parallel-orchestratorA"
-#"ndn-cabeee-20node-parallel-orchestratorB"
-#"ndn-cabeee-20node-parallel"
+"ndn-cabeee-20node-parallel-orchestratorA"
+"ndn-cabeee-20node-parallel-orchestratorB"
+"ndn-cabeee-20node-parallel-nesco"
+"ndn-cabeee-20node-parallel-nescoSCOPT"
 # 20 Sensor (Parallel)
-#"ndn-cabeee-20sensor-orchestratorA"
-#"ndn-cabeee-20sensor-orchestratorB"
-#"ndn-cabeee-20sensor"
+"ndn-cabeee-20sensor-orchestratorA"
+"ndn-cabeee-20sensor-orchestratorB"
+"ndn-cabeee-20sensor-nesco"
+"ndn-cabeee-20sensor-nescoSCOPT"
 # 20-Node Linear
-#"ndn-cabeee-20node-linear-orchestratorA"
-#"ndn-cabeee-20node-linear-orchestratorB"
-#"ndn-cabeee-20node-linear"
+"ndn-cabeee-20node-linear-orchestratorA"
+"ndn-cabeee-20node-linear-orchestratorB"
+"ndn-cabeee-20node-linear-nesco"
+"ndn-cabeee-20node-linear-nescoSCOPT"
 # 20 Linear (new hosting using 3node topology)
 "ndn-cabeee-20linear-orchestratorA"
 "ndn-cabeee-20linear-orchestratorB"
-"ndn-cabeee-20linear"
+"ndn-cabeee-20linear-nesco"
+"ndn-cabeee-20linear-nescoSCOPT"
 # Misc
 #"ndn-cabeee-8dag-reuse"
+#"ndn-cabeee-20sensor-3node"
 )
 
 scenario_log="$SCENARIO_DIR/scenario.log"

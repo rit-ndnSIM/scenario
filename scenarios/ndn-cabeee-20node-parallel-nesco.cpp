@@ -24,14 +24,14 @@
 #include "ns3/ndnSIM-module.h"
 #include "ns3/string.h"
 
-#define PREFIX "/interCACHE"
+#define PREFIX "/nesco"
 
 namespace ns3 {
 
 /**
-*       /-------\        /--------\     /--------\ Fapp   ----------------
-*  node0|sensor1|--------|sensor-n|-----|sensor20|--------| Producer APPs| Sensor Data
-*       \-------/        \--------/     \--------/        ----------------
+*       /--------------------------------------\ Fapp     ----------------
+*  node0|              sensor                  |----------| Producer APP | Sensor Data
+*       \--------------------------------------/          ----------------
 *         ^ F8             ^ F3            ^ F1
 *         |                |               |
 *         |                |               |
@@ -69,7 +69,7 @@ namespace ns3 {
 * node23|  user  |--------| Consumer APP |
 *       \--------/        ----------------
 * 
-*     NS_LOG=CustomAppConsumer:CustomAppProducer:DagForwarderApp ./waf --run=ndn-cabeee-20sensor
+*     NS_LOG=CustomAppConsumer:CustomAppProducer:DagForwarderApp ./waf --run=ndn-cabeee-20node-parallel
 */
 int
 main(int argc, char* argv[])
@@ -80,7 +80,7 @@ main(int argc, char* argv[])
 
   // Creating nodes
   AnnotatedTopologyReader topologyReader("", 1);
-  topologyReader.SetFileName("topologies/topo-cabeee-20sensor.txt");
+  topologyReader.SetFileName("topologies/topo-cabeee-20node-parallel.txt");
   topologyReader.Read();
 
 
@@ -96,26 +96,7 @@ main(int argc, char* argv[])
   //ndnHelper.InstallAll();
 
   // Getting containers for the nodes
-  Ptr<Node> producer1 = Names::Find<Node>("sensor-1");
-  Ptr<Node> producer2 = Names::Find<Node>("sensor-2");
-  Ptr<Node> producer3 = Names::Find<Node>("sensor-3");
-  Ptr<Node> producer4 = Names::Find<Node>("sensor-4");
-  Ptr<Node> producer5 = Names::Find<Node>("sensor-5");
-  Ptr<Node> producer6 = Names::Find<Node>("sensor-6");
-  Ptr<Node> producer7 = Names::Find<Node>("sensor-7");
-  Ptr<Node> producer8 = Names::Find<Node>("sensor-8");
-  Ptr<Node> producer9 = Names::Find<Node>("sensor-9");
-  Ptr<Node> producer10 = Names::Find<Node>("sensor-10");
-  Ptr<Node> producer11 = Names::Find<Node>("sensor-11");
-  Ptr<Node> producer12 = Names::Find<Node>("sensor-12");
-  Ptr<Node> producer13 = Names::Find<Node>("sensor-13");
-  Ptr<Node> producer14 = Names::Find<Node>("sensor-14");
-  Ptr<Node> producer15 = Names::Find<Node>("sensor-15");
-  Ptr<Node> producer16 = Names::Find<Node>("sensor-16");
-  Ptr<Node> producer17 = Names::Find<Node>("sensor-17");
-  Ptr<Node> producer18 = Names::Find<Node>("sensor-18");
-  Ptr<Node> producer19 = Names::Find<Node>("sensor-19");
-  Ptr<Node> producer20 = Names::Find<Node>("sensor-20");
+  Ptr<Node> producer = Names::Find<Node>("sensor");
   Ptr<Node> router1 = Names::Find<Node>("rtr-1");
   Ptr<Node> router2 = Names::Find<Node>("rtr-2");
   Ptr<Node> router3 = Names::Find<Node>("rtr-3");
@@ -141,26 +122,7 @@ main(int argc, char* argv[])
   Ptr<Node> consumer = Names::Find<Node>("user");
 
   ndnHelper.setCsSize(0); // disable content store
-  ndnHelper.Install(producer1);
-  ndnHelper.Install(producer2);
-  ndnHelper.Install(producer3);
-  ndnHelper.Install(producer4);
-  ndnHelper.Install(producer5);
-  ndnHelper.Install(producer6);
-  ndnHelper.Install(producer7);
-  ndnHelper.Install(producer8);
-  ndnHelper.Install(producer9);
-  ndnHelper.Install(producer10);
-  ndnHelper.Install(producer11);
-  ndnHelper.Install(producer12);
-  ndnHelper.Install(producer13);
-  ndnHelper.Install(producer14);
-  ndnHelper.Install(producer15);
-  ndnHelper.Install(producer16);
-  ndnHelper.Install(producer17);
-  ndnHelper.Install(producer18);
-  ndnHelper.Install(producer19);
-  ndnHelper.Install(producer20);
+  ndnHelper.Install(producer);
   //ndnHelper.setCsSize(0); // disable content store
   //ndnHelper.Install(orchestrator);
   ndnHelper.setCsSize(0); // disable content store
@@ -197,26 +159,7 @@ main(int argc, char* argv[])
 
   // Choosing forwarding strategy
   //ndn::StrategyChoiceHelper::InstallAll(Prefix + "/sensor", "/localhost/nfd/strategy/best-route");
-  ndn::StrategyChoiceHelper::InstallAll(Prefix + "/sensor1", "/localhost/nfd/strategy/multicast");
-  ndn::StrategyChoiceHelper::InstallAll(Prefix + "/sensor2", "/localhost/nfd/strategy/multicast");
-  ndn::StrategyChoiceHelper::InstallAll(Prefix + "/sensor3", "/localhost/nfd/strategy/multicast");
-  ndn::StrategyChoiceHelper::InstallAll(Prefix + "/sensor4", "/localhost/nfd/strategy/multicast");
-  ndn::StrategyChoiceHelper::InstallAll(Prefix + "/sensor5", "/localhost/nfd/strategy/multicast");
-  ndn::StrategyChoiceHelper::InstallAll(Prefix + "/sensor6", "/localhost/nfd/strategy/multicast");
-  ndn::StrategyChoiceHelper::InstallAll(Prefix + "/sensor7", "/localhost/nfd/strategy/multicast");
-  ndn::StrategyChoiceHelper::InstallAll(Prefix + "/sensor8", "/localhost/nfd/strategy/multicast");
-  ndn::StrategyChoiceHelper::InstallAll(Prefix + "/sensor9", "/localhost/nfd/strategy/multicast");
-  ndn::StrategyChoiceHelper::InstallAll(Prefix + "/sensor10", "/localhost/nfd/strategy/multicast");
-  ndn::StrategyChoiceHelper::InstallAll(Prefix + "/sensor11", "/localhost/nfd/strategy/multicast");
-  ndn::StrategyChoiceHelper::InstallAll(Prefix + "/sensor12", "/localhost/nfd/strategy/multicast");
-  ndn::StrategyChoiceHelper::InstallAll(Prefix + "/sensor13", "/localhost/nfd/strategy/multicast");
-  ndn::StrategyChoiceHelper::InstallAll(Prefix + "/sensor14", "/localhost/nfd/strategy/multicast");
-  ndn::StrategyChoiceHelper::InstallAll(Prefix + "/sensor15", "/localhost/nfd/strategy/multicast");
-  ndn::StrategyChoiceHelper::InstallAll(Prefix + "/sensor16", "/localhost/nfd/strategy/multicast");
-  ndn::StrategyChoiceHelper::InstallAll(Prefix + "/sensor17", "/localhost/nfd/strategy/multicast");
-  ndn::StrategyChoiceHelper::InstallAll(Prefix + "/sensor18", "/localhost/nfd/strategy/multicast");
-  ndn::StrategyChoiceHelper::InstallAll(Prefix + "/sensor19", "/localhost/nfd/strategy/multicast");
-  ndn::StrategyChoiceHelper::InstallAll(Prefix + "/sensor20", "/localhost/nfd/strategy/multicast");
+  ndn::StrategyChoiceHelper::InstallAll(Prefix + "/sensor", "/localhost/nfd/strategy/multicast");
   ndn::StrategyChoiceHelper::InstallAll(Prefix + "/serviceP1", "/localhost/nfd/strategy/multicast");
   ndn::StrategyChoiceHelper::InstallAll(Prefix + "/serviceP2", "/localhost/nfd/strategy/multicast");
   ndn::StrategyChoiceHelper::InstallAll(Prefix + "/serviceP3", "/localhost/nfd/strategy/multicast");
@@ -256,65 +199,8 @@ main(int argc, char* argv[])
   // Custom App for Sensor(Producer)
   ndn::AppHelper sensorApp("CustomAppProducer");
   sensorApp.SetPrefix(Prefix);
-  sensorApp.SetAttribute("Service", StringValue("sensor1"));
-  sensorApp.Install(producer1).Start(Seconds(0));
-  sensorApp.SetPrefix(Prefix);
-  sensorApp.SetAttribute("Service", StringValue("sensor2"));
-  sensorApp.Install(producer2).Start(Seconds(0));
-  sensorApp.SetPrefix(Prefix);
-  sensorApp.SetAttribute("Service", StringValue("sensor3"));
-  sensorApp.Install(producer3).Start(Seconds(0));
-  sensorApp.SetPrefix(Prefix);
-  sensorApp.SetAttribute("Service", StringValue("sensor4"));
-  sensorApp.Install(producer4).Start(Seconds(0));
-  sensorApp.SetPrefix(Prefix);
-  sensorApp.SetAttribute("Service", StringValue("sensor5"));
-  sensorApp.Install(producer5).Start(Seconds(0));
-  sensorApp.SetPrefix(Prefix);
-  sensorApp.SetAttribute("Service", StringValue("sensor6"));
-  sensorApp.Install(producer6).Start(Seconds(0));
-  sensorApp.SetPrefix(Prefix);
-  sensorApp.SetAttribute("Service", StringValue("sensor7"));
-  sensorApp.Install(producer7).Start(Seconds(0));
-  sensorApp.SetPrefix(Prefix);
-  sensorApp.SetAttribute("Service", StringValue("sensor8"));
-  sensorApp.Install(producer8).Start(Seconds(0));
-  sensorApp.SetPrefix(Prefix);
-  sensorApp.SetAttribute("Service", StringValue("sensor9"));
-  sensorApp.Install(producer9).Start(Seconds(0));
-  sensorApp.SetPrefix(Prefix);
-  sensorApp.SetAttribute("Service", StringValue("sensor10"));
-  sensorApp.Install(producer10).Start(Seconds(0));
-  sensorApp.SetPrefix(Prefix);
-  sensorApp.SetAttribute("Service", StringValue("sensor11"));
-  sensorApp.Install(producer11).Start(Seconds(0));
-  sensorApp.SetPrefix(Prefix);
-  sensorApp.SetAttribute("Service", StringValue("sensor12"));
-  sensorApp.Install(producer12).Start(Seconds(0));
-  sensorApp.SetPrefix(Prefix);
-  sensorApp.SetAttribute("Service", StringValue("sensor13"));
-  sensorApp.Install(producer13).Start(Seconds(0));
-  sensorApp.SetPrefix(Prefix);
-  sensorApp.SetAttribute("Service", StringValue("sensor14"));
-  sensorApp.Install(producer14).Start(Seconds(0));
-  sensorApp.SetPrefix(Prefix);
-  sensorApp.SetAttribute("Service", StringValue("sensor15"));
-  sensorApp.Install(producer15).Start(Seconds(0));
-  sensorApp.SetPrefix(Prefix);
-  sensorApp.SetAttribute("Service", StringValue("sensor16"));
-  sensorApp.Install(producer16).Start(Seconds(0));
-  sensorApp.SetPrefix(Prefix);
-  sensorApp.SetAttribute("Service", StringValue("sensor17"));
-  sensorApp.Install(producer17).Start(Seconds(0));
-  sensorApp.SetPrefix(Prefix);
-  sensorApp.SetAttribute("Service", StringValue("sensor18"));
-  sensorApp.Install(producer18).Start(Seconds(0));
-  sensorApp.SetPrefix(Prefix);
-  sensorApp.SetAttribute("Service", StringValue("sensor19"));
-  sensorApp.Install(producer19).Start(Seconds(0));
-  sensorApp.SetPrefix(Prefix);
-  sensorApp.SetAttribute("Service", StringValue("sensor20"));
-  sensorApp.Install(producer20).Start(Seconds(0));
+  sensorApp.SetAttribute("Service", StringValue("sensor"));
+  sensorApp.Install(producer).Start(Seconds(0));
 
   // Custom App for routers
   ndn::AppHelper routerApp("DagForwarderApp");
@@ -386,7 +272,7 @@ main(int argc, char* argv[])
   ndn::AppHelper userApp("CustomAppConsumer");
   userApp.SetPrefix(Prefix); // this is only a placeholder. The app will read the JSON workflow, and figure out which service is "last"
   userApp.SetAttribute("Service", StringValue("consumer"));
-  userApp.SetAttribute("Workflow", StringValue("workflows/20-sensor.json"));
+  userApp.SetAttribute("Workflow", StringValue("workflows/20-parallel.json"));
   userApp.SetAttribute("Orchestrate", UintegerValue(0));
   userApp.Install(consumer).Start(Seconds(0));
 
@@ -444,8 +330,8 @@ main(int argc, char* argv[])
 
   Simulator::Stop(Seconds(3));
 
-  ndn::L3RateTracer::InstallAll("rate-trace_cabeee-20sensor-parallel.txt", Seconds(0.1));
-  ndn::CsTracer::InstallAll("cs-trace_cabeee-20sensor-parallel.txt", Seconds(0.1));
+  ndn::L3RateTracer::InstallAll("rate-trace_cabeee-20node-parallel.txt", Seconds(0.1));
+  ndn::CsTracer::InstallAll("cs-trace_cabeee-20node-parallel.txt", Seconds(0.1));
 
   Simulator::Run();
   Simulator::Destroy();

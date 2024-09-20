@@ -24,7 +24,7 @@
 #include "ns3/ndnSIM-module.h"
 #include "ns3/string.h"
 
-#define PREFIX "/interCACHE"
+#define PREFIX "/nesco"
 
 namespace ns3 {
 
@@ -67,7 +67,7 @@ namespace ns3 {
 *  node5|  user  |--------| Consumer APP |
 *       \--------/        ----------------
 * 
-*     NS_LOG=CustomAppConsumer:CustomAppProducer:DagForwarderApp ./waf --run=ndn-cabeee-8dag-caching
+*     NS_LOG=CustomAppConsumer:CustomAppProducer:DagForwarderApp ./waf --run=ndn-cabeee-8dag
 */
 int
 main(int argc, char* argv[])
@@ -105,13 +105,16 @@ main(int argc, char* argv[])
   ndnHelper.setCsSize(0); // disable content store
   ndnHelper.Install(producer);
 
-  ndnHelper.setCsSize(10); // enable/disable content store
+  //ndnHelper.setCsSize(0); // enable/disable content store
+  ndnHelper.setCsSize(0); // enable/disable content store
   ndnHelper.Install(router1);
 
-  ndnHelper.setCsSize(10); // enable/disable content store
+  //ndnHelper.setCsSize(0); // enable/disable content store
+  ndnHelper.setCsSize(0); // enable/disable content store
   ndnHelper.Install(router2);
 
-  ndnHelper.setCsSize(10); // enable/disable content store
+  //ndnHelper.setCsSize(0); // enable/disable content store
+  ndnHelper.setCsSize(0); // enable/disable content store
   ndnHelper.Install(router3);
 
   //ndnHelper.setCsSize(0); // disable content store
@@ -193,6 +196,7 @@ main(int argc, char* argv[])
   routerApp.SetAttribute("Service", StringValue("service8"));
   routerApp.Install(router2).Start(Seconds(0));
 
+  /* in the non-caching scenario, we don't need to run the 4dag workflow first.
   // Custom App for User1(Consumer1)
   ndn::AppHelper userApp("CustomAppConsumer");
   userApp.SetPrefix(Prefix); // this is only a placeholder. The app will read the JSON workflow, and figure out which service is "last"
@@ -200,6 +204,7 @@ main(int argc, char* argv[])
   userApp.SetAttribute("Workflow", StringValue("workflows/4dag.json"));
   userApp.SetAttribute("Orchestrate", UintegerValue(0));
   userApp.Install(consumer).Start(Seconds(0));
+  */
 
   // Custom App for User2(Consumer2)
   ndn::AppHelper userApp2("CustomAppConsumer2");
@@ -262,10 +267,10 @@ main(int argc, char* argv[])
 
 
 
-  Simulator::Stop(Seconds(20.0));
+  Simulator::Stop(Seconds(8.0));
 
-  ndn::L3RateTracer::InstallAll("rate-trace_cabeee-8dag-caching.txt", Seconds(0.1));
-  ndn::CsTracer::InstallAll("cs-trace_cabeee-8dag-caching.txt", Seconds(0.1));
+  ndn::L3RateTracer::InstallAll("rate-trace_cabeee-8dag.txt", Seconds(0.1));
+  ndn::CsTracer::InstallAll("cs-trace_cabeee-8dag.txt", Seconds(0.1));
 
   Simulator::Run();
   Simulator::Destroy();
