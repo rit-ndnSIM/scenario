@@ -70,7 +70,7 @@ scenarios=(
 
 scenario_log="$SCENARIO_DIR/scenario.log"
 csv_out="$SCENARIO_DIR/perf-results-simulation.csv"
-header="Example, Interest Packets Generated, Data Packets Generated, Interest Packets Transmitted, Data Packets Transmitted, Service Latency, Time, ns-3 commit, pybindgen commit, scenario commit, ndnSIM commit"
+header="Example, Interest Packets Generated, Data Packets Generated, Interest Packets Transmitted, Data Packets Transmitted, Service Latency, Final Result, Time, ns-3 commit, pybindgen commit, scenario commit, ndnSIM commit"
 
 if [ ! -f "$csv_out" ]; then
 	echo "$header" > "$csv_out"
