@@ -197,23 +197,23 @@ main(int argc, char* argv[])
   routerApp.Install(router2).Start(Seconds(0));
 
   /* in the non-caching scenario, we don't need to run the 4dag workflow first.
-  // Custom App for User1(Consumer1)
-  ndn::AppHelper userApp("CustomAppConsumer");
-  userApp.SetPrefix(Prefix); // this is only a placeholder. The app will read the JSON workflow, and figure out which service is "last"
-  userApp.SetAttribute("Service", StringValue("consumer"));
-  userApp.SetAttribute("Workflow", StringValue("workflows/4dag.json"));
-  userApp.SetAttribute("Orchestrate", UintegerValue(0));
-  userApp.Install(consumer).Start(Seconds(0));
-  */
-
   // Custom App for User2(Consumer2)
   ndn::AppHelper userApp2("CustomAppConsumer2");
   userApp2.SetPrefix(Prefix); // this is only a placeholder. The app will read the JSON workflow, and figure out which service is "last"
   userApp2.SetAttribute("Service", StringValue("consumer2"));
-  userApp2.SetAttribute("Workflow", StringValue("workflows/8dag.json"));
-  //userApp2.SetAttribute("Workflow", StringValue("workflows/rpa-dag_reuse2.json")); //TODO: test this other dag later
+  userApp2.SetAttribute("Workflow", StringValue("workflows/4dag.json"));
   userApp2.SetAttribute("Orchestrate", UintegerValue(0));
-  userApp2.Install(consumer).Start(Seconds(4));
+  userApp2.Install(consumer).Start(Seconds(0));
+  */
+
+  // Custom App for User1(Consumer1)
+  ndn::AppHelper userApp("CustomAppConsumer");
+  userApp.SetPrefix(Prefix); // this is only a placeholder. The app will read the JSON workflow, and figure out which service is "last"
+  userApp.SetAttribute("Service", StringValue("consumer"));
+  userApp.SetAttribute("Workflow", StringValue("workflows/8dag.json"));
+  //userApp.SetAttribute("Workflow", StringValue("workflows/rpa-dag_reuse2.json")); //TODO: test this other dag later
+  userApp.SetAttribute("Orchestrate", UintegerValue(0));
+  userApp.Install(consumer).Start(Seconds(4));
 
 /*
   // default consumer app

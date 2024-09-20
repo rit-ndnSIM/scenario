@@ -405,12 +405,12 @@ CustomAppConsumer2::OnData(std::shared_ptr<const ndn::Data> data)
   pContent++;  // now this points to the first size octet
   pContent++;  // now this points to the second size octet
   pContent++;  // now we are pointing at the first byte of the true content
-  std::cout << "\n  The final answer is: " <<  (int)(*pContent) << std::endl << "\n\n";
+  std::cout << "\n  Consumer 2 result: " <<  (int)(*pContent) << std::endl << "\n\n";
 
   m_endTime = Simulator::Now();
   Time serviceLatency = m_endTime - m_startTime;
-  std::cout << "\n  Service Latency: " <<  serviceLatency.GetMilliSeconds() << " milliseconds." << std::endl;
-  std::cout << "\n  Service Latency: " <<  serviceLatency.GetMicroSeconds() << " microseconds." << std::endl;
+  std::cout << "\n  Service Latency consumer2: " <<  serviceLatency.GetMilliSeconds() << " milliseconds." << std::endl;
+  std::cout << "\n  Service Latency consumer2: " <<  serviceLatency.GetMicroSeconds() << " microseconds." << std::endl;
 
 }
 

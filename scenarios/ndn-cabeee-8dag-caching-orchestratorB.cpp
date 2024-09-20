@@ -225,13 +225,13 @@ main(int argc, char* argv[])
   orchApp.Start(Seconds(0));
   orchApp.Stop(Seconds(3));
   
-  // Custom App for User(Consumer)
-  ndn::AppHelper userApp("CustomAppConsumer");
-  userApp.SetPrefix(Prefix);
-  userApp.SetAttribute("Service", StringValue("consumer"));
-  userApp.SetAttribute("Workflow", StringValue("workflows/4dag.json"));
-  userApp.SetAttribute("Orchestrate", UintegerValue(2)); // This enables the "orchestrator" by having the consumer set the head service to /serviceOrchestration/dag
-  userApp.Install(consumer).Start(Seconds(0));
+  // Custom App for User2(Consumer2) - Consumer 2 will not print results in the same way. We want consumer1 as the "final" one.
+  ndn::AppHelper userApp2("CustomAppConsumer2");
+  userApp2.SetPrefix(Prefix);
+  userApp2.SetAttribute("Service", StringValue("consumer2"));
+  userApp2.SetAttribute("Workflow", StringValue("workflows/4dag-cache.json"));
+  userApp2.SetAttribute("Orchestrate", UintegerValue(2)); // This enables the "orchestrator" by having the consumer set the head service to /serviceOrchestration/dag
+  userApp2.Install(consumer).Start(Seconds(0));
 
 
   // FOR SECOND USER - we need a new Orchestrator app, because of the tracker data structures. OR we could simply reset the tracker once we generate the last data packet to the consumer.
@@ -242,13 +242,13 @@ main(int argc, char* argv[])
   //orchestratorApp2.Install(orchestrator).Start(Seconds(4));
   orchestratorApp2.Install(consumer).Start(Seconds(4));
 
-  // Custom App for User2(Consumer2)
-  ndn::AppHelper userApp2("CustomAppConsumer2");
-  userApp2.SetPrefix(Prefix);
-  userApp2.SetAttribute("Service", StringValue("consumer2"));
-  userApp2.SetAttribute("Workflow", StringValue("workflows/8dag.json"));
-  userApp2.SetAttribute("Orchestrate", UintegerValue(2)); // This enables the "orchestrator" by having the consumer set the head service to /serviceOrchestration/dag
-  userApp2.Install(consumer).Start(Seconds(4));
+  // Custom App for User(Consumer)
+  ndn::AppHelper userApp("CustomAppConsumer");
+  userApp.SetPrefix(Prefix);
+  userApp.SetAttribute("Service", StringValue("consumer"));
+  userApp.SetAttribute("Workflow", StringValue("workflows/8dag.json"));
+  userApp.SetAttribute("Orchestrate", UintegerValue(2)); // This enables the "orchestrator" by having the consumer set the head service to /serviceOrchestration/dag
+  userApp.Install(consumer).Start(Seconds(4));
 
 
 
