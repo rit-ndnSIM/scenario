@@ -4,17 +4,21 @@
 			"/sensor"
 		],
 		"rtr-3": [
-			"/service1"
+			"/service1",
+			"/service5"
 		],
 		"rtr-1": [
-			"/service2"
+			"/service2",
+			"/service6"
 		],
 		"rtr-2": [
 			"/service3",
-			"/service4"
+			"/service4",
+			"/service7",
+			"/service8"
 		],
 		"user": [
-			"/consumer"
+			"/consumer2"
 		]
 	}
 }

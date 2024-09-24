@@ -11,3 +11,8 @@ cs-trace*
 graphs/
 rate-trace*
 *.vim
+*.orig
+log.txt
+perf-results*.*
+results.txt
+scenario.log
