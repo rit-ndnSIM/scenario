@@ -1,0 +1,39 @@
+{	"routerHosting": {
+		"sensor": [
+			"/sensor"
+		],
+		"rtr-001": [
+			"/serviceCPM-001"
+		],
+		"rtr-002": [
+			"/serviceCPM-002"
+		],
+		"rtr-003": [
+			"/serviceCPM-003"
+		],
+		"rtr-004": [
+			"/serviceCPM-004"
+		],
+		"rtr-005": [
+			"/serviceCPM-005"
+		],
+		"rtr-006": [
+			"/serviceCPM-006"
+		],
+		"rtr-007": [
+			"/serviceCPM-007"
+		],
+		"rtr-008": [
+			"/serviceCPM-008"
+		],
+		"rtr-009": [
+			"/serviceCPM-009"
+		],
+		"rtr-010": [
+			"/serviceCPM-010"
+		],
+		"user": [
+			"/consumer"
+		]
+	}
+}

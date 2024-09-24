@@ -4,6 +4,8 @@ import json
 import re
 import copy
 
+import sys, argparse
+
 from collections import defaultdict, deque, namedtuple
 
 # TODO: add caching
@@ -472,9 +474,31 @@ def main():
     #topology_file = "topologies/topo-cabeee-3node.txt"
     #hosting_file = "workflows/20-linear-in3node.hosting"
 
-    workflow_file = "workflows/20-linear.json"
-    topology_file = "topologies/topo-cabeee-20node-linear.txt"
-    hosting_file = "workflows/20-linear.hosting"
+    #workflow_file = "workflows/20-linear.json"
+    #topology_file = "topologies/topo-cabeee-20node-linear.txt"
+    #hosting_file = "workflows/20-linear.hosting"
+
+    # Parse command line options
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-workflow', type=str, default=None, help='Command line option to enter workflow file name')
+    parser.add_argument('-topology', type=str, default=None, help='Command line option to enter topology file name')
+    parser.add_argument('-hosting', type=str, default=None, help='Command line option to enter hosting file name')
+    args = parser.parse_args()
+
+
+    if args.workflow is None:
+        print("Please enter a workflow, topology, and hosting file using the command line options")
+        sys.exit(0)
+    if args.topology is None:
+        print("Please enter a workflow, topology, and hosting file using the command line options")
+        sys.exit(0)
+    if args.hosting is None:
+        print("Please enter a workflow, topology, and hosting file using the command line options")
+        sys.exit(0)
+
+    workflow_file = args.workflow
+    topology_file = args.topology
+    hosting_file = args.hosting
 
     scenario = scenario_from_files(workflow_file, topology_file, hosting_file)
 
