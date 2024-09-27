@@ -480,12 +480,16 @@ def main():
 
     # Parse command line options
     parser = argparse.ArgumentParser()
+    parser.add_argument('-type', type=str, default=None, help='Command line option to enter forwarding scheme (nescoSCOPT, orchA or orchB)')
     parser.add_argument('-workflow', type=str, default=None, help='Command line option to enter workflow file name')
     parser.add_argument('-topology', type=str, default=None, help='Command line option to enter topology file name')
     parser.add_argument('-hosting', type=str, default=None, help='Command line option to enter hosting file name')
     args = parser.parse_args()
 
 
+    if args.type is None:
+        print("Please enter a fowarding type (nescoSCOPT, orchA or orchB")
+        sys.exit(0)
     if args.workflow is None:
         print("Please enter a workflow, topology, and hosting file using the command line options")
         sys.exit(0)
@@ -508,15 +512,16 @@ def main():
 
     #metric = scenario.critical_path_metric("user", "/consumer")
 
-    metric_intercache = scenario.critical_path_metric("user", "/consumer")
-    metric_a = scenario.orch_a_critical_path_metric("user", "/consumer")
-    metric_b = scenario.orch_b_critical_path_metric("user", "/consumer")
+    if (args.type == 'nescoSCOPT'):
+        metric = scenario.critical_path_metric("user", "/consumer")
+    if (args.type == 'orchA'):
+        metric = scenario.orch_a_critical_path_metric("user", "/consumer")
+    if (args.type == 'orchB'):
+        metric = scenario.orch_b_critical_path_metric("user", "/consumer")
 
     tree = scenario.build_interest_tree("user", "/consumer")
 
-    print(f"interCACHE is {metric_intercache}")
-    print(f"orch_a is {metric_a}")
-    print(f"orch_b is {metric_b}")
+    print(f"metric is {metric}")
 
 if __name__ == '__main__':
     main()

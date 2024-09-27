@@ -1,0 +1,309 @@
+{	"routerHosting": {			
+		"sensor": [		
+			"/sensor"	
+		],		
+		"rtr-001": [		
+			"/serviceCPM-001"	
+		],		
+		"rtr-002": [		
+			"/serviceCPM-002"	
+		],		
+		"rtr-003": [		
+			"/serviceCPM-003"	
+		],		
+		"rtr-004": [		
+			"/serviceCPM-004"	
+		],		
+		"rtr-005": [		
+			"/serviceCPM-005"	
+		],		
+		"rtr-006": [		
+			"/serviceCPM-006"	
+		],		
+		"rtr-007": [		
+			"/serviceCPM-007"	
+		],		
+		"rtr-008": [		
+			"/serviceCPM-008"	
+		],		
+		"rtr-009": [		
+			"/serviceCPM-009"	
+		],		
+		"rtr-010": [		
+			"/serviceCPM-010"	
+		],		
+		"rtr-011": [		
+			"/serviceCPM-011"	
+		],		
+		"rtr-012": [		
+			"/serviceCPM-012"	
+		],		
+		"rtr-013": [		
+			"/serviceCPM-013"	
+		],		
+		"rtr-014": [		
+			"/serviceCPM-014"	
+		],		
+		"rtr-015": [		
+			"/serviceCPM-015"	
+		],		
+		"rtr-016": [		
+			"/serviceCPM-016"	
+		],		
+		"rtr-017": [		
+			"/serviceCPM-017"	
+		],		
+		"rtr-018": [		
+			"/serviceCPM-018"	
+		],		
+		"rtr-019": [		
+			"/serviceCPM-019"	
+		],		
+		"rtr-020": [		
+			"/serviceCPM-020"	
+		],		
+		"rtr-021": [		
+			"/serviceCPM-021"	
+		],		
+		"rtr-022": [		
+			"/serviceCPM-022"	
+		],		
+		"rtr-023": [		
+			"/serviceCPM-023"	
+		],		
+		"rtr-024": [		
+			"/serviceCPM-024"	
+		],		
+		"rtr-025": [		
+			"/serviceCPM-025"	
+		],		
+		"rtr-026": [		
+			"/serviceCPM-026"	
+		],		
+		"rtr-027": [		
+			"/serviceCPM-027"	
+		],		
+		"rtr-028": [		
+			"/serviceCPM-028"	
+		],		
+		"rtr-029": [		
+			"/serviceCPM-029"	
+		],		
+		"rtr-030": [		
+			"/serviceCPM-030"	
+		],		
+		"rtr-031": [		
+			"/serviceCPM-031"	
+		],		
+		"rtr-032": [		
+			"/serviceCPM-032"	
+		],		
+		"rtr-033": [		
+			"/serviceCPM-033"	
+		],		
+		"rtr-034": [		
+			"/serviceCPM-034"	
+		],		
+		"rtr-035": [		
+			"/serviceCPM-035"	
+		],		
+		"rtr-036": [		
+			"/serviceCPM-036"	
+		],		
+		"rtr-037": [		
+			"/serviceCPM-037"	
+		],		
+		"rtr-038": [		
+			"/serviceCPM-038"	
+		],		
+		"rtr-039": [		
+			"/serviceCPM-039"	
+		],		
+		"rtr-040": [		
+			"/serviceCPM-040"	
+		],		
+		"rtr-041": [		
+			"/serviceCPM-041"	
+		],		
+		"rtr-042": [		
+			"/serviceCPM-042"	
+		],		
+		"rtr-043": [		
+			"/serviceCPM-043"	
+		],		
+		"rtr-044": [		
+			"/serviceCPM-044"	
+		],		
+		"rtr-045": [		
+			"/serviceCPM-045"	
+		],		
+		"rtr-046": [		
+			"/serviceCPM-046"	
+		],		
+		"rtr-047": [		
+			"/serviceCPM-047"	
+		],		
+		"rtr-048": [		
+			"/serviceCPM-048"	
+		],		
+		"rtr-049": [		
+			"/serviceCPM-049"	
+		],		
+		"rtr-050": [		
+			"/serviceCPM-050"	
+		],		
+		"rtr-051": [		
+			"/serviceCPM-051"	
+		],		
+		"rtr-052": [		
+			"/serviceCPM-052"	
+		],		
+		"rtr-053": [		
+			"/serviceCPM-053"	
+		],		
+		"rtr-054": [		
+			"/serviceCPM-054"	
+		],		
+		"rtr-055": [		
+			"/serviceCPM-055"	
+		],		
+		"rtr-056": [		
+			"/serviceCPM-056"	
+		],		
+		"rtr-057": [		
+			"/serviceCPM-057"	
+		],		
+		"rtr-058": [		
+			"/serviceCPM-058"	
+		],		
+		"rtr-059": [		
+			"/serviceCPM-059"	
+		],		
+		"rtr-060": [		
+			"/serviceCPM-060"	
+		],		
+		"rtr-061": [		
+			"/serviceCPM-061"	
+		],		
+		"rtr-062": [		
+			"/serviceCPM-062"	
+		],		
+		"rtr-063": [		
+			"/serviceCPM-063"	
+		],		
+		"rtr-064": [		
+			"/serviceCPM-064"	
+		],		
+		"rtr-065": [		
+			"/serviceCPM-065"	
+		],		
+		"rtr-066": [		
+			"/serviceCPM-066"	
+		],		
+		"rtr-067": [		
+			"/serviceCPM-067"	
+		],		
+		"rtr-068": [		
+			"/serviceCPM-068"	
+		],		
+		"rtr-069": [		
+			"/serviceCPM-069"	
+		],		
+		"rtr-070": [		
+			"/serviceCPM-070"	
+		],		
+		"rtr-071": [		
+			"/serviceCPM-071"	
+		],		
+		"rtr-072": [		
+			"/serviceCPM-072"	
+		],		
+		"rtr-073": [		
+			"/serviceCPM-073"	
+		],		
+		"rtr-074": [		
+			"/serviceCPM-074"	
+		],		
+		"rtr-075": [		
+			"/serviceCPM-075"	
+		],		
+		"rtr-076": [		
+			"/serviceCPM-076"	
+		],		
+		"rtr-077": [		
+			"/serviceCPM-077"	
+		],		
+		"rtr-078": [		
+			"/serviceCPM-078"	
+		],		
+		"rtr-079": [		
+			"/serviceCPM-079"	
+		],		
+		"rtr-080": [		
+			"/serviceCPM-080"	
+		],		
+		"rtr-081": [		
+			"/serviceCPM-081"	
+		],		
+		"rtr-082": [		
+			"/serviceCPM-082"	
+		],		
+		"rtr-083": [		
+			"/serviceCPM-083"	
+		],		
+		"rtr-084": [		
+			"/serviceCPM-084"	
+		],		
+		"rtr-085": [		
+			"/serviceCPM-085"	
+		],		
+		"rtr-086": [		
+			"/serviceCPM-086"	
+		],		
+		"rtr-087": [		
+			"/serviceCPM-087"	
+		],		
+		"rtr-088": [		
+			"/serviceCPM-088"	
+		],		
+		"rtr-089": [		
+			"/serviceCPM-089"	
+		],		
+		"rtr-090": [		
+			"/serviceCPM-090"	
+		],		
+		"rtr-091": [		
+			"/serviceCPM-091"	
+		],		
+		"rtr-092": [		
+			"/serviceCPM-092"	
+		],		
+		"rtr-093": [		
+			"/serviceCPM-093"	
+		],		
+		"rtr-094": [		
+			"/serviceCPM-094"	
+		],		
+		"rtr-095": [		
+			"/serviceCPM-095"	
+		],		
+		"rtr-096": [		
+			"/serviceCPM-096"	
+		],		
+		"rtr-097": [		
+			"/serviceCPM-097"	
+		],		
+		"rtr-098": [		
+			"/serviceCPM-098"	
+		],		
+		"rtr-099": [		
+			"/serviceCPM-099"	
+		],		
+		"rtr-100": [		
+			"/serviceCPM-100"	
+		],		
+		"user": [		
+			"/consumer"	
+		]		
+	}			
+}				

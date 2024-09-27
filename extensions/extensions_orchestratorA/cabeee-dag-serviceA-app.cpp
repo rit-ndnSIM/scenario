@@ -439,6 +439,9 @@ DagServiceA_App::OnData(std::shared_ptr<const ndn::Data> data)
             (m_vectorOfServiceInputs[18])+
             (m_vectorOfServiceInputs[19]);
     }
+    if (m_service.ndn::Name::toUri().rfind("/serviceCPM-", 0) == 0) { // if name of string starts with /serviceCPM- (any of the 001-100 CPM services)
+      m_serviceOutput = (m_vectorOfServiceInputs[0])+1;
+    }
     
     NS_LOG_DEBUG("Service " << m_service.ndn::Name::toUri() << " has output: " << (int)m_serviceOutput);
   

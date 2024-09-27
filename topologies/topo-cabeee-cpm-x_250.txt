@@ -1,0 +1,512 @@
+router
+
+#node	city	y	x	mpi-partition
+sensor	NA	0	0	0
+user	NA	1	1	1
+rtr-001	NA	2	2	2
+rtr-002	NA	3	3	2
+rtr-003	NA	4	4	2
+rtr-004	NA	5	5	2
+rtr-005	NA	6	6	2
+rtr-006	NA	7	7	2
+rtr-007	NA	8	8	2
+rtr-008	NA	9	9	2
+rtr-009	NA	10	10	2
+rtr-010	NA	11	11	2
+rtr-011	NA	12	12	2
+rtr-012	NA	13	13	2
+rtr-013	NA	14	14	2
+rtr-014	NA	15	15	2
+rtr-015	NA	16	16	2
+rtr-016	NA	17	17	2
+rtr-017	NA	18	18	2
+rtr-018	NA	19	19	2
+rtr-019	NA	20	20	2
+rtr-020	NA	21	21	2
+rtr-021	NA	22	22	2
+rtr-022	NA	23	23	2
+rtr-023	NA	24	24	2
+rtr-024	NA	25	25	2
+rtr-025	NA	26	26	2
+rtr-026	NA	27	27	2
+rtr-027	NA	28	28	2
+rtr-028	NA	29	29	2
+rtr-029	NA	30	30	2
+rtr-030	NA	31	31	2
+rtr-031	NA	32	32	2
+rtr-032	NA	33	33	2
+rtr-033	NA	34	34	2
+rtr-034	NA	35	35	2
+rtr-035	NA	36	36	2
+rtr-036	NA	37	37	2
+rtr-037	NA	38	38	2
+rtr-038	NA	39	39	2
+rtr-039	NA	40	40	2
+rtr-040	NA	41	41	2
+rtr-041	NA	42	42	2
+rtr-042	NA	43	43	2
+rtr-043	NA	44	44	2
+rtr-044	NA	45	45	2
+rtr-045	NA	46	46	2
+rtr-046	NA	47	47	2
+rtr-047	NA	48	48	2
+rtr-048	NA	49	49	2
+rtr-049	NA	50	50	2
+rtr-050	NA	51	51	2
+rtr-051	NA	52	52	2
+rtr-052	NA	53	53	2
+rtr-053	NA	54	54	2
+rtr-054	NA	55	55	2
+rtr-055	NA	56	56	2
+rtr-056	NA	57	57	2
+rtr-057	NA	58	58	2
+rtr-058	NA	59	59	2
+rtr-059	NA	60	60	2
+rtr-060	NA	61	61	2
+rtr-061	NA	62	62	2
+rtr-062	NA	63	63	2
+rtr-063	NA	64	64	2
+rtr-064	NA	65	65	2
+rtr-065	NA	66	66	2
+rtr-066	NA	67	67	2
+rtr-067	NA	68	68	2
+rtr-068	NA	69	69	2
+rtr-069	NA	70	70	2
+rtr-070	NA	71	71	2
+rtr-071	NA	72	72	2
+rtr-072	NA	73	73	2
+rtr-073	NA	74	74	2
+rtr-074	NA	75	75	2
+rtr-075	NA	76	76	2
+rtr-076	NA	77	77	2
+rtr-077	NA	78	78	2
+rtr-078	NA	79	79	2
+rtr-079	NA	80	80	2
+rtr-080	NA	81	81	2
+rtr-081	NA	82	82	2
+rtr-082	NA	83	83	2
+rtr-083	NA	84	84	2
+rtr-084	NA	85	85	2
+rtr-085	NA	86	86	2
+rtr-086	NA	87	87	2
+rtr-087	NA	88	88	2
+rtr-088	NA	89	89	2
+rtr-089	NA	90	90	2
+rtr-090	NA	91	91	2
+rtr-091	NA	92	92	2
+rtr-092	NA	93	93	2
+rtr-093	NA	94	94	2
+rtr-094	NA	95	95	2
+rtr-095	NA	96	96	2
+rtr-096	NA	97	97	2
+rtr-097	NA	98	98	2
+rtr-098	NA	99	99	2
+rtr-099	NA	100	100	2
+rtr-100	NA	101	101	2
+rtr-101	NA	102	102	2
+rtr-102	NA	103	103	2
+rtr-103	NA	104	104	2
+rtr-104	NA	105	105	2
+rtr-105	NA	106	106	2
+rtr-106	NA	107	107	2
+rtr-107	NA	108	108	2
+rtr-108	NA	109	109	2
+rtr-109	NA	110	110	2
+rtr-110	NA	111	111	2
+rtr-111	NA	112	112	2
+rtr-112	NA	113	113	2
+rtr-113	NA	114	114	2
+rtr-114	NA	115	115	2
+rtr-115	NA	116	116	2
+rtr-116	NA	117	117	2
+rtr-117	NA	118	118	2
+rtr-118	NA	119	119	2
+rtr-119	NA	120	120	2
+rtr-120	NA	121	121	2
+rtr-121	NA	122	122	2
+rtr-122	NA	123	123	2
+rtr-123	NA	124	124	2
+rtr-124	NA	125	125	2
+rtr-125	NA	126	126	2
+rtr-126	NA	127	127	2
+rtr-127	NA	128	128	2
+rtr-128	NA	129	129	2
+rtr-129	NA	130	130	2
+rtr-130	NA	131	131	2
+rtr-131	NA	132	132	2
+rtr-132	NA	133	133	2
+rtr-133	NA	134	134	2
+rtr-134	NA	135	135	2
+rtr-135	NA	136	136	2
+rtr-136	NA	137	137	2
+rtr-137	NA	138	138	2
+rtr-138	NA	139	139	2
+rtr-139	NA	140	140	2
+rtr-140	NA	141	141	2
+rtr-141	NA	142	142	2
+rtr-142	NA	143	143	2
+rtr-143	NA	144	144	2
+rtr-144	NA	145	145	2
+rtr-145	NA	146	146	2
+rtr-146	NA	147	147	2
+rtr-147	NA	148	148	2
+rtr-148	NA	149	149	2
+rtr-149	NA	150	150	2
+rtr-150	NA	151	151	2
+rtr-151	NA	152	152	2
+rtr-152	NA	153	153	2
+rtr-153	NA	154	154	2
+rtr-154	NA	155	155	2
+rtr-155	NA	156	156	2
+rtr-156	NA	157	157	2
+rtr-157	NA	158	158	2
+rtr-158	NA	159	159	2
+rtr-159	NA	160	160	2
+rtr-160	NA	161	161	2
+rtr-161	NA	162	162	2
+rtr-162	NA	163	163	2
+rtr-163	NA	164	164	2
+rtr-164	NA	165	165	2
+rtr-165	NA	166	166	2
+rtr-166	NA	167	167	2
+rtr-167	NA	168	168	2
+rtr-168	NA	169	169	2
+rtr-169	NA	170	170	2
+rtr-170	NA	171	171	2
+rtr-171	NA	172	172	2
+rtr-172	NA	173	173	2
+rtr-173	NA	174	174	2
+rtr-174	NA	175	175	2
+rtr-175	NA	176	176	2
+rtr-176	NA	177	177	2
+rtr-177	NA	178	178	2
+rtr-178	NA	179	179	2
+rtr-179	NA	180	180	2
+rtr-180	NA	181	181	2
+rtr-181	NA	182	182	2
+rtr-182	NA	183	183	2
+rtr-183	NA	184	184	2
+rtr-184	NA	185	185	2
+rtr-185	NA	186	186	2
+rtr-186	NA	187	187	2
+rtr-187	NA	188	188	2
+rtr-188	NA	189	189	2
+rtr-189	NA	190	190	2
+rtr-190	NA	191	191	2
+rtr-191	NA	192	192	2
+rtr-192	NA	193	193	2
+rtr-193	NA	194	194	2
+rtr-194	NA	195	195	2
+rtr-195	NA	196	196	2
+rtr-196	NA	197	197	2
+rtr-197	NA	198	198	2
+rtr-198	NA	199	199	2
+rtr-199	NA	200	200	2
+rtr-200	NA	201	201	2
+rtr-201	NA	202	202	2
+rtr-202	NA	203	203	2
+rtr-203	NA	204	204	2
+rtr-204	NA	205	205	2
+rtr-205	NA	206	206	2
+rtr-206	NA	207	207	2
+rtr-207	NA	208	208	2
+rtr-208	NA	209	209	2
+rtr-209	NA	210	210	2
+rtr-210	NA	211	211	2
+rtr-211	NA	212	212	2
+rtr-212	NA	213	213	2
+rtr-213	NA	214	214	2
+rtr-214	NA	215	215	2
+rtr-215	NA	216	216	2
+rtr-216	NA	217	217	2
+rtr-217	NA	218	218	2
+rtr-218	NA	219	219	2
+rtr-219	NA	220	220	2
+rtr-220	NA	221	221	2
+rtr-221	NA	222	222	2
+rtr-222	NA	223	223	2
+rtr-223	NA	224	224	2
+rtr-224	NA	225	225	2
+rtr-225	NA	226	226	2
+rtr-226	NA	227	227	2
+rtr-227	NA	228	228	2
+rtr-228	NA	229	229	2
+rtr-229	NA	230	230	2
+rtr-230	NA	231	231	2
+rtr-231	NA	232	232	2
+rtr-232	NA	233	233	2
+rtr-233	NA	234	234	2
+rtr-234	NA	235	235	2
+rtr-235	NA	236	236	2
+rtr-236	NA	237	237	2
+rtr-237	NA	238	238	2
+rtr-238	NA	239	239	2
+rtr-239	NA	240	240	2
+rtr-240	NA	241	241	2
+rtr-241	NA	242	242	2
+rtr-242	NA	243	243	2
+rtr-243	NA	244	244	2
+rtr-244	NA	245	245	2
+rtr-245	NA	246	246	2
+rtr-246	NA	247	247	2
+rtr-247	NA	248	248	2
+rtr-248	NA	249	249	2
+rtr-249	NA	250	250	2
+rtr-250	NA	251	251	2
+
+
+
+link
+
+# from	    to	capacity	metric	delay	queue
+sensor	rtr-001	10Mbps	1	1ms	100
+rtr-001	rtr-002	10Mbps	1	1ms	100
+rtr-002	rtr-003	10Mbps	1	1ms	100
+rtr-003	rtr-004	10Mbps	1	1ms	100
+rtr-004	rtr-005	10Mbps	1	1ms	100
+rtr-005	rtr-006	10Mbps	1	1ms	100
+rtr-006	rtr-007	10Mbps	1	1ms	100
+rtr-007	rtr-008	10Mbps	1	1ms	100
+rtr-008	rtr-009	10Mbps	1	1ms	100
+rtr-009	rtr-010	10Mbps	1	1ms	100
+rtr-010	rtr-011	10Mbps	1	1ms	100
+rtr-011	rtr-012	10Mbps	1	1ms	100
+rtr-012	rtr-013	10Mbps	1	1ms	100
+rtr-013	rtr-014	10Mbps	1	1ms	100
+rtr-014	rtr-015	10Mbps	1	1ms	100
+rtr-015	rtr-016	10Mbps	1	1ms	100
+rtr-016	rtr-017	10Mbps	1	1ms	100
+rtr-017	rtr-018	10Mbps	1	1ms	100
+rtr-018	rtr-019	10Mbps	1	1ms	100
+rtr-019	rtr-020	10Mbps	1	1ms	100
+rtr-020	rtr-021	10Mbps	1	1ms	100
+rtr-021	rtr-022	10Mbps	1	1ms	100
+rtr-022	rtr-023	10Mbps	1	1ms	100
+rtr-023	rtr-024	10Mbps	1	1ms	100
+rtr-024	rtr-025	10Mbps	1	1ms	100
+rtr-025	rtr-026	10Mbps	1	1ms	100
+rtr-026	rtr-027	10Mbps	1	1ms	100
+rtr-027	rtr-028	10Mbps	1	1ms	100
+rtr-028	rtr-029	10Mbps	1	1ms	100
+rtr-029	rtr-030	10Mbps	1	1ms	100
+rtr-030	rtr-031	10Mbps	1	1ms	100
+rtr-031	rtr-032	10Mbps	1	1ms	100
+rtr-032	rtr-033	10Mbps	1	1ms	100
+rtr-033	rtr-034	10Mbps	1	1ms	100
+rtr-034	rtr-035	10Mbps	1	1ms	100
+rtr-035	rtr-036	10Mbps	1	1ms	100
+rtr-036	rtr-037	10Mbps	1	1ms	100
+rtr-037	rtr-038	10Mbps	1	1ms	100
+rtr-038	rtr-039	10Mbps	1	1ms	100
+rtr-039	rtr-040	10Mbps	1	1ms	100
+rtr-040	rtr-041	10Mbps	1	1ms	100
+rtr-041	rtr-042	10Mbps	1	1ms	100
+rtr-042	rtr-043	10Mbps	1	1ms	100
+rtr-043	rtr-044	10Mbps	1	1ms	100
+rtr-044	rtr-045	10Mbps	1	1ms	100
+rtr-045	rtr-046	10Mbps	1	1ms	100
+rtr-046	rtr-047	10Mbps	1	1ms	100
+rtr-047	rtr-048	10Mbps	1	1ms	100
+rtr-048	rtr-049	10Mbps	1	1ms	100
+rtr-049	rtr-050	10Mbps	1	1ms	100
+rtr-050	rtr-051	10Mbps	1	1ms	100
+rtr-051	rtr-052	10Mbps	1	1ms	100
+rtr-052	rtr-053	10Mbps	1	1ms	100
+rtr-053	rtr-054	10Mbps	1	1ms	100
+rtr-054	rtr-055	10Mbps	1	1ms	100
+rtr-055	rtr-056	10Mbps	1	1ms	100
+rtr-056	rtr-057	10Mbps	1	1ms	100
+rtr-057	rtr-058	10Mbps	1	1ms	100
+rtr-058	rtr-059	10Mbps	1	1ms	100
+rtr-059	rtr-060	10Mbps	1	1ms	100
+rtr-060	rtr-061	10Mbps	1	1ms	100
+rtr-061	rtr-062	10Mbps	1	1ms	100
+rtr-062	rtr-063	10Mbps	1	1ms	100
+rtr-063	rtr-064	10Mbps	1	1ms	100
+rtr-064	rtr-065	10Mbps	1	1ms	100
+rtr-065	rtr-066	10Mbps	1	1ms	100
+rtr-066	rtr-067	10Mbps	1	1ms	100
+rtr-067	rtr-068	10Mbps	1	1ms	100
+rtr-068	rtr-069	10Mbps	1	1ms	100
+rtr-069	rtr-070	10Mbps	1	1ms	100
+rtr-070	rtr-071	10Mbps	1	1ms	100
+rtr-071	rtr-072	10Mbps	1	1ms	100
+rtr-072	rtr-073	10Mbps	1	1ms	100
+rtr-073	rtr-074	10Mbps	1	1ms	100
+rtr-074	rtr-075	10Mbps	1	1ms	100
+rtr-075	rtr-076	10Mbps	1	1ms	100
+rtr-076	rtr-077	10Mbps	1	1ms	100
+rtr-077	rtr-078	10Mbps	1	1ms	100
+rtr-078	rtr-079	10Mbps	1	1ms	100
+rtr-079	rtr-080	10Mbps	1	1ms	100
+rtr-080	rtr-081	10Mbps	1	1ms	100
+rtr-081	rtr-082	10Mbps	1	1ms	100
+rtr-082	rtr-083	10Mbps	1	1ms	100
+rtr-083	rtr-084	10Mbps	1	1ms	100
+rtr-084	rtr-085	10Mbps	1	1ms	100
+rtr-085	rtr-086	10Mbps	1	1ms	100
+rtr-086	rtr-087	10Mbps	1	1ms	100
+rtr-087	rtr-088	10Mbps	1	1ms	100
+rtr-088	rtr-089	10Mbps	1	1ms	100
+rtr-089	rtr-090	10Mbps	1	1ms	100
+rtr-090	rtr-091	10Mbps	1	1ms	100
+rtr-091	rtr-092	10Mbps	1	1ms	100
+rtr-092	rtr-093	10Mbps	1	1ms	100
+rtr-093	rtr-094	10Mbps	1	1ms	100
+rtr-094	rtr-095	10Mbps	1	1ms	100
+rtr-095	rtr-096	10Mbps	1	1ms	100
+rtr-096	rtr-097	10Mbps	1	1ms	100
+rtr-097	rtr-098	10Mbps	1	1ms	100
+rtr-098	rtr-099	10Mbps	1	1ms	100
+rtr-099	rtr-100	10Mbps	1	1ms	100
+rtr-100	rtr-101	10Mbps	1	1ms	100
+rtr-101	rtr-102	10Mbps	1	1ms	100
+rtr-102	rtr-103	10Mbps	1	1ms	100
+rtr-103	rtr-104	10Mbps	1	1ms	100
+rtr-104	rtr-105	10Mbps	1	1ms	100
+rtr-105	rtr-106	10Mbps	1	1ms	100
+rtr-106	rtr-107	10Mbps	1	1ms	100
+rtr-107	rtr-108	10Mbps	1	1ms	100
+rtr-108	rtr-109	10Mbps	1	1ms	100
+rtr-109	rtr-110	10Mbps	1	1ms	100
+rtr-110	rtr-111	10Mbps	1	1ms	100
+rtr-111	rtr-112	10Mbps	1	1ms	100
+rtr-112	rtr-113	10Mbps	1	1ms	100
+rtr-113	rtr-114	10Mbps	1	1ms	100
+rtr-114	rtr-115	10Mbps	1	1ms	100
+rtr-115	rtr-116	10Mbps	1	1ms	100
+rtr-116	rtr-117	10Mbps	1	1ms	100
+rtr-117	rtr-118	10Mbps	1	1ms	100
+rtr-118	rtr-119	10Mbps	1	1ms	100
+rtr-119	rtr-120	10Mbps	1	1ms	100
+rtr-120	rtr-121	10Mbps	1	1ms	100
+rtr-121	rtr-122	10Mbps	1	1ms	100
+rtr-122	rtr-123	10Mbps	1	1ms	100
+rtr-123	rtr-124	10Mbps	1	1ms	100
+rtr-124	rtr-125	10Mbps	1	1ms	100
+rtr-125	rtr-126	10Mbps	1	1ms	100
+rtr-126	rtr-127	10Mbps	1	1ms	100
+rtr-127	rtr-128	10Mbps	1	1ms	100
+rtr-128	rtr-129	10Mbps	1	1ms	100
+rtr-129	rtr-130	10Mbps	1	1ms	100
+rtr-130	rtr-131	10Mbps	1	1ms	100
+rtr-131	rtr-132	10Mbps	1	1ms	100
+rtr-132	rtr-133	10Mbps	1	1ms	100
+rtr-133	rtr-134	10Mbps	1	1ms	100
+rtr-134	rtr-135	10Mbps	1	1ms	100
+rtr-135	rtr-136	10Mbps	1	1ms	100
+rtr-136	rtr-137	10Mbps	1	1ms	100
+rtr-137	rtr-138	10Mbps	1	1ms	100
+rtr-138	rtr-139	10Mbps	1	1ms	100
+rtr-139	rtr-140	10Mbps	1	1ms	100
+rtr-140	rtr-141	10Mbps	1	1ms	100
+rtr-141	rtr-142	10Mbps	1	1ms	100
+rtr-142	rtr-143	10Mbps	1	1ms	100
+rtr-143	rtr-144	10Mbps	1	1ms	100
+rtr-144	rtr-145	10Mbps	1	1ms	100
+rtr-145	rtr-146	10Mbps	1	1ms	100
+rtr-146	rtr-147	10Mbps	1	1ms	100
+rtr-147	rtr-148	10Mbps	1	1ms	100
+rtr-148	rtr-149	10Mbps	1	1ms	100
+rtr-149	rtr-150	10Mbps	1	1ms	100
+rtr-150	rtr-151	10Mbps	1	1ms	100
+rtr-151	rtr-152	10Mbps	1	1ms	100
+rtr-152	rtr-153	10Mbps	1	1ms	100
+rtr-153	rtr-154	10Mbps	1	1ms	100
+rtr-154	rtr-155	10Mbps	1	1ms	100
+rtr-155	rtr-156	10Mbps	1	1ms	100
+rtr-156	rtr-157	10Mbps	1	1ms	100
+rtr-157	rtr-158	10Mbps	1	1ms	100
+rtr-158	rtr-159	10Mbps	1	1ms	100
+rtr-159	rtr-160	10Mbps	1	1ms	100
+rtr-160	rtr-161	10Mbps	1	1ms	100
+rtr-161	rtr-162	10Mbps	1	1ms	100
+rtr-162	rtr-163	10Mbps	1	1ms	100
+rtr-163	rtr-164	10Mbps	1	1ms	100
+rtr-164	rtr-165	10Mbps	1	1ms	100
+rtr-165	rtr-166	10Mbps	1	1ms	100
+rtr-166	rtr-167	10Mbps	1	1ms	100
+rtr-167	rtr-168	10Mbps	1	1ms	100
+rtr-168	rtr-169	10Mbps	1	1ms	100
+rtr-169	rtr-170	10Mbps	1	1ms	100
+rtr-170	rtr-171	10Mbps	1	1ms	100
+rtr-171	rtr-172	10Mbps	1	1ms	100
+rtr-172	rtr-173	10Mbps	1	1ms	100
+rtr-173	rtr-174	10Mbps	1	1ms	100
+rtr-174	rtr-175	10Mbps	1	1ms	100
+rtr-175	rtr-176	10Mbps	1	1ms	100
+rtr-176	rtr-177	10Mbps	1	1ms	100
+rtr-177	rtr-178	10Mbps	1	1ms	100
+rtr-178	rtr-179	10Mbps	1	1ms	100
+rtr-179	rtr-180	10Mbps	1	1ms	100
+rtr-180	rtr-181	10Mbps	1	1ms	100
+rtr-181	rtr-182	10Mbps	1	1ms	100
+rtr-182	rtr-183	10Mbps	1	1ms	100
+rtr-183	rtr-184	10Mbps	1	1ms	100
+rtr-184	rtr-185	10Mbps	1	1ms	100
+rtr-185	rtr-186	10Mbps	1	1ms	100
+rtr-186	rtr-187	10Mbps	1	1ms	100
+rtr-187	rtr-188	10Mbps	1	1ms	100
+rtr-188	rtr-189	10Mbps	1	1ms	100
+rtr-189	rtr-190	10Mbps	1	1ms	100
+rtr-190	rtr-191	10Mbps	1	1ms	100
+rtr-191	rtr-192	10Mbps	1	1ms	100
+rtr-192	rtr-193	10Mbps	1	1ms	100
+rtr-193	rtr-194	10Mbps	1	1ms	100
+rtr-194	rtr-195	10Mbps	1	1ms	100
+rtr-195	rtr-196	10Mbps	1	1ms	100
+rtr-196	rtr-197	10Mbps	1	1ms	100
+rtr-197	rtr-198	10Mbps	1	1ms	100
+rtr-198	rtr-199	10Mbps	1	1ms	100
+rtr-199	rtr-200	10Mbps	1	1ms	100
+rtr-200	rtr-201	10Mbps	1	1ms	100
+rtr-201	rtr-202	10Mbps	1	1ms	100
+rtr-202	rtr-203	10Mbps	1	1ms	100
+rtr-203	rtr-204	10Mbps	1	1ms	100
+rtr-204	rtr-205	10Mbps	1	1ms	100
+rtr-205	rtr-206	10Mbps	1	1ms	100
+rtr-206	rtr-207	10Mbps	1	1ms	100
+rtr-207	rtr-208	10Mbps	1	1ms	100
+rtr-208	rtr-209	10Mbps	1	1ms	100
+rtr-209	rtr-210	10Mbps	1	1ms	100
+rtr-210	rtr-211	10Mbps	1	1ms	100
+rtr-211	rtr-212	10Mbps	1	1ms	100
+rtr-212	rtr-213	10Mbps	1	1ms	100
+rtr-213	rtr-214	10Mbps	1	1ms	100
+rtr-214	rtr-215	10Mbps	1	1ms	100
+rtr-215	rtr-216	10Mbps	1	1ms	100
+rtr-216	rtr-217	10Mbps	1	1ms	100
+rtr-217	rtr-218	10Mbps	1	1ms	100
+rtr-218	rtr-219	10Mbps	1	1ms	100
+rtr-219	rtr-220	10Mbps	1	1ms	100
+rtr-220	rtr-221	10Mbps	1	1ms	100
+rtr-221	rtr-222	10Mbps	1	1ms	100
+rtr-222	rtr-223	10Mbps	1	1ms	100
+rtr-223	rtr-224	10Mbps	1	1ms	100
+rtr-224	rtr-225	10Mbps	1	1ms	100
+rtr-225	rtr-226	10Mbps	1	1ms	100
+rtr-226	rtr-227	10Mbps	1	1ms	100
+rtr-227	rtr-228	10Mbps	1	1ms	100
+rtr-228	rtr-229	10Mbps	1	1ms	100
+rtr-229	rtr-230	10Mbps	1	1ms	100
+rtr-230	rtr-231	10Mbps	1	1ms	100
+rtr-231	rtr-232	10Mbps	1	1ms	100
+rtr-232	rtr-233	10Mbps	1	1ms	100
+rtr-233	rtr-234	10Mbps	1	1ms	100
+rtr-234	rtr-235	10Mbps	1	1ms	100
+rtr-235	rtr-236	10Mbps	1	1ms	100
+rtr-236	rtr-237	10Mbps	1	1ms	100
+rtr-237	rtr-238	10Mbps	1	1ms	100
+rtr-238	rtr-239	10Mbps	1	1ms	100
+rtr-239	rtr-240	10Mbps	1	1ms	100
+rtr-240	rtr-241	10Mbps	1	1ms	100
+rtr-241	rtr-242	10Mbps	1	1ms	100
+rtr-242	rtr-243	10Mbps	1	1ms	100
+rtr-243	rtr-244	10Mbps	1	1ms	100
+rtr-244	rtr-245	10Mbps	1	1ms	100
+rtr-245	rtr-246	10Mbps	1	1ms	100
+rtr-246	rtr-247	10Mbps	1	1ms	100
+rtr-247	rtr-248	10Mbps	1	1ms	100
+rtr-248	rtr-249	10Mbps	1	1ms	100
+rtr-249	rtr-250	10Mbps	1	1ms	100
+rtr-250	user	10Mbps	1	1ms	100

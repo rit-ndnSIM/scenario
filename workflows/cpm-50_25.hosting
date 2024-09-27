@@ -1,0 +1,109 @@
+{	"routerHosting": {
+		"sensor": [
+			"/sensor"
+		],
+		"rtr-001": [
+			"/serviceCPM-001",
+			"/serviceCPM-026"
+		],
+		"rtr-002": [
+			"/serviceCPM-002",
+			"/serviceCPM-027"
+		],
+		"rtr-003": [
+			"/serviceCPM-003",
+			"/serviceCPM-028"
+		],
+		"rtr-004": [
+			"/serviceCPM-004",
+			"/serviceCPM-029"
+		],
+		"rtr-005": [
+			"/serviceCPM-005",
+			"/serviceCPM-030"
+		],
+		"rtr-006": [
+			"/serviceCPM-006",
+			"/serviceCPM-031"
+		],
+		"rtr-007": [
+			"/serviceCPM-007",
+			"/serviceCPM-032"
+		],
+		"rtr-008": [
+			"/serviceCPM-008",
+			"/serviceCPM-033"
+		],
+		"rtr-009": [
+			"/serviceCPM-009",
+			"/serviceCPM-034"
+		],
+		"rtr-010": [
+			"/serviceCPM-010",
+			"/serviceCPM-035"
+		],
+		"rtr-011": [
+			"/serviceCPM-011",
+			"/serviceCPM-036"
+		],
+		"rtr-012": [
+			"/serviceCPM-012",
+			"/serviceCPM-037"
+		],
+		"rtr-013": [
+			"/serviceCPM-013",
+			"/serviceCPM-038"
+		],
+		"rtr-014": [
+			"/serviceCPM-014",
+			"/serviceCPM-039"
+		],
+		"rtr-015": [
+			"/serviceCPM-015",
+			"/serviceCPM-040"
+		],
+		"rtr-016": [
+			"/serviceCPM-016",
+			"/serviceCPM-041"
+		],
+		"rtr-017": [
+			"/serviceCPM-017",
+			"/serviceCPM-042"
+		],
+		"rtr-018": [
+			"/serviceCPM-018",
+			"/serviceCPM-043"
+		],
+		"rtr-019": [
+			"/serviceCPM-019",
+			"/serviceCPM-044"
+		],
+		"rtr-020": [
+			"/serviceCPM-020",
+			"/serviceCPM-045"
+		],
+		"rtr-021": [
+			"/serviceCPM-021",
+			"/serviceCPM-046"
+		],
+		"rtr-022": [
+			"/serviceCPM-022",
+			"/serviceCPM-047"
+		],
+		"rtr-023": [
+			"/serviceCPM-023",
+			"/serviceCPM-048"
+		],
+		"rtr-024": [
+			"/serviceCPM-024",
+			"/serviceCPM-049"
+		],
+		"rtr-025": [
+			"/serviceCPM-025",
+			"/serviceCPM-050"
+		],
+		"user": [
+			"/consumer"
+		]
+	}
+}

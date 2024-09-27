@@ -1,0 +1,306 @@
+{	"dag": {
+		"/sensor": {
+			"/serviceCPM-001": 0
+		},
+		"/serviceCPM-001": {
+			"/serviceCPM-002": 0
+		},
+		"/serviceCPM-002": {
+			"/serviceCPM-003": 0
+		},
+		"/serviceCPM-003": {
+			"/serviceCPM-004": 0
+		},
+		"/serviceCPM-004": {
+			"/serviceCPM-005": 0
+		},
+		"/serviceCPM-005": {
+			"/serviceCPM-006": 0
+		},
+		"/serviceCPM-006": {
+			"/serviceCPM-007": 0
+		},
+		"/serviceCPM-007": {
+			"/serviceCPM-008": 0
+		},
+		"/serviceCPM-008": {
+			"/serviceCPM-009": 0
+		},
+		"/serviceCPM-009": {
+			"/serviceCPM-010": 0
+		},
+		"/serviceCPM-010": {
+			"/serviceCPM-011": 0
+		},
+		"/serviceCPM-011": {
+			"/serviceCPM-012": 0
+		},
+		"/serviceCPM-012": {
+			"/serviceCPM-013": 0
+		},
+		"/serviceCPM-013": {
+			"/serviceCPM-014": 0
+		},
+		"/serviceCPM-014": {
+			"/serviceCPM-015": 0
+		},
+		"/serviceCPM-015": {
+			"/serviceCPM-016": 0
+		},
+		"/serviceCPM-016": {
+			"/serviceCPM-017": 0
+		},
+		"/serviceCPM-017": {
+			"/serviceCPM-018": 0
+		},
+		"/serviceCPM-018": {
+			"/serviceCPM-019": 0
+		},
+		"/serviceCPM-019": {
+			"/serviceCPM-020": 0
+		},
+		"/serviceCPM-020": {	
+			"/serviceCPM-021": 0
+		},	
+		"/serviceCPM-021": {	
+			"/serviceCPM-022": 0
+		},	
+		"/serviceCPM-022": {	
+			"/serviceCPM-023": 0
+		},	
+		"/serviceCPM-023": {	
+			"/serviceCPM-024": 0
+		},	
+		"/serviceCPM-024": {	
+			"/serviceCPM-025": 0
+		},	
+		"/serviceCPM-025": {	
+			"/serviceCPM-026": 0
+		},	
+		"/serviceCPM-026": {	
+			"/serviceCPM-027": 0
+		},	
+		"/serviceCPM-027": {	
+			"/serviceCPM-028": 0
+		},	
+		"/serviceCPM-028": {	
+			"/serviceCPM-029": 0
+		},	
+		"/serviceCPM-029": {	
+			"/serviceCPM-030": 0
+		},	
+		"/serviceCPM-030": {	
+			"/serviceCPM-031": 0
+		},	
+		"/serviceCPM-031": {	
+			"/serviceCPM-032": 0
+		},	
+		"/serviceCPM-032": {	
+			"/serviceCPM-033": 0
+		},	
+		"/serviceCPM-033": {	
+			"/serviceCPM-034": 0
+		},	
+		"/serviceCPM-034": {	
+			"/serviceCPM-035": 0
+		},	
+		"/serviceCPM-035": {	
+			"/serviceCPM-036": 0
+		},	
+		"/serviceCPM-036": {	
+			"/serviceCPM-037": 0
+		},	
+		"/serviceCPM-037": {	
+			"/serviceCPM-038": 0
+		},	
+		"/serviceCPM-038": {	
+			"/serviceCPM-039": 0
+		},	
+		"/serviceCPM-039": {	
+			"/serviceCPM-040": 0
+		},	
+		"/serviceCPM-040": {	
+			"/serviceCPM-041": 0
+		},	
+		"/serviceCPM-041": {	
+			"/serviceCPM-042": 0
+		},	
+		"/serviceCPM-042": {	
+			"/serviceCPM-043": 0
+		},	
+		"/serviceCPM-043": {	
+			"/serviceCPM-044": 0
+		},	
+		"/serviceCPM-044": {	
+			"/serviceCPM-045": 0
+		},	
+		"/serviceCPM-045": {	
+			"/serviceCPM-046": 0
+		},	
+		"/serviceCPM-046": {	
+			"/serviceCPM-047": 0
+		},	
+		"/serviceCPM-047": {	
+			"/serviceCPM-048": 0
+		},	
+		"/serviceCPM-048": {	
+			"/serviceCPM-049": 0
+		},	
+		"/serviceCPM-049": {	
+			"/serviceCPM-050": 0
+		},	
+		"/serviceCPM-050": {	
+			"/serviceCPM-051": 0
+		},	
+		"/serviceCPM-051": {	
+			"/serviceCPM-052": 0
+		},	
+		"/serviceCPM-052": {	
+			"/serviceCPM-053": 0
+		},	
+		"/serviceCPM-053": {	
+			"/serviceCPM-054": 0
+		},	
+		"/serviceCPM-054": {	
+			"/serviceCPM-055": 0
+		},	
+		"/serviceCPM-055": {	
+			"/serviceCPM-056": 0
+		},	
+		"/serviceCPM-056": {	
+			"/serviceCPM-057": 0
+		},	
+		"/serviceCPM-057": {	
+			"/serviceCPM-058": 0
+		},	
+		"/serviceCPM-058": {	
+			"/serviceCPM-059": 0
+		},	
+		"/serviceCPM-059": {	
+			"/serviceCPM-060": 0
+		},	
+		"/serviceCPM-060": {	
+			"/serviceCPM-061": 0
+		},	
+		"/serviceCPM-061": {	
+			"/serviceCPM-062": 0
+		},	
+		"/serviceCPM-062": {	
+			"/serviceCPM-063": 0
+		},	
+		"/serviceCPM-063": {	
+			"/serviceCPM-064": 0
+		},	
+		"/serviceCPM-064": {	
+			"/serviceCPM-065": 0
+		},	
+		"/serviceCPM-065": {	
+			"/serviceCPM-066": 0
+		},	
+		"/serviceCPM-066": {	
+			"/serviceCPM-067": 0
+		},	
+		"/serviceCPM-067": {	
+			"/serviceCPM-068": 0
+		},	
+		"/serviceCPM-068": {	
+			"/serviceCPM-069": 0
+		},	
+		"/serviceCPM-069": {	
+			"/serviceCPM-070": 0
+		},	
+		"/serviceCPM-070": {	
+			"/serviceCPM-071": 0
+		},	
+		"/serviceCPM-071": {	
+			"/serviceCPM-072": 0
+		},	
+		"/serviceCPM-072": {	
+			"/serviceCPM-073": 0
+		},	
+		"/serviceCPM-073": {	
+			"/serviceCPM-074": 0
+		},	
+		"/serviceCPM-074": {	
+			"/serviceCPM-075": 0
+		},	
+		"/serviceCPM-075": {	
+			"/serviceCPM-076": 0
+		},	
+		"/serviceCPM-076": {	
+			"/serviceCPM-077": 0
+		},	
+		"/serviceCPM-077": {	
+			"/serviceCPM-078": 0
+		},	
+		"/serviceCPM-078": {	
+			"/serviceCPM-079": 0
+		},	
+		"/serviceCPM-079": {	
+			"/serviceCPM-080": 0
+		},	
+		"/serviceCPM-080": {	
+			"/serviceCPM-081": 0
+		},	
+		"/serviceCPM-081": {	
+			"/serviceCPM-082": 0
+		},	
+		"/serviceCPM-082": {	
+			"/serviceCPM-083": 0
+		},	
+		"/serviceCPM-083": {	
+			"/serviceCPM-084": 0
+		},	
+		"/serviceCPM-084": {	
+			"/serviceCPM-085": 0
+		},	
+		"/serviceCPM-085": {	
+			"/serviceCPM-086": 0
+		},	
+		"/serviceCPM-086": {	
+			"/serviceCPM-087": 0
+		},	
+		"/serviceCPM-087": {	
+			"/serviceCPM-088": 0
+		},	
+		"/serviceCPM-088": {	
+			"/serviceCPM-089": 0
+		},	
+		"/serviceCPM-089": {	
+			"/serviceCPM-090": 0
+		},	
+		"/serviceCPM-090": {	
+			"/serviceCPM-091": 0
+		},	
+		"/serviceCPM-091": {	
+			"/serviceCPM-092": 0
+		},	
+		"/serviceCPM-092": {	
+			"/serviceCPM-093": 0
+		},	
+		"/serviceCPM-093": {	
+			"/serviceCPM-094": 0
+		},	
+		"/serviceCPM-094": {	
+			"/serviceCPM-095": 0
+		},	
+		"/serviceCPM-095": {	
+			"/serviceCPM-096": 0
+		},	
+		"/serviceCPM-096": {	
+			"/serviceCPM-097": 0
+		},	
+		"/serviceCPM-097": {	
+			"/serviceCPM-098": 0
+		},	
+		"/serviceCPM-098": {	
+			"/serviceCPM-099": 0
+		},	
+		"/serviceCPM-099": {	
+			"/serviceCPM-100": 0
+		},	
+		"/serviceCPM-100": {
+			"/consumer": 0
+		}
+	}
+}

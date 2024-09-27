@@ -9,6 +9,9 @@
 #CXXFLAGS="-std=c++17" ./waf configure --debug
 #---------------------------------------------------------
 
+
+clear
+
 set -e
 
 LOGS=CustomAppConsumer
@@ -26,8 +29,10 @@ export NS_LOG="$LOGS"
 
 NDNSIM_HOME="$HOME/ndnSIM"
 SCENARIO_DIR="$HOME/ndnSIM/scenario"
+WORKFLOW_DIR="$HOME/ndnSIM/scenario/workflows"
+TOPOLOGY_DIR="$HOME/ndnSIM/scenario/topologies"
 
-scenarios=(
+declare -a scenarios=(
 # 4 DAG
 #"ndn-cabeee-4dag-orchestratorA"
 #"ndn-cabeee-4dag-orchestratorB"
@@ -68,61 +73,62 @@ scenarios=(
 #"ndn-cabeee-20sensor-3node"
 
 # CriticalPath-Metric (CPM) Scenarios
-#"ndn-cabeee-cpm-10_5-orchA"
-#"ndn-cabeee-cpm-10_10-orchA"
-#"ndn-cabeee-cpm-10_20-orchA"
-#"ndn-cabeee-cpm-10_50-orchA"
-#"ndn-cabeee-cpm-20_10-orchA"
-#"ndn-cabeee-cpm-20_20-orchA"
-#"ndn-cabeee-cpm-20_40-orchA"
-#"ndn-cabeee-cpm-20_100-orchA"
-#"ndn-cabeee-cpm-50_25-orchA"
-#"ndn-cabeee-cpm-50_50-orchA"
-#"ndn-cabeee-cpm-50_100-orchA"
-#"ndn-cabeee-cpm-50_250-orchA"
-#"ndn-cabeee-cpm-100_50-orchA"
-#"ndn-cabeee-cpm-100_100-orchA"
-#"ndn-cabeee-cpm-100_200-orchA"
-#"ndn-cabeee-cpm-100_500-orchA"
+#"ndn-cabeee-cpm-orchA-10_5 orchA cpm-10_x.json cpm-10_5.hosting topo-cabeee-cpm-x_5.txt"
+#"ndn-cabeee-cpm-orchA-10_10 orchA cpm-10_x.json cpm-10_10.hosting topo-cabeee-cpm-x_10.txt"
+#"ndn-cabeee-cpm-orchA-10_20 orchA cpm-10_x.json cpm-10_20.hosting topo-cabeee-cpm-x_20.txt"
+#"ndn-cabeee-cpm-orchA-10_50 orchA cpm-10_x.json cpm-10_50.hosting topo-cabeee-cpm-x_50.txt"
+#"ndn-cabeee-cpm-orchA-20_10 orchA cpm-20_x.json cpm-20_10.hosting topo-cabeee-cpm-x_10.txt"
+#"ndn-cabeee-cpm-orchA-20_20 orchA cpm-20_x.json cpm-20_20.hosting topo-cabeee-cpm-x_20.txt"
+#"ndn-cabeee-cpm-orchA-20_40 orchA cpm-20_x.json cpm-20_40.hosting topo-cabeee-cpm-x_40.txt"
+#"ndn-cabeee-cpm-orchA-20_100 orchA cpm-20_x.json cpm-20_100.hosting topo-cabeee-cpm-x_100.txt"
+#"ndn-cabeee-cpm-orchA-50_25 orchA cpm-50_x.json cpm-50_25.hosting topo-cabeee-cpm-x_25.txt"
+#"ndn-cabeee-cpm-orchA-50_50 orchA cpm-50_x.json cpm-50_50.hosting topo-cabeee-cpm-x_50.txt"
+#"ndn-cabeee-cpm-orchA-50_100 orchA cpm-50_x.json cpm-50_100.hosting topo-cabeee-cpm-x_100.txt"
+#"ndn-cabeee-cpm-orchA-50_250 orchA cpm-50_x.json cpm-50_250.hosting topo-cabeee-cpm-x_250.txt"
+#"ndn-cabeee-cpm-orchA-100_50 orchA cpm-100_x.json cpm-100_50.hosting topo-cabeee-cpm-x_50.txt"
+#"ndn-cabeee-cpm-orchA-100_100 orchA cpm-100_x.json cpm-100_100.hosting topo-cabeee-cpm-x_100.txt"
+#"ndn-cabeee-cpm-orchA-100_200 orchA cpm-100_x.json cpm-100_200.hosting topo-cabeee-cpm-x_200.txt"
+#"ndn-cabeee-cpm-orchA-100_500 orchA cpm-100_x.json cpm-100_500.hosting topo-cabeee-cpm-x_500.txt"
 
-#"ndn-cabeee-cpm-10_5-orchB"
-#"ndn-cabeee-cpm-10_10-orchB"
-#"ndn-cabeee-cpm-10_20-orchB"
-#"ndn-cabeee-cpm-10_50-orchB"
-#"ndn-cabeee-cpm-20_10-orchB"
-#"ndn-cabeee-cpm-20_20-orchB"
-#"ndn-cabeee-cpm-20_40-orchB"
-#"ndn-cabeee-cpm-20_100-orchB"
-#"ndn-cabeee-cpm-50_25-orchB"
-#"ndn-cabeee-cpm-50_50-orchB"
-#"ndn-cabeee-cpm-50_100-orchB"
-#"ndn-cabeee-cpm-50_250-orchB"
-#"ndn-cabeee-cpm-100_50-orchB"
-#"ndn-cabeee-cpm-100_100-orchB"
-#"ndn-cabeee-cpm-100_200-orchB"
-#"ndn-cabeee-cpm-100_500-orchB"
+#"ndn-cabeee-cpm-orchB-10_5 orchB cpm-10_x.json cpm-10_5.hosting topo-cabeee-cpm-x_5.txt"
+#"ndn-cabeee-cpm-orchB-10_10 orchB cpm-10_x.json cpm-10_10.hosting topo-cabeee-cpm-x_10.txt"
+#"ndn-cabeee-cpm-orchB-10_20 orchB cpm-10_x.json cpm-10_20.hosting topo-cabeee-cpm-x_20.txt"
+#"ndn-cabeee-cpm-orchB-10_50 orchB cpm-10_x.json cpm-10_50.hosting topo-cabeee-cpm-x_50.txt"
+#"ndn-cabeee-cpm-orchB-20_10 orchB cpm-20_x.json cpm-20_10.hosting topo-cabeee-cpm-x_10.txt"
+"ndn-cabeee-cpm-orchB-20_20 orchB cpm-20_x.json cpm-20_20.hosting topo-cabeee-cpm-x_20.txt"
+#"ndn-cabeee-cpm-orchB-20_40 orchB cpm-20_x.json cpm-20_40.hosting topo-cabeee-cpm-x_40.txt"
+#"ndn-cabeee-cpm-orchB-20_100 orchB cpm-20_x.json cpm-20_100.hosting topo-cabeee-cpm-x_100.txt"
+"ndn-cabeee-cpm-orchB-50_25 orchB cpm-50_x.json cpm-50_25.hosting topo-cabeee-cpm-x_25.txt"
+"ndn-cabeee-cpm-orchB-50_50 orchB cpm-50_x.json cpm-50_50.hosting topo-cabeee-cpm-x_50.txt"
+"ndn-cabeee-cpm-orchB-50_100 orchB cpm-50_x.json cpm-50_100.hosting topo-cabeee-cpm-x_100.txt"
+"ndn-cabeee-cpm-orchB-50_250 orchB cpm-50_x.json cpm-50_250.hosting topo-cabeee-cpm-x_250.txt"
+"ndn-cabeee-cpm-orchB-100_50 orchB cpm-100_x.json cpm-100_50.hosting topo-cabeee-cpm-x_50.txt"
+"ndn-cabeee-cpm-orchB-100_100 orchB cpm-100_x.json cpm-100_100.hosting topo-cabeee-cpm-x_100.txt"
+"ndn-cabeee-cpm-orchB-100_200 orchB cpm-100_x.json cpm-100_200.hosting topo-cabeee-cpm-x_200.txt"
+"ndn-cabeee-cpm-orchB-100_500 orchB cpm-100_x.json cpm-100_500.hosting topo-cabeee-cpm-x_500.txt"
 
-#"ndn-cabeee-cpm-10_5-nescoSCOPT"
-"ndn-cabeee-cpm-10_10-nescoSCOPT"
-#"ndn-cabeee-cpm-10_20-nescoSCOPT"
-#"ndn-cabeee-cpm-10_50-nescoSCOPT"
-#"ndn-cabeee-cpm-20_10-nescoSCOPT"
-#"ndn-cabeee-cpm-20_20-nescoSCOPT"
-#"ndn-cabeee-cpm-20_40-nescoSCOPT"
-#"ndn-cabeee-cpm-20_100-nescoSCOPT"
-#"ndn-cabeee-cpm-50_25-nescoSCOPT"
-#"ndn-cabeee-cpm-50_50-nescoSCOPT"
-#"ndn-cabeee-cpm-50_100-nescoSCOPT"
-#"ndn-cabeee-cpm-50_250-nescoSCOPT"
-#"ndn-cabeee-cpm-100_50-nescoSCOPT"
-#"ndn-cabeee-cpm-100_100-nescoSCOPT"
-#"ndn-cabeee-cpm-100_200-nescoSCOPT"
-#"ndn-cabeee-cpm-100_500-nescoSCOPT"
+#"ndn-cabeee-cpm-nescoSCOPT-10_5 nescoSCOPT cpm-10_x.json cpm-10_5.hosting topo-cabeee-cpm-x_5.txt"
+#"ndn-cabeee-cpm-nescoSCOPT-10_10 nescoSCOPT cpm-10_x.json cpm-10_10.hosting topo-cabeee-cpm-x_10.txt"
+"ndn-cabeee-cpm-nescoSCOPT-10_20 nescoSCOPT cpm-10_x.json cpm-10_20.hosting topo-cabeee-cpm-x_20.txt"
+"ndn-cabeee-cpm-nescoSCOPT-10_50 nescoSCOPT cpm-10_x.json cpm-10_50.hosting topo-cabeee-cpm-x_50.txt"
+"ndn-cabeee-cpm-nescoSCOPT-20_10 nescoSCOPT cpm-20_x.json cpm-20_10.hosting topo-cabeee-cpm-x_10.txt"
+"ndn-cabeee-cpm-nescoSCOPT-20_20 nescoSCOPT cpm-20_x.json cpm-20_20.hosting topo-cabeee-cpm-x_20.txt"
+"ndn-cabeee-cpm-nescoSCOPT-20_40 nescoSCOPT cpm-20_x.json cpm-20_40.hosting topo-cabeee-cpm-x_40.txt"
+"ndn-cabeee-cpm-nescoSCOPT-20_100 nescoSCOPT cpm-20_x.json cpm-20_100.hosting topo-cabeee-cpm-x_100.txt"
+"ndn-cabeee-cpm-nescoSCOPT-50_25 nescoSCOPT cpm-50_x.json cpm-50_25.hosting topo-cabeee-cpm-x_25.txt"
+"ndn-cabeee-cpm-nescoSCOPT-50_50 nescoSCOPT cpm-50_x.json cpm-50_50.hosting topo-cabeee-cpm-x_50.txt"
+"ndn-cabeee-cpm-nescoSCOPT-50_100 nescoSCOPT cpm-50_x.json cpm-50_100.hosting topo-cabeee-cpm-x_100.txt"
+"ndn-cabeee-cpm-nescoSCOPT-50_250 nescoSCOPT cpm-50_x.json cpm-50_250.hosting topo-cabeee-cpm-x_250.txt"
+"ndn-cabeee-cpm-nescoSCOPT-100_50 nescoSCOPT cpm-100_x.json cpm-100_50.hosting topo-cabeee-cpm-x_50.txt"
+"ndn-cabeee-cpm-nescoSCOPT-100_100 nescoSCOPT cpm-100_x.json cpm-100_100.hosting topo-cabeee-cpm-x_100.txt"
+"ndn-cabeee-cpm-nescoSCOPT-100_200 nescoSCOPT cpm-100_x.json cpm-100_200.hosting topo-cabeee-cpm-x_200.txt"
+"ndn-cabeee-cpm-nescoSCOPT-100_500 nescoSCOPT cpm-100_x.json cpm-100_500.hosting topo-cabeee-cpm-x_500.txt"
+
 )
 
 scenario_log="$SCENARIO_DIR/scenario.log"
 csv_out="$SCENARIO_DIR/perf-results-simulation.csv"
-header="Example, Interest Packets Generated, Data Packets Generated, Interest Packets Transmitted, Data Packets Transmitted, Service Latency, Final Result, Time, ns-3 commit, pybindgen commit, scenario commit, ndnSIM commit"
+header="Example, Interest Packets Generated, Data Packets Generated, Interest Packets Transmitted, Data Packets Transmitted, Critical-Path-Metric, Service Latency, Final Result, Time, ns-3 commit, pybindgen commit, scenario commit, ndnSIM commit"
 
 if [ ! -f "$csv_out" ]; then
 	echo "$header" > "$csv_out"
@@ -134,9 +140,20 @@ else
 	cp "$csv_out" "$csv_out.bak"
 fi
 
-for scenario in "${scenarios[@]}"
+
+for iterator in "${scenarios[@]}"
 do
+	read -a itrArray <<< "$iterator" #default whitespace IFS
+	scenario=${itrArray[0]}
+	type=${itrArray[1]}
+	wf=${WORKFLOW_DIR}/${itrArray[2]}
+	hosting=${WORKFLOW_DIR}/${itrArray[3]}
+	topo=${TOPOLOGY_DIR}/${itrArray[4]}
 	echo "Scenario: $scenario"
+	echo "type: $type"
+	echo "Workflow: $wf"
+	echo "Hosting: $hosting"
+	echo "Topology: $topo"
 
 	now="$(date -Iseconds)"
 
@@ -171,7 +188,13 @@ do
 	interest_trans="$(echo "$packets" | cut -d',' -f3)"
 	data_trans="$(echo "$packets" | cut -d',' -f4)"
 
-	row="$scenario, $interest_gen, $data_gen, $interest_trans, $data_trans, $latency, $result, $now, $ns_3_hash, $pybindgen_hash, $scenario_hash, $ndnsim_hash"
+	cpm=$( \
+		python critical-path-metric.py -type ${type} -workflow ${wf} -hosting ${hosting} -topology ${topo} | sed -n \
+		-e 's/^metric is \([0-9]*\)/\1/p' \
+		| tr -d '\n' \
+	)
+
+	row="$scenario, $interest_gen, $data_gen, $interest_trans, $data_trans, $cpm, $latency, $result, $now, $ns_3_hash, $pybindgen_hash, $scenario_hash, $ndnsim_hash"
 
 	echo "Dumping to csv..."
 	line_num="$(grep -n -F "$scenario," "$csv_out" | cut -d: -f1 | head -1)"

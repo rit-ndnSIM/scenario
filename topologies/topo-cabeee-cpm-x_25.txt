@@ -1,0 +1,62 @@
+router
+
+#node	city	y	x	mpi-partition
+sensor	NA	0	0	0
+user	NA	1	1	1
+rtr-001	NA	2	2	2
+rtr-002	NA	3	3	2
+rtr-003	NA	4	4	2
+rtr-004	NA	5	5	2
+rtr-005	NA	6	6	2
+rtr-006	NA	7	7	2
+rtr-007	NA	8	8	2
+rtr-008	NA	9	9	2
+rtr-009	NA	10	10	2
+rtr-010	NA	11	11	2
+rtr-011	NA	12	12	2
+rtr-012	NA	13	13	2
+rtr-013	NA	14	14	2
+rtr-014	NA	15	15	2
+rtr-015	NA	16	16	2
+rtr-016	NA	17	17	2
+rtr-017	NA	18	18	2
+rtr-018	NA	19	19	2
+rtr-019	NA	20	20	2
+rtr-020	NA	21	21	2
+rtr-021	NA	22	22	2
+rtr-022	NA	23	23	2
+rtr-023	NA	24	24	2
+rtr-024	NA	25	25	2
+rtr-025	NA	26	26	2
+
+
+
+link
+
+# from	    to	capacity	metric	delay	queue
+sensor	rtr-001	10Mbps	1	1ms	100
+rtr-001	rtr-002	10Mbps	1	1ms	100
+rtr-002	rtr-003	10Mbps	1	1ms	100
+rtr-003	rtr-004	10Mbps	1	1ms	100
+rtr-004	rtr-005	10Mbps	1	1ms	100
+rtr-005	rtr-006	10Mbps	1	1ms	100
+rtr-006	rtr-007	10Mbps	1	1ms	100
+rtr-007	rtr-008	10Mbps	1	1ms	100
+rtr-008	rtr-009	10Mbps	1	1ms	100
+rtr-009	rtr-010	10Mbps	1	1ms	100
+rtr-010	rtr-011	10Mbps	1	1ms	100
+rtr-011	rtr-012	10Mbps	1	1ms	100
+rtr-012	rtr-013	10Mbps	1	1ms	100
+rtr-013	rtr-014	10Mbps	1	1ms	100
+rtr-014	rtr-015	10Mbps	1	1ms	100
+rtr-015	rtr-016	10Mbps	1	1ms	100
+rtr-016	rtr-017	10Mbps	1	1ms	100
+rtr-017	rtr-018	10Mbps	1	1ms	100
+rtr-018	rtr-019	10Mbps	1	1ms	100
+rtr-019	rtr-020	10Mbps	1	1ms	100
+rtr-020	rtr-021	10Mbps	1	1ms	100
+rtr-021	rtr-022	10Mbps	1	1ms	100
+rtr-022	rtr-023	10Mbps	1	1ms	100
+rtr-023	rtr-024	10Mbps	1	1ms	100
+rtr-024	rtr-025	10Mbps	1	1ms	100
+rtr-025	user	10Mbps	1	1ms	100

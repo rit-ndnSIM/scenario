@@ -131,7 +131,7 @@ CustomAppConsumer::SendInterest()
   auto interest = std::make_shared<ndn::Interest>(m_prefix); // this name is just a placeholder
   Ptr<UniformRandomVariable> rand = CreateObject<UniformRandomVariable>();
   interest->setNonce(rand->GetValue(0, std::numeric_limits<uint32_t>::max()));
-  interest->setInterestLifetime(ndn::time::seconds(5));
+  interest->setInterestLifetime(ndn::time::seconds(540));
   //interest->setMustBeFresh(true);
 
   /*

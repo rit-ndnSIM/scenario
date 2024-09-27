@@ -1,0 +1,159 @@
+{	"routerHosting": {			
+		"sensor": [		
+			"/sensor"	
+		],		
+		"rtr-005": [		
+			"/serviceCPM-001"	
+		],		
+		"rtr-010": [		
+			"/serviceCPM-002"	
+		],		
+		"rtr-015": [		
+			"/serviceCPM-003"	
+		],		
+		"rtr-020": [		
+			"/serviceCPM-004"	
+		],		
+		"rtr-025": [		
+			"/serviceCPM-005"	
+		],		
+		"rtr-030": [		
+			"/serviceCPM-006"	
+		],		
+		"rtr-035": [		
+			"/serviceCPM-007"	
+		],		
+		"rtr-040": [		
+			"/serviceCPM-008"	
+		],		
+		"rtr-045": [		
+			"/serviceCPM-009"	
+		],		
+		"rtr-050": [		
+			"/serviceCPM-010"	
+		],		
+		"rtr-055": [		
+			"/serviceCPM-011"	
+		],		
+		"rtr-060": [		
+			"/serviceCPM-012"	
+		],		
+		"rtr-065": [		
+			"/serviceCPM-013"	
+		],		
+		"rtr-070": [		
+			"/serviceCPM-014"	
+		],		
+		"rtr-075": [		
+			"/serviceCPM-015"	
+		],		
+		"rtr-080": [		
+			"/serviceCPM-016"	
+		],		
+		"rtr-085": [		
+			"/serviceCPM-017"	
+		],		
+		"rtr-090": [		
+			"/serviceCPM-018"	
+		],		
+		"rtr-095": [		
+			"/serviceCPM-019"	
+		],		
+		"rtr-100": [		
+			"/serviceCPM-020"	
+		],		
+		"rtr-105": [		
+			"/serviceCPM-021"	
+		],		
+		"rtr-110": [		
+			"/serviceCPM-022"	
+		],		
+		"rtr-115": [		
+			"/serviceCPM-023"	
+		],		
+		"rtr-120": [		
+			"/serviceCPM-024"	
+		],		
+		"rtr-125": [		
+			"/serviceCPM-025"	
+		],		
+		"rtr-130": [		
+			"/serviceCPM-026"	
+		],		
+		"rtr-135": [		
+			"/serviceCPM-027"	
+		],		
+		"rtr-140": [		
+			"/serviceCPM-028"	
+		],		
+		"rtr-145": [		
+			"/serviceCPM-029"	
+		],		
+		"rtr-150": [		
+			"/serviceCPM-030"	
+		],		
+		"rtr-155": [		
+			"/serviceCPM-031"	
+		],		
+		"rtr-160": [		
+			"/serviceCPM-032"	
+		],		
+		"rtr-165": [		
+			"/serviceCPM-033"	
+		],		
+		"rtr-170": [		
+			"/serviceCPM-034"	
+		],		
+		"rtr-175": [		
+			"/serviceCPM-035"	
+		],		
+		"rtr-180": [		
+			"/serviceCPM-036"	
+		],		
+		"rtr-185": [		
+			"/serviceCPM-037"	
+		],		
+		"rtr-190": [		
+			"/serviceCPM-038"	
+		],		
+		"rtr-195": [		
+			"/serviceCPM-039"	
+		],		
+		"rtr-200": [		
+			"/serviceCPM-040"	
+		],		
+		"rtr-205": [		
+			"/serviceCPM-041"	
+		],		
+		"rtr-210": [		
+			"/serviceCPM-042"	
+		],		
+		"rtr-215": [		
+			"/serviceCPM-043"	
+		],		
+		"rtr-220": [		
+			"/serviceCPM-044"	
+		],		
+		"rtr-225": [		
+			"/serviceCPM-045"	
+		],		
+		"rtr-230": [		
+			"/serviceCPM-046"	
+		],		
+		"rtr-235": [		
+			"/serviceCPM-047"	
+		],		
+		"rtr-240": [		
+			"/serviceCPM-048"	
+		],		
+		"rtr-245": [		
+			"/serviceCPM-049"	
+		],		
+		"rtr-250": [		
+			"/serviceCPM-050"	
+		],		
+		"user": [		
+			"/consumer"	
+		]		
+	}			
+}				

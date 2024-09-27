@@ -1,0 +1,66 @@
+{	"dag": {
+		"/sensor": {
+			"/serviceCPM-001": 0
+		},
+		"/serviceCPM-001": {
+			"/serviceCPM-002": 0
+		},
+		"/serviceCPM-002": {
+			"/serviceCPM-003": 0
+		},
+		"/serviceCPM-003": {
+			"/serviceCPM-004": 0
+		},
+		"/serviceCPM-004": {
+			"/serviceCPM-005": 0
+		},
+		"/serviceCPM-005": {
+			"/serviceCPM-006": 0
+		},
+		"/serviceCPM-006": {
+			"/serviceCPM-007": 0
+		},
+		"/serviceCPM-007": {
+			"/serviceCPM-008": 0
+		},
+		"/serviceCPM-008": {
+			"/serviceCPM-009": 0
+		},
+		"/serviceCPM-009": {
+			"/serviceCPM-010": 0
+		},
+		"/serviceCPM-010": {
+			"/serviceCPM-011": 0
+		},
+		"/serviceCPM-011": {
+			"/serviceCPM-012": 0
+		},
+		"/serviceCPM-012": {
+			"/serviceCPM-013": 0
+		},
+		"/serviceCPM-013": {
+			"/serviceCPM-014": 0
+		},
+		"/serviceCPM-014": {
+			"/serviceCPM-015": 0
+		},
+		"/serviceCPM-015": {
+			"/serviceCPM-016": 0
+		},
+		"/serviceCPM-016": {
+			"/serviceCPM-017": 0
+		},
+		"/serviceCPM-017": {
+			"/serviceCPM-018": 0
+		},
+		"/serviceCPM-018": {
+			"/serviceCPM-019": 0
+		},
+		"/serviceCPM-019": {
+			"/serviceCPM-020": 0
+		},
+		"/serviceCPM-020": {
+			"/consumer": 0
+		}
+	}
+}
