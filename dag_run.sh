@@ -140,7 +140,7 @@ declare -a scenarios=(
 
 scenario_log="$SCENARIO_DIR/scenario.log"
 csv_out="$SCENARIO_DIR/perf-results-simulation.csv"
-header="Example, Interest Packets Generated, Data Packets Generated, Interest Packets Transmitted, Data Packets Transmitted, Critical-Path-Metric, Service Latency, Final Result, Time, ns-3 commit, pybindgen commit, scenario commit, ndnSIM commit"
+header="Example, Interest Packets Generated, Data Packets Generated, Interest Packets Transmitted, Data Packets Transmitted, Critical-Path-Metric, CPM-t_exec, Service Latency, Final Result, Time, ns-3 commit, pybindgen commit, scenario commit, ndnSIM commit"
 
 if [ ! -f "$csv_out" ]; then
 	echo "$header" > "$csv_out"
@@ -205,8 +205,13 @@ do
 		-e 's/^metric is \([0-9]*\)/\1/p' \
 		| tr -d '\n' \
 	)
+	cpm_t=$( \
+		python critical-path-metric.py -type ${type} -workflow ${wf} -hosting ${hosting} -topology ${topo} | sed -n \
+		-e 's/^time is \([0-9]*\)/\1/p' \
+		| tr -d '\n' \
+	)
 
-	row="$scenario, $interest_gen, $data_gen, $interest_trans, $data_trans, $cpm, $latency, $result, $now, $ns_3_hash, $pybindgen_hash, $scenario_hash, $ndnsim_hash"
+	row="$scenario, $interest_gen, $data_gen, $interest_trans, $data_trans, $cpm, $cpm_t, $latency, $result, $now, $ns_3_hash, $pybindgen_hash, $scenario_hash, $ndnsim_hash"
 
 	echo "Dumping to csv..."
 	line_num="$(grep -n -F "$scenario," "$csv_out" | cut -d: -f1 | head -1)"
