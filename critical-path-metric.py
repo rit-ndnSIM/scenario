@@ -5,6 +5,7 @@ import re
 import copy
 
 import sys, argparse
+import time
 
 from collections import defaultdict, deque, namedtuple
 
@@ -504,6 +505,7 @@ def main():
     topology_file = args.topology
     hosting_file = args.hosting
 
+    start_time = time.time()
     scenario = scenario_from_files(workflow_file, topology_file, hosting_file)
 
     #tree = scenario.build_interest_tree("user", "/consumer")
@@ -519,9 +521,12 @@ def main():
     if (args.type == 'orchB'):
         metric = scenario.orch_b_critical_path_metric("user", "/consumer")
 
-    tree = scenario.build_interest_tree("user", "/consumer")
+
+    #tree = scenario.build_interest_tree("user", "/consumer")
+    end_time = time.time()
 
     print(f"metric is {metric}")
+    print(f"time is {(end_time - start_time)}")
 
 if __name__ == '__main__':
     main()
