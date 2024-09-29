@@ -1,0 +1,14 @@
+router
+
+#node	city	y	x	mpi-partition
+sensor	NA	30	10	1
+rtr-001	NA	20	10	1
+rtr-002	NA	20	15	2
+user	NA	0	50	0
+
+link
+
+# from	    to		capacity	metric	delay	queue
+sensor	    rtr-001	10Mbps		1	1ms	100
+rtr-001	    rtr-002	10Mbps		1	1ms	100
+rtr-002	    user	10Mbps		1	1ms	100
