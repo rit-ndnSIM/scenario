@@ -24,7 +24,7 @@
 #include "ns3/ndnSIM-module.h"
 #include "ns3/string.h"
 
-#define PREFIX "/orchB"
+#define PREFIX "/orchA"
 
 namespace ns3 {
 
@@ -37,7 +37,7 @@ namespace ns3 {
 *         |
 *         v F2
 *       /-------\ Fapp    ---------------------
-*  node1| rtr-2 |---------| Service_B APP     | Service 1
+*  node1| rtr-2 |---------| Service_A APP     | Service 1
 *       \-------/         ---------------------
 *         ^ F3
 *         |
@@ -47,7 +47,7 @@ namespace ns3 {
 *         |
 *         v F6
 *       /-------\ Fapp    ---------------------
-*  noden| rtr-n |---------| Service_B APP     | Service n
+*  noden| rtr-n |---------| Service_A APP     | Service n
 *       \-------/         ---------------------
 *         ^ F7
 *         |
@@ -57,14 +57,14 @@ namespace ns3 {
 *         |
 *         v F6
 *       /-------\ Fapp    ---------------------
-*  node?| rtr-3 |---------| Service_B APP     | Service 20
+*  node?| rtr-3 |---------| Service_A APP     | Service 20
 *       \-------/         ---------------------
 *         ^ F7
 *         |
 *         |
 *         v F8
 *       /--------\ Fapp   ----------------------
-*  node?|  orch  |--------| Orchestrator_B APP | ServiceOrchestration
+*  node?|  orch  |--------| Orchestrator_A APP | ServiceOrchestration
 *       \--------/        ----------------------
 *         ^ F9
 *     0ms |
@@ -73,7 +73,7 @@ namespace ns3 {
 *  node?|  user  |--------| Consumer APP |
 *       \--------/        ----------------
 * 
-*     NS_LOG=CustomAppConsumer:CustomAppProducer:DagForwarderApp ./waf --run=ndn-cabeee-20node-linear-orchestratorB
+*     NS_LOG=CustomAppConsumer:CustomAppProducer:DagForwarderApp ./waf --run=ndn-cabeee-20node-linear-orchestratorA
 */
 int
 main(int argc, char* argv[])
@@ -119,11 +119,12 @@ main(int argc, char* argv[])
   ndnHelper.Install(router3);
 
 
+
   std::string Prefix(PREFIX);
 
 
   // Choosing forwarding strategy
-  //ndn::StrategyChoiceHelper::InstallAll(Prefix + "/serviceOrchestration", "/localhost/nfd/strategy/best-route");
+  //ndn::StrategyChoiceHelper::InstallAll("/serviceOrchestration", "/localhost/nfd/strategy/best-route");
   ndn::StrategyChoiceHelper::InstallAll(Prefix + "/serviceOrchestration", "/localhost/nfd/strategy/multicast");
   ndn::StrategyChoiceHelper::InstallAll(Prefix + "/sensor", "/localhost/nfd/strategy/multicast");
   ndn::StrategyChoiceHelper::InstallAll(Prefix + "/serviceL1", "/localhost/nfd/strategy/multicast");
@@ -168,43 +169,43 @@ main(int argc, char* argv[])
   sensorApp.Install(producer).Start(Seconds(0));
 
   // Custom App for routers
-  ndn::AppHelper routerApp("DagServiceB_App");
+  ndn::AppHelper routerApp("DagServiceA_App");
   routerApp.SetPrefix(Prefix);
   routerApp.SetAttribute("Service", StringValue("serviceL1"));
-  routerApp.Install(router2).Start(Seconds(0));
-  routerApp.SetPrefix(Prefix);
-  routerApp.SetAttribute("Service", StringValue("serviceL2"));
   routerApp.Install(router1).Start(Seconds(0));
   routerApp.SetPrefix(Prefix);
-  routerApp.SetAttribute("Service", StringValue("serviceL3"));
+  routerApp.SetAttribute("Service", StringValue("serviceL2"));
   routerApp.Install(router2).Start(Seconds(0));
   routerApp.SetPrefix(Prefix);
-  routerApp.SetAttribute("Service", StringValue("serviceL4"));
+  routerApp.SetAttribute("Service", StringValue("serviceL3"));
   routerApp.Install(router3).Start(Seconds(0));
+  routerApp.SetPrefix(Prefix);
+  routerApp.SetAttribute("Service", StringValue("serviceL4"));
+  routerApp.Install(router1).Start(Seconds(0));
   routerApp.SetPrefix(Prefix);
   routerApp.SetAttribute("Service", StringValue("serviceL5"));
   routerApp.Install(router2).Start(Seconds(0));
   routerApp.SetPrefix(Prefix);
   routerApp.SetAttribute("Service", StringValue("serviceL6"));
-  routerApp.Install(router1).Start(Seconds(0));
+  routerApp.Install(router3).Start(Seconds(0));
   routerApp.SetPrefix(Prefix);
   routerApp.SetAttribute("Service", StringValue("serviceL7"));
   routerApp.Install(router2).Start(Seconds(0));
   routerApp.SetPrefix(Prefix);
   routerApp.SetAttribute("Service", StringValue("serviceL8"));
-  routerApp.Install(router3).Start(Seconds(0));
+  routerApp.Install(router1).Start(Seconds(0));
   routerApp.SetPrefix(Prefix);
   routerApp.SetAttribute("Service", StringValue("serviceL9"));
   routerApp.Install(router2).Start(Seconds(0));
   routerApp.SetPrefix(Prefix);
   routerApp.SetAttribute("Service", StringValue("serviceL10"));
-  routerApp.Install(router1).Start(Seconds(0));
+  routerApp.Install(router3).Start(Seconds(0));
   routerApp.SetPrefix(Prefix);
   routerApp.SetAttribute("Service", StringValue("serviceL11"));
   routerApp.Install(router2).Start(Seconds(0));
   routerApp.SetPrefix(Prefix);
   routerApp.SetAttribute("Service", StringValue("serviceL12"));
-  routerApp.Install(router3).Start(Seconds(0));
+  routerApp.Install(router1).Start(Seconds(0));
   routerApp.SetPrefix(Prefix);
   routerApp.SetAttribute("Service", StringValue("serviceL13"));
   routerApp.Install(router2).Start(Seconds(0));
@@ -213,24 +214,24 @@ main(int argc, char* argv[])
   routerApp.Install(router1).Start(Seconds(0));
   routerApp.SetPrefix(Prefix);
   routerApp.SetAttribute("Service", StringValue("serviceL15"));
-  routerApp.Install(router2).Start(Seconds(0));
-  routerApp.SetPrefix(Prefix);
-  routerApp.SetAttribute("Service", StringValue("serviceL16"));
   routerApp.Install(router3).Start(Seconds(0));
   routerApp.SetPrefix(Prefix);
+  routerApp.SetAttribute("Service", StringValue("serviceL16"));
+  routerApp.Install(router1).Start(Seconds(0));
+  routerApp.SetPrefix(Prefix);
   routerApp.SetAttribute("Service", StringValue("serviceL17"));
-  routerApp.Install(router2).Start(Seconds(0));
+  routerApp.Install(router3).Start(Seconds(0));
   routerApp.SetPrefix(Prefix);
   routerApp.SetAttribute("Service", StringValue("serviceL18"));
   routerApp.Install(router1).Start(Seconds(0));
   routerApp.SetPrefix(Prefix);
   routerApp.SetAttribute("Service", StringValue("serviceL19"));
-  routerApp.Install(router2).Start(Seconds(0));
+  routerApp.Install(router3).Start(Seconds(0));
   routerApp.SetPrefix(Prefix);
   routerApp.SetAttribute("Service", StringValue("serviceL20"));
-  routerApp.Install(router3).Start(Seconds(0));
+  routerApp.Install(router1).Start(Seconds(0));
 
-  ndn::AppHelper orchestratorApp("DagOrchestratorB_App");
+  ndn::AppHelper orchestratorApp("DagOrchestratorA_App");
   orchestratorApp.SetPrefix(Prefix);
   orchestratorApp.SetAttribute("Service", StringValue("serviceOrchestration"));
   //orchestratorApp.Install(orchestrator).Start(Seconds(0));
@@ -240,10 +241,10 @@ main(int argc, char* argv[])
   ndn::AppHelper userApp("CustomAppConsumer");
   //userApp.SetPrefix("/cabeee/sensor/service1/service2/service3");
   //userApp.SetPrefix("/service4/service3/service2/service1/sensor"); // only for linear workflows
-  userApp.SetPrefix(Prefix);
+  userApp.SetPrefix(Prefix); // this is only a placeholder. The app will read the JSON workflow, and figure out which service is "last"
   userApp.SetAttribute("Service", StringValue("consumer"));
   userApp.SetAttribute("Workflow", StringValue("workflows/20-linear.json"));
-  userApp.SetAttribute("Orchestrate", UintegerValue(2)); // This enables the "orchestrator" by having the consumer set the head service to /serviceOrchestration/dag
+  userApp.SetAttribute("Orchestrate", UintegerValue(1)); // This enables the "orchestrator" by having the consumer set the head service to /serviceOrchestration
   userApp.Install(consumer).Start(Seconds(0));
 
 /*
@@ -298,10 +299,10 @@ main(int argc, char* argv[])
 
 
 
-  Simulator::Stop(Seconds(5.0));
+  Simulator::Stop(Seconds(4.0));
 
-  //ndn::L3RateTracer::InstallAll("rate-trace_cabeee-20node-linear-orchestratorB.txt", Seconds(1.0));
-  //ndn::CsTracer::InstallAll("cs-trace_cabeee-20node-linear-orchestratorB.txt", Seconds(1.0));
+  //ndn::L3RateTracer::InstallAll("rate-trace_cabeee-20scrambled-orchestratorA.txt", Seconds(1.0));
+  //ndn::CsTracer::InstallAll("cs-trace_cabeee-20scrambled-orchestratorA.txt", Seconds(1.0));
 
   Simulator::Run();
   Simulator::Destroy();

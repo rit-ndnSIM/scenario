@@ -37,7 +37,7 @@ namespace ns3 {
 *         |
 *         v F2
 *       /-------\ Fapp    ---------------------
-*  node1| rtr-1 |---------| DAG Forwarder APP | Service 1
+*  node1| rtr-2 |---------| DAG Forwarder APP | Service 1
 *       \-------/         ---------------------
 *         ^ F3
 *         |
@@ -51,13 +51,13 @@ namespace ns3 {
 *       \-------/         ---------------------
 *         ^ F7
 *         |
-*         .
+*         . Note: routers alternate per service as shown in the code below!
 *         .
 *         .
 *         |
 *         v F6
 *       /-------\ Fapp    ---------------------
-*  node?| rtr-20|-- ------| DAG Forwarder APP | Service 20
+*  node?| rtr-3 |-- ------| DAG Forwarder APP | Service 20
 *       \-------/         ---------------------
 *         ^ F7
 *         |
@@ -292,8 +292,8 @@ main(int argc, char* argv[])
 
   Simulator::Stop(Seconds(2.0));
 
-  ndn::L3RateTracer::InstallAll("rate-trace_cabeee-20node-linear.txt", Seconds(1.0));
-  ndn::CsTracer::InstallAll("cs-trace_cabeee-20node-linear.txt", Seconds(1.0));
+  //ndn::L3RateTracer::InstallAll("rate-trace_cabeee-20node-linear.txt", Seconds(1.0));
+  //ndn::CsTracer::InstallAll("cs-trace_cabeee-20node-linear.txt", Seconds(1.0));
 
   Simulator::Run();
   Simulator::Destroy();

@@ -364,7 +364,7 @@ DagForwarderApp::OnInterest(std::shared_ptr<const ndn::Interest> interest)
       // only if we haven't already received a request for the service
       if (m_dagServTracker.empty()) // if we haven't generated an interest for this service, the dagServTracker will be empty
       {
-        NS_LOG_DEBUG("\n\nWe are hosting service " << m_service.toUri() << ", looking for this service in the DAG!" << std::endl);
+        NS_LOG_DEBUG("\n\nshortcutOPT: We are hosting service " << m_service.toUri() << ", looking for this service in the DAG!" << std::endl);
         for (auto& x : dagObject["dag"].items())
         {
           //std::cout << "Checking x.key: " << (std::string)x.key() << '\n';
@@ -386,7 +386,7 @@ DagForwarderApp::OnInterest(std::shared_ptr<const ndn::Interest> interest)
         }
         //std::cout << "Forwarder dagServTracker data structure: " << std::setw(2) << m_dagServTracker << '\n';
 
-        NS_LOG_DEBUG("\n\nGenerarating all interests for required inputs..." << '\n');
+        NS_LOG_DEBUG("\n\nshortcutOPT: Generarating all interests for required inputs..." << '\n');
         // generate all the interests for required inputs
         //for (auto& serviceInput : m_dagServTracker[(std::string)m_nameUri]["inputsRxed"].items())
         for (auto& serviceInput : m_dagServTracker[(std::string)m_service.toUri()]["inputsRxed"].items())
@@ -395,7 +395,7 @@ DagForwarderApp::OnInterest(std::shared_ptr<const ndn::Interest> interest)
           {
             // generate the interest for this input, sendInterest will prune the DAG and set the head properly
             std::string dagString = dagObject.dump();
-            NS_LOG_DEBUG("\n\nForwarder: Generating interest for " << serviceInput.key() << '\n');
+            NS_LOG_DEBUG("\n\nshortcutOPT: Generating interest for " << serviceInput.key() << '\n');
             DagForwarderApp::SendInterest(serviceInput.key(), dagString);
           }
         }

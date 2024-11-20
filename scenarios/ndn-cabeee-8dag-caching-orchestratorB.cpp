@@ -276,8 +276,8 @@ main(int argc, char* argv[])
 
   Simulator::Stop(Seconds(8.0));
 
-  ndn::L3RateTracer::InstallAll("rate-trace_cabeee-8dag-caching-orchestratorB.txt", Seconds(0.1));
-  ndn::CsTracer::InstallAll("cs-trace_cabeee-8dag-caching-orchestratorB.txt", Seconds(0.1));
+  //ndn::L3RateTracer::InstallAll("rate-trace_cabeee-8dag-caching-orchestratorB.txt", Seconds(0.1));
+  //ndn::CsTracer::InstallAll("cs-trace_cabeee-8dag-caching-orchestratorB.txt", Seconds(0.1));
 
   Simulator::Run();
   Simulator::Destroy();

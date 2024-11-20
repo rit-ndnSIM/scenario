@@ -339,8 +339,8 @@ main(int argc, char* argv[])
 
   Simulator::Stop(Seconds(20.0));
 
-  ndn::L3RateTracer::InstallAll("rate-trace_cabeee-20node-parallel-orchestratorA.txt", Seconds(0.1));
-  ndn::CsTracer::InstallAll("cs-trace_cabeee-20node-parallel-orchestratorA.txt", Seconds(0.1));
+  //ndn::L3RateTracer::InstallAll("rate-trace_cabeee-20node-parallel-orchestratorA.txt", Seconds(0.1));
+  //ndn::CsTracer::InstallAll("cs-trace_cabeee-20node-parallel-orchestratorA.txt", Seconds(0.1));
 
   Simulator::Run();
   Simulator::Destroy();
