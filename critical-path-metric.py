@@ -20,7 +20,7 @@ class Scenario(object):
         self.topology = Topology(topology)
         self.hosting = Hosting(hosting)
 
-    def build_interest_tree(self, user, consumer):
+    def build_interest_tree(self, user, consumer, shortcutOPT=False):
         """ Builds an interest tree for the scenario """
 
         workflow = self.workflow.clone()
@@ -33,32 +33,41 @@ class Scenario(object):
             current_branch = branches.pop()
             router, interest_service, time = current_branch
 
-            for hosted_service in self.hosting.get_hosting(router):
-                for upstream_service in workflow.get_incoming(hosted_service):
-                    next_router = self.next_hop(router, upstream_service)
-                    if next_router == router:
-                        next_branch = Branch(router, upstream_service, time)
-                        branches.append(next_branch)
-                    else:
-                        next_branch = Branch(next_router, upstream_service, time+1)
-                        branches.appendleft(next_branch)
-                    workflow.remove_connection(upstream_service, hosted_service)
-                    tree.add(current_branch, next_branch)
-
-            if not self.hosting.is_hosting(router, interest_service):
+            if not self.hosting.is_hosting(router, interest_service): 
+                # if not hosting, take a hop
                 next_router = self.next_hop(router, interest_service)
                 next_branch = Branch(next_router, interest_service, time+1)
                 branches.appendleft(next_branch)
                 tree.add(current_branch, next_branch)
+            else:
+                # if hosted, generate interests for get upstream service
+                for upstream_service in workflow.get_incoming(interest_service):
+                    next_branch = Branch(router, upstream_service, time)
+                    # .append to handle immediately, keeps things synced (i think)
+                    branches.append(next_branch)
+
+                    # mark as accounted for by removing connection
+                    workflow.remove_connection(upstream_service, interest_service)
+                    tree.add(current_branch, next_branch)
+
+            # repeat code here but it's fine
+            # shortcutOPT
+            if shortcutOPT:
+                for hosted_service in self.hosting.get_hosting(router):
+                    for upstream_service in workflow.get_incoming(hosted_service):
+                        next_branch = Branch(router, upstream_service, time)
+                        branches.append(next_branch)
+                        workflow.remove_connection(upstream_service, hosted_service)
+                        tree.add(current_branch, next_branch)
 
         return tree
 
-    def critical_path_metric(self, user, consumer):
+    def critical_path_metric(self, user, consumer, shortcutOPT=False):
         """ Get critical path for distributed orchestration """
 
         self.check_scenario(user, consumer)
 
-        tree = self.build_interest_tree(user, consumer)
+        tree = self.build_interest_tree(user, consumer, shortcutOPT)
 
         terminations = tree.get_sinks()
 
@@ -425,7 +434,7 @@ def topology_connections_from_file(topology_path):
             pass
         
         # TODO: this logic could be a lot more robust, but it should work for now
-        pattern = re.compile("^([a-zA-Z0-9_-]+)\s+([a-zA-Z0-9_-]+).*$")
+        pattern = re.compile(r"^([a-zA-Z0-9_-]+)\s+([a-zA-Z0-9_-]+).*$")
         topology_connections = list()
 
         for line in lines:
@@ -489,7 +498,7 @@ def main():
 
 
     if args.type is None:
-        print("Please enter a fowarding type (nescoSCOPT, orchA or orchB")
+        print("Please enter a fowarding type (nesco, nescoSCOPT, orchA or orchB")
         sys.exit(0)
     if args.workflow is None:
         print("Please enter a workflow, topology, and hosting file using the command line options")
@@ -506,6 +515,7 @@ def main():
     hosting_file = args.hosting
 
     start_time = time.time()
+
     scenario = scenario_from_files(workflow_file, topology_file, hosting_file)
 
     #tree = scenario.build_interest_tree("user", "/consumer")
@@ -514,8 +524,10 @@ def main():
 
     #metric = scenario.critical_path_metric("user", "/consumer")
 
+    if (args.type == 'nesco'):
+        metric = scenario.critical_path_metric("user", "/consumer", False)
     if (args.type == 'nescoSCOPT'):
-        metric = scenario.critical_path_metric("user", "/consumer")
+        metric = scenario.critical_path_metric("user", "/consumer", True)
     if (args.type == 'orchA'):
         metric = scenario.orch_a_critical_path_metric("user", "/consumer")
     if (args.type == 'orchB'):
