@@ -45,7 +45,7 @@ user	NA	10	0	0
 link
 
 # from	    to		capacity	metric	delay	queue
-sensor	    rtr-1	10Mbps		1	1ms	100
-rtr-1	    rtr-2	10Mbps		1	1ms	100
-rtr-2	    rtr-3	10Mbps		1	1ms	100
-rtr-3	    user	10Mbps		1	1ms	100
+sensor	    rtr-1	100Mbps		1	1ms	100
+rtr-1	    rtr-2	100Mbps		1	1ms	100
+rtr-2	    rtr-3	100Mbps		1	1ms	100
+rtr-3	    user	100Mbps		1	1ms	100
