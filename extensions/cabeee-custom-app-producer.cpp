@@ -26,6 +26,7 @@
 #include "ns3/simulator.h"
 #include "ns3/packet.h"
 #include "ns3/string.h"
+#include "ns3/uinteger.h"
 
 #include "ns3/ndnSIM/helper/ndn-stack-helper.hpp"
 #include "ns3/ndnSIM/helper/ndn-fib-helper.hpp"
@@ -45,6 +46,8 @@ CustomAppProducer::GetTypeId()
   static TypeId tid = TypeId("CustomAppProducer")
     .SetParent<ndn::App>()
     .AddConstructor<CustomAppProducer>()
+    .AddAttribute("FreshnessPeriod_ms", "Requested freshness period milliseconds", UintegerValue(60000),
+                    MakeUintegerAccessor(&CustomAppProducer::m_freshnessPeriod), MakeUintegerChecker<uint32_t>())
     .AddAttribute("Prefix", "Requested prefix", StringValue("/dumb-interest"),
                     ndn::MakeNameAccessor(&CustomAppProducer::m_prefix), ndn::MakeNameChecker())
     .AddAttribute("Service", "Requested service", StringValue("dumb-service"),
@@ -97,7 +100,7 @@ CustomAppProducer::SendInterest()
   Ptr<UniformRandomVariable> rand = CreateObject<UniformRandomVariable>();
   interest->setNonce(rand->GetValue(0, std::numeric_limits<uint32_t>::max()));
   interest->setInterestLifetime(ndn::time::seconds(5));
-  //interest->setMustBeFresh(true);
+  interest->setMustBeFresh(true);
 
   NS_LOG_DEBUG("Sending Interest packet for " << *interest);
 
@@ -118,7 +121,8 @@ CustomAppProducer::OnInterest(std::shared_ptr<const ndn::Interest> interest)
   // Note that Interests send out by the app will not be sent back to the app !
 
   auto data = std::make_shared<ndn::Data>(interest->getName());
-  data->setFreshnessPeriod(ndn::time::milliseconds(60000));
+  //data->setFreshnessPeriod(ndn::time::milliseconds(60000));
+  data->setFreshnessPeriod(ndn::time::milliseconds(m_freshnessPeriod));
 
   //data->setContent(std::make_shared< ::ndn::Buffer>(1024));
   unsigned char myBuffer[1024];
