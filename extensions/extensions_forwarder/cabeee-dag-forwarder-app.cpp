@@ -92,6 +92,8 @@ DagForwarderApp::StartApplication()
   //m_inputTotal = 0;
   //m_numRxedInputs = 0;
 
+  m_lowestFreshness = ndn::time::milliseconds(100000); // set to a high value (I know no producer freshness value is higher than 100 seconds)
+
 }
 
 // Processing when application is stopped
@@ -127,8 +129,8 @@ DagForwarderApp::SendInterest(const std::string& interestName, std::string dagSt
   auto interest = std::make_shared<ndn::Interest>(m_prefix.ndn::Name::toUri() + interestName);
   Ptr<UniformRandomVariable> rand = CreateObject<UniformRandomVariable>();
   interest->setNonce(rand->GetValue(0, std::numeric_limits<uint32_t>::max()));
-  interest->setInterestLifetime(ndn::time::seconds(5));
-  //interest->setMustBeFresh(true);
+  interest->setInterestLifetime(ndn::time::seconds(10));
+  interest->setMustBeFresh(true);
 
 
 
@@ -535,6 +537,11 @@ DagForwarderApp::OnData(std::shared_ptr<const ndn::Data> data)
   std::string head = dagObject["head"];
   */
 
+  ndn::time::milliseconds data_freshnessPeriod = data->getFreshnessPeriod();
+  if (data_freshnessPeriod < m_lowestFreshness) {
+    m_lowestFreshness = data_freshnessPeriod;
+  }
+
   char index = -1;
   for (auto& x : m_dagObject["dag"].items())
   {
@@ -697,7 +704,8 @@ DagForwarderApp::OnData(std::shared_ptr<const ndn::Data> data)
 
     //auto new_data = std::make_shared<ndn::Data>(new_name);
     auto new_data = std::make_shared<ndn::Data>(m_nameAndDigest);
-    new_data->setFreshnessPeriod(ndn::time::milliseconds(9000));
+    //new_data->setFreshnessPeriod(ndn::time::milliseconds(9000));
+    new_data->setFreshnessPeriod(ndn::time::milliseconds(m_lowestFreshness));
 
     //new_data->setContent(std::make_shared< ::ndn::Buffer>(1024));
     unsigned char myBuffer[1024];
@@ -709,6 +717,17 @@ DagForwarderApp::OnData(std::shared_ptr<const ndn::Data> data)
     // Call trace (for logging purposes)
     m_transmittedDatas(new_data, this, m_face);
     m_appLink->onReceiveData(*new_data);
+
+
+    // now that we have run the service (and possibly cached the result data), we set inputs to "not received"
+    // this is done so when cached results expire, any new interests will trigger inputs to be fetched again, and the service will run again.
+    allInputsReceived = 0;
+    for (auto& serviceInput : m_dagServTracker[m_nameUri]["inputsRxed"].items())
+    {
+      serviceInput.value() = 0;
+    }
+
+
 
   }
   else
