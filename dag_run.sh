@@ -32,13 +32,9 @@ SCENARIO_DIR="$HOME/ndnSIM/scenario"
 WORKFLOW_DIR="$HOME/ndnSIM/scenario/workflows"
 TOPOLOGY_DIR="$HOME/ndnSIM/scenario/topologies"
 
-runSCENARIOS_vs_runCPM="runSCENARIOS"
-#runSCENARIOS_vs_runCPM="runCPM"
 
 
-if [ "$runSCENARIOS_vs_runCPM" == "runSCENARIOS" ]; then
-
-	declare -a scenarios=(
+declare -a scenarios=(
 	# 4 DAG
 	"ndn-cabeee-4dag-orchestratorA orchA 4dag.json 4dag.hosting topo-cabeee-3node.txt"
 	"ndn-cabeee-4dag-orchestratorB orchB 4dag.json 4dag.hosting topo-cabeee-3node.txt"
@@ -97,101 +93,9 @@ if [ "$runSCENARIOS_vs_runCPM" == "runSCENARIOS" ]; then
 	#"ndn-cabeee-20sensor-3node"
 	)
 	
-	scenario_log="$SCENARIO_DIR/scenario.log"
-	csv_out="$SCENARIO_DIR/perf-results-simulation.csv"
+scenario_log="$SCENARIO_DIR/scenario.log"
+csv_out="$SCENARIO_DIR/perf-results-simulation.csv"
 
-else
-
-	declare -a scenarios=(
-	# CriticalPath-Metric (CPM) Scenarios
-	"ndn-cabeee-cpm-orchA-10_2 orchA cpm-10_x.json cpm-10_2.hosting topo-cabeee-cpm-x_2.txt"
-	"ndn-cabeee-cpm-orchA-10_5 orchA cpm-10_x.json cpm-10_5.hosting topo-cabeee-cpm-x_5.txt"
-	"ndn-cabeee-cpm-orchA-10_10 orchA cpm-10_x.json cpm-10_10.hosting topo-cabeee-cpm-x_10.txt"
-	"ndn-cabeee-cpm-orchA-10_20 orchA cpm-10_x.json cpm-10_20.hosting topo-cabeee-cpm-x_20.txt"
-	"ndn-cabeee-cpm-orchA-10_50 orchA cpm-10_x.json cpm-10_50.hosting topo-cabeee-cpm-x_50.txt"
-	"ndn-cabeee-cpm-orchA-20_5 orchA cpm-20_x.json cpm-20_5.hosting topo-cabeee-cpm-x_5.txt"
-	"ndn-cabeee-cpm-orchA-20_10 orchA cpm-20_x.json cpm-20_10.hosting topo-cabeee-cpm-x_10.txt"
-	"ndn-cabeee-cpm-orchA-20_20 orchA cpm-20_x.json cpm-20_20.hosting topo-cabeee-cpm-x_20.txt"
-	"ndn-cabeee-cpm-orchA-20_40 orchA cpm-20_x.json cpm-20_40.hosting topo-cabeee-cpm-x_40.txt"
-	"ndn-cabeee-cpm-orchA-20_100 orchA cpm-20_x.json cpm-20_100.hosting topo-cabeee-cpm-x_100.txt"
-	"ndn-cabeee-cpm-orchA-50_12 orchA cpm-50_x.json cpm-50_12.hosting topo-cabeee-cpm-x_12.txt"
-	"ndn-cabeee-cpm-orchA-50_25 orchA cpm-50_x.json cpm-50_25.hosting topo-cabeee-cpm-x_25.txt"
-	"ndn-cabeee-cpm-orchA-50_50 orchA cpm-50_x.json cpm-50_50.hosting topo-cabeee-cpm-x_50.txt"
-	"ndn-cabeee-cpm-orchA-50_100 orchA cpm-50_x.json cpm-50_100.hosting topo-cabeee-cpm-x_100.txt"
-	"ndn-cabeee-cpm-orchA-50_250 orchA cpm-50_x.json cpm-50_250.hosting topo-cabeee-cpm-x_250.txt"
-	"ndn-cabeee-cpm-orchA-100_25 orchA cpm-100_x.json cpm-100_25.hosting topo-cabeee-cpm-x_25.txt"
-	"ndn-cabeee-cpm-orchA-100_50 orchA cpm-100_x.json cpm-100_50.hosting topo-cabeee-cpm-x_50.txt"
-	"ndn-cabeee-cpm-orchA-100_100 orchA cpm-100_x.json cpm-100_100.hosting topo-cabeee-cpm-x_100.txt"
-	"ndn-cabeee-cpm-orchA-100_200 orchA cpm-100_x.json cpm-100_200.hosting topo-cabeee-cpm-x_200.txt"
-	"ndn-cabeee-cpm-orchA-100_500 orchA cpm-100_x.json cpm-100_500.hosting topo-cabeee-cpm-x_500.txt"
-	
-	"ndn-cabeee-cpm-orchB-10_2 orchB cpm-10_x.json cpm-10_2.hosting topo-cabeee-cpm-x_2.txt"
-	"ndn-cabeee-cpm-orchB-10_5 orchB cpm-10_x.json cpm-10_5.hosting topo-cabeee-cpm-x_5.txt"
-	"ndn-cabeee-cpm-orchB-10_10 orchB cpm-10_x.json cpm-10_10.hosting topo-cabeee-cpm-x_10.txt"
-	"ndn-cabeee-cpm-orchB-10_20 orchB cpm-10_x.json cpm-10_20.hosting topo-cabeee-cpm-x_20.txt"
-	"ndn-cabeee-cpm-orchB-10_50 orchB cpm-10_x.json cpm-10_50.hosting topo-cabeee-cpm-x_50.txt"
-	"ndn-cabeee-cpm-orchB-20_5 orchB cpm-20_x.json cpm-20_5.hosting topo-cabeee-cpm-x_5.txt"
-	"ndn-cabeee-cpm-orchB-20_10 orchB cpm-20_x.json cpm-20_10.hosting topo-cabeee-cpm-x_10.txt"
-	"ndn-cabeee-cpm-orchB-20_20 orchB cpm-20_x.json cpm-20_20.hosting topo-cabeee-cpm-x_20.txt"
-	"ndn-cabeee-cpm-orchB-20_40 orchB cpm-20_x.json cpm-20_40.hosting topo-cabeee-cpm-x_40.txt"
-	"ndn-cabeee-cpm-orchB-20_100 orchB cpm-20_x.json cpm-20_100.hosting topo-cabeee-cpm-x_100.txt"
-	"ndn-cabeee-cpm-orchB-50_12 orchB cpm-50_x.json cpm-50_12.hosting topo-cabeee-cpm-x_12.txt"
-	"ndn-cabeee-cpm-orchB-50_25 orchB cpm-50_x.json cpm-50_25.hosting topo-cabeee-cpm-x_25.txt"
-	"ndn-cabeee-cpm-orchB-50_50 orchB cpm-50_x.json cpm-50_50.hosting topo-cabeee-cpm-x_50.txt"
-	"ndn-cabeee-cpm-orchB-50_100 orchB cpm-50_x.json cpm-50_100.hosting topo-cabeee-cpm-x_100.txt"
-	"ndn-cabeee-cpm-orchB-50_250 orchB cpm-50_x.json cpm-50_250.hosting topo-cabeee-cpm-x_250.txt"
-	"ndn-cabeee-cpm-orchB-100_25 orchB cpm-100_x.json cpm-100_25.hosting topo-cabeee-cpm-x_25.txt"
-	"ndn-cabeee-cpm-orchB-100_50 orchB cpm-100_x.json cpm-100_50.hosting topo-cabeee-cpm-x_50.txt"
-	"ndn-cabeee-cpm-orchB-100_100 orchB cpm-100_x.json cpm-100_100.hosting topo-cabeee-cpm-x_100.txt"
-	"ndn-cabeee-cpm-orchB-100_200 orchB cpm-100_x.json cpm-100_200.hosting topo-cabeee-cpm-x_200.txt"
-	"ndn-cabeee-cpm-orchB-100_500 orchB cpm-100_x.json cpm-100_500.hosting topo-cabeee-cpm-x_500.txt"
-	
-	"ndn-cabeee-cpm-nesco-10_2 nesco cpm-10_x.json cpm-10_2.hosting topo-cabeee-cpm-x_2.txt"
-	"ndn-cabeee-cpm-nesco-10_5 nesco cpm-10_x.json cpm-10_5.hosting topo-cabeee-cpm-x_5.txt"
-	"ndn-cabeee-cpm-nesco-10_10 nesco cpm-10_x.json cpm-10_10.hosting topo-cabeee-cpm-x_10.txt"
-	"ndn-cabeee-cpm-nesco-10_20 nesco cpm-10_x.json cpm-10_20.hosting topo-cabeee-cpm-x_20.txt"
-	"ndn-cabeee-cpm-nesco-10_50 nesco cpm-10_x.json cpm-10_50.hosting topo-cabeee-cpm-x_50.txt"
-	"ndn-cabeee-cpm-nesco-20_5 nesco cpm-20_x.json cpm-20_5.hosting topo-cabeee-cpm-x_5.txt"
-	"ndn-cabeee-cpm-nesco-20_10 nesco cpm-20_x.json cpm-20_10.hosting topo-cabeee-cpm-x_10.txt"
-	"ndn-cabeee-cpm-nesco-20_20 nesco cpm-20_x.json cpm-20_20.hosting topo-cabeee-cpm-x_20.txt"
-	"ndn-cabeee-cpm-nesco-20_40 nesco cpm-20_x.json cpm-20_40.hosting topo-cabeee-cpm-x_40.txt"
-	"ndn-cabeee-cpm-nesco-20_100 nesco cpm-20_x.json cpm-20_100.hosting topo-cabeee-cpm-x_100.txt"
-	"ndn-cabeee-cpm-nesco-50_12 nesco cpm-50_x.json cpm-50_12.hosting topo-cabeee-cpm-x_12.txt"
-	"ndn-cabeee-cpm-nesco-50_25 nesco cpm-50_x.json cpm-50_25.hosting topo-cabeee-cpm-x_25.txt"
-	"ndn-cabeee-cpm-nesco-50_50 nesco cpm-50_x.json cpm-50_50.hosting topo-cabeee-cpm-x_50.txt"
-	"ndn-cabeee-cpm-nesco-50_100 nesco cpm-50_x.json cpm-50_100.hosting topo-cabeee-cpm-x_100.txt"
-	"ndn-cabeee-cpm-nesco-50_250 nesco cpm-50_x.json cpm-50_250.hosting topo-cabeee-cpm-x_250.txt"
-	"ndn-cabeee-cpm-nesco-100_25 nesco cpm-100_x.json cpm-100_25.hosting topo-cabeee-cpm-x_25.txt"
-	"ndn-cabeee-cpm-nesco-100_50 nesco cpm-100_x.json cpm-100_50.hosting topo-cabeee-cpm-x_50.txt"
-	"ndn-cabeee-cpm-nesco-100_100 nesco cpm-100_x.json cpm-100_100.hosting topo-cabeee-cpm-x_100.txt"
-	"ndn-cabeee-cpm-nesco-100_200 nesco cpm-100_x.json cpm-100_200.hosting topo-cabeee-cpm-x_200.txt"
-	"ndn-cabeee-cpm-nesco-100_500 nesco cpm-100_x.json cpm-100_500.hosting topo-cabeee-cpm-x_500.txt"
-	
-	"ndn-cabeee-cpm-nescoSCOPT-10_2 nescoSCOPT cpm-10_x.json cpm-10_2.hosting topo-cabeee-cpm-x_2.txt"
-	"ndn-cabeee-cpm-nescoSCOPT-10_5 nescoSCOPT cpm-10_x.json cpm-10_5.hosting topo-cabeee-cpm-x_5.txt"
-	"ndn-cabeee-cpm-nescoSCOPT-10_10 nescoSCOPT cpm-10_x.json cpm-10_10.hosting topo-cabeee-cpm-x_10.txt"
-	"ndn-cabeee-cpm-nescoSCOPT-10_20 nescoSCOPT cpm-10_x.json cpm-10_20.hosting topo-cabeee-cpm-x_20.txt"
-	"ndn-cabeee-cpm-nescoSCOPT-10_50 nescoSCOPT cpm-10_x.json cpm-10_50.hosting topo-cabeee-cpm-x_50.txt"
-	"ndn-cabeee-cpm-nescoSCOPT-20_5 nescoSCOPT cpm-20_x.json cpm-20_5.hosting topo-cabeee-cpm-x_5.txt"
-	"ndn-cabeee-cpm-nescoSCOPT-20_10 nescoSCOPT cpm-20_x.json cpm-20_10.hosting topo-cabeee-cpm-x_10.txt"
-	"ndn-cabeee-cpm-nescoSCOPT-20_20 nescoSCOPT cpm-20_x.json cpm-20_20.hosting topo-cabeee-cpm-x_20.txt"
-	"ndn-cabeee-cpm-nescoSCOPT-20_40 nescoSCOPT cpm-20_x.json cpm-20_40.hosting topo-cabeee-cpm-x_40.txt"
-	"ndn-cabeee-cpm-nescoSCOPT-20_100 nescoSCOPT cpm-20_x.json cpm-20_100.hosting topo-cabeee-cpm-x_100.txt"
-	"ndn-cabeee-cpm-nescoSCOPT-50_12 nescoSCOPT cpm-50_x.json cpm-50_12.hosting topo-cabeee-cpm-x_12.txt"
-	"ndn-cabeee-cpm-nescoSCOPT-50_25 nescoSCOPT cpm-50_x.json cpm-50_25.hosting topo-cabeee-cpm-x_25.txt"
-	"ndn-cabeee-cpm-nescoSCOPT-50_50 nescoSCOPT cpm-50_x.json cpm-50_50.hosting topo-cabeee-cpm-x_50.txt"
-	"ndn-cabeee-cpm-nescoSCOPT-50_100 nescoSCOPT cpm-50_x.json cpm-50_100.hosting topo-cabeee-cpm-x_100.txt"
-	"ndn-cabeee-cpm-nescoSCOPT-50_250 nescoSCOPT cpm-50_x.json cpm-50_250.hosting topo-cabeee-cpm-x_250.txt"
-	"ndn-cabeee-cpm-nescoSCOPT-100_25 nescoSCOPT cpm-100_x.json cpm-100_25.hosting topo-cabeee-cpm-x_25.txt"
-	"ndn-cabeee-cpm-nescoSCOPT-100_50 nescoSCOPT cpm-100_x.json cpm-100_50.hosting topo-cabeee-cpm-x_50.txt"
-	"ndn-cabeee-cpm-nescoSCOPT-100_100 nescoSCOPT cpm-100_x.json cpm-100_100.hosting topo-cabeee-cpm-x_100.txt"
-	"ndn-cabeee-cpm-nescoSCOPT-100_200 nescoSCOPT cpm-100_x.json cpm-100_200.hosting topo-cabeee-cpm-x_200.txt"
-	"ndn-cabeee-cpm-nescoSCOPT-100_500 nescoSCOPT cpm-100_x.json cpm-100_500.hosting topo-cabeee-cpm-x_500.txt"
-	
-	)
-	scenario_log="$SCENARIO_DIR/scenario.log"
-	csv_out="$SCENARIO_DIR/perf-results-simulation-cpm.csv"
-fi
 
 
 
