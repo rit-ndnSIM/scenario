@@ -24,52 +24,49 @@
 #include "ns3/ndnSIM-module.h"
 #include "ns3/string.h"
 
-#define PREFIX "/interCACHE"
+#define PREFIX "/orchA"
 
 namespace ns3 {
 
 /**
-*       /-------\        /--------\     /--------\ Fapp   ----------------
-*  node0|sensor1|--------|sensor-n|-----|sensor20|--------| Producer APPs| Sensor Data
-*       \-------/        \--------/     \--------/        ----------------
-*         ^ F8             ^ F3            ^ F1
-*         |                |               |
-*         |                |               |
-*         |                |               v F2
-*         |                |             /-------\ Fapp   ---------------------
-*         |                |       node20| rtr-20|--------| DAG Forwarder APP | Service 20
-*         |                |             \-------/        ---------------------
-*         |                |               ^
-*         |                v F6            |
-*         |              /-------\ Fapp    |              ---------------------
-*         |         noden| rtr-n |---------|--------------| DAG Forwarder APP | Service n
-*         |              \-------/         |              ---------------------
-*         |                ^               |
-*         v F6             |               | 
-*       /-------\ Fapp     |               |              ---------------------
-*  node1| rtr-1 |----------|---------------|--------------| DAG Forwarder APP | Service 1
-*       \-------/          |               |              ---------------------
-*         ^ F7             |               |
-*         |                |               |
-*         |                |               |
-*         v F8             v               v
-*       /--------------------------------------\ Fapp     ---------------------
-* node21|              rtr-21                  |----------| DAG Forwarder APP | Service 21
-*       \--------------------------------------/          ---------------------
-*         ^ F7
+*       /------\ Fapp x20 ----------------
+*  node0|sensor|----------| Producer APP | Sensor 1-20
+*       \------/          ----------------
+*         ^ F1
+*         |
+*         |
+*         v F2
+*       /-------\ Fapp    ---------------------
+*  node1| rtr-1 |---------|                   | No application, just a regular NDN forwarder
+*       \-------/         ---------------------
+*         ^ F3
+*         |
+*         .
+*         .
+*         .
+*         |
+*         v F4
+*       /-------\ Fapp x20---------------------
+*  node2| rtr-2 |---------| ServiceA APP      | Service 1-20
+*       \-------/         ---------------------
+*         ^ F5
+*         |
+*         .
+*         .
 *         |
 *         v F6
-*       /--------\
-* node22|  orch  |
-*       \--------/
-*         ^ F9
-*     0ms |
-*         v FA
-*       /--------\ Fapp   ----------------
-* node23|  user  |--------| Consumer APP |
-*       \--------/        ----------------
+*       /-------\ Fapp    ---------------------
+*  node3| rtr-3 |-- ------| ServiceA APP      | Service 21
+*       \-------/         ---------------------
+*         ^ F7
+*         |
+*         |
+*         v F8
+*       /--------\ Fapp x2-----------------------------------
+*  node4|  user  |--------| Consumer APP, OrchestratorA APP |
+*       \--------/        -----------------------------------
 * 
-*     NS_LOG=CustomAppConsumer:CustomAppProducer:DagForwarderApp ./waf --run=ndn-cabeee-20sensor
+*     NS_LOG=CustomAppConsumer:CustomAppProducer:DagForwarderApp ./waf --run=ndn-cabeee-20sensor-orchestratorA
 */
 int
 main(int argc, char* argv[])
@@ -100,16 +97,17 @@ main(int argc, char* argv[])
   Ptr<Node> router1 = Names::Find<Node>("rtr-1");
   Ptr<Node> router2 = Names::Find<Node>("rtr-2");
   Ptr<Node> router3 = Names::Find<Node>("rtr-3");
+  //Ptr<Node> orchestrator = Names::Find<Node>("orch");
   Ptr<Node> consumer = Names::Find<Node>("user");
 
-  ndnHelper.setCsSize(0); // disable content store
+  ndnHelper.setCsSize(0); // enable/disable content store by setting size
   ndnHelper.Install(producer);
-  //ndnHelper.setCsSize(0); // disable content store
+  //ndnHelper.setCsSize(0); // enable/disable content store by setting size
   //ndnHelper.Install(orchestrator);
   ndnHelper.setCsSize(0); // disable content store
   ndnHelper.Install(consumer);
 
-  ndnHelper.setCsSize(0); // enable/disable content store
+  ndnHelper.setCsSize(1000); // enable/disable content store by setting size
   ndnHelper.Install(router1);
   ndnHelper.Install(router2);
   ndnHelper.Install(router3);
@@ -121,7 +119,8 @@ main(int argc, char* argv[])
 
 
   // Choosing forwarding strategy
-  //ndn::StrategyChoiceHelper::InstallAll(Prefix + "/sensor", "/localhost/nfd/strategy/best-route");
+  //ndn::StrategyChoiceHelper::InstallAll(Prefix + "/serviceOrchestration", "/localhost/nfd/strategy/best-route");
+  ndn::StrategyChoiceHelper::InstallAll(Prefix + "/serviceOrchestration", "/localhost/nfd/strategy/multicast");
   ndn::StrategyChoiceHelper::InstallAll(Prefix + "/sensor1", "/localhost/nfd/strategy/multicast");
   ndn::StrategyChoiceHelper::InstallAll(Prefix + "/sensor2", "/localhost/nfd/strategy/multicast");
   ndn::StrategyChoiceHelper::InstallAll(Prefix + "/sensor3", "/localhost/nfd/strategy/multicast");
@@ -182,67 +181,87 @@ main(int argc, char* argv[])
   ndn::AppHelper sensorApp("CustomAppProducer");
   sensorApp.SetPrefix(Prefix);
   sensorApp.SetAttribute("Service", StringValue("sensor1"));
+  sensorApp.SetAttribute("FreshnessPeriod_ms", UintegerValue(1000));
   sensorApp.Install(producer).Start(Seconds(0));
   sensorApp.SetPrefix(Prefix);
   sensorApp.SetAttribute("Service", StringValue("sensor2"));
+  sensorApp.SetAttribute("FreshnessPeriod_ms", UintegerValue(750));
   sensorApp.Install(producer).Start(Seconds(0));
   sensorApp.SetPrefix(Prefix);
   sensorApp.SetAttribute("Service", StringValue("sensor3"));
+  sensorApp.SetAttribute("FreshnessPeriod_ms", UintegerValue(500));
   sensorApp.Install(producer).Start(Seconds(0));
   sensorApp.SetPrefix(Prefix);
   sensorApp.SetAttribute("Service", StringValue("sensor4"));
+  sensorApp.SetAttribute("FreshnessPeriod_ms", UintegerValue(250));
   sensorApp.Install(producer).Start(Seconds(0));
   sensorApp.SetPrefix(Prefix);
   sensorApp.SetAttribute("Service", StringValue("sensor5"));
+  sensorApp.SetAttribute("FreshnessPeriod_ms", UintegerValue(200));
   sensorApp.Install(producer).Start(Seconds(0));
   sensorApp.SetPrefix(Prefix);
   sensorApp.SetAttribute("Service", StringValue("sensor6"));
+  sensorApp.SetAttribute("FreshnessPeriod_ms", UintegerValue(150));
   sensorApp.Install(producer).Start(Seconds(0));
   sensorApp.SetPrefix(Prefix);
   sensorApp.SetAttribute("Service", StringValue("sensor7"));
+  sensorApp.SetAttribute("FreshnessPeriod_ms", UintegerValue(250));
   sensorApp.Install(producer).Start(Seconds(0));
   sensorApp.SetPrefix(Prefix);
   sensorApp.SetAttribute("Service", StringValue("sensor8"));
+  sensorApp.SetAttribute("FreshnessPeriod_ms", UintegerValue(240));
   sensorApp.Install(producer).Start(Seconds(0));
   sensorApp.SetPrefix(Prefix);
   sensorApp.SetAttribute("Service", StringValue("sensor9"));
+  sensorApp.SetAttribute("FreshnessPeriod_ms", UintegerValue(230));
   sensorApp.Install(producer).Start(Seconds(0));
   sensorApp.SetPrefix(Prefix);
   sensorApp.SetAttribute("Service", StringValue("sensor10"));
+  sensorApp.SetAttribute("FreshnessPeriod_ms", UintegerValue(220));
   sensorApp.Install(producer).Start(Seconds(0));
   sensorApp.SetPrefix(Prefix);
   sensorApp.SetAttribute("Service", StringValue("sensor11"));
+  sensorApp.SetAttribute("FreshnessPeriod_ms", UintegerValue(210));
   sensorApp.Install(producer).Start(Seconds(0));
   sensorApp.SetPrefix(Prefix);
   sensorApp.SetAttribute("Service", StringValue("sensor12"));
+  sensorApp.SetAttribute("FreshnessPeriod_ms", UintegerValue(200));
   sensorApp.Install(producer).Start(Seconds(0));
   sensorApp.SetPrefix(Prefix);
   sensorApp.SetAttribute("Service", StringValue("sensor13"));
+  sensorApp.SetAttribute("FreshnessPeriod_ms", UintegerValue(180));
   sensorApp.Install(producer).Start(Seconds(0));
   sensorApp.SetPrefix(Prefix);
   sensorApp.SetAttribute("Service", StringValue("sensor14"));
+  sensorApp.SetAttribute("FreshnessPeriod_ms", UintegerValue(150));
   sensorApp.Install(producer).Start(Seconds(0));
   sensorApp.SetPrefix(Prefix);
   sensorApp.SetAttribute("Service", StringValue("sensor15"));
+  sensorApp.SetAttribute("FreshnessPeriod_ms", UintegerValue(100));
   sensorApp.Install(producer).Start(Seconds(0));
   sensorApp.SetPrefix(Prefix);
   sensorApp.SetAttribute("Service", StringValue("sensor16"));
+  sensorApp.SetAttribute("FreshnessPeriod_ms", UintegerValue(100));
   sensorApp.Install(producer).Start(Seconds(0));
   sensorApp.SetPrefix(Prefix);
   sensorApp.SetAttribute("Service", StringValue("sensor17"));
+  sensorApp.SetAttribute("FreshnessPeriod_ms", UintegerValue(100));
   sensorApp.Install(producer).Start(Seconds(0));
   sensorApp.SetPrefix(Prefix);
   sensorApp.SetAttribute("Service", StringValue("sensor18"));
+  sensorApp.SetAttribute("FreshnessPeriod_ms", UintegerValue(100));
   sensorApp.Install(producer).Start(Seconds(0));
   sensorApp.SetPrefix(Prefix);
   sensorApp.SetAttribute("Service", StringValue("sensor19"));
+  sensorApp.SetAttribute("FreshnessPeriod_ms", UintegerValue(100));
   sensorApp.Install(producer).Start(Seconds(0));
   sensorApp.SetPrefix(Prefix);
   sensorApp.SetAttribute("Service", StringValue("sensor20"));
+  sensorApp.SetAttribute("FreshnessPeriod_ms", UintegerValue(100));
   sensorApp.Install(producer).Start(Seconds(0));
 
   // Custom App for routers
-  ndn::AppHelper routerApp("DagForwarderApp");
+  ndn::AppHelper routerApp("DagServiceA_App");
   routerApp.SetPrefix(Prefix);
   routerApp.SetAttribute("Service", StringValue("serviceP1"));
   routerApp.Install(router2).Start(Seconds(0));
@@ -305,14 +324,24 @@ main(int argc, char* argv[])
   routerApp.Install(router2).Start(Seconds(0));
   routerApp.SetPrefix(Prefix);
   routerApp.SetAttribute("Service", StringValue("serviceP21"));
-  routerApp.Install(router3).Start(Seconds(0));
+  routerApp.Install(router3).Start(Seconds(0)); 
+
+  ndn::AppHelper orchestratorApp("DagOrchestratorA_App");
+  orchestratorApp.SetPrefix(Prefix);
+  orchestratorApp.SetAttribute("Service", StringValue("serviceOrchestration"));
+  //orchestratorApp.Install(orchestrator).Start(Seconds(0));
+  orchestratorApp.Install(consumer).Start(Seconds(0));
 
   // Custom App for User(Consumer)
-  ndn::AppHelper userApp("CustomAppConsumer");
-  userApp.SetPrefix(Prefix); // this is only a placeholder. The app will read the JSON workflow, and figure out which service is "last"
+  ndn::AppHelper userApp("CustomAppConsumerPoisson");
+  //userApp.SetPrefix("/cabeee/sensor/service1/service2/service3");
+  //userApp.SetPrefix("/service4/service3/service2/service1/sensor"); // only for linear workflows
+  userApp.SetPrefix(Prefix);
   userApp.SetAttribute("Service", StringValue("consumer"));
   userApp.SetAttribute("Workflow", StringValue("workflows/20-sensor.json"));
-  userApp.SetAttribute("Orchestrate", UintegerValue(0));
+  userApp.SetAttribute("Orchestrate", UintegerValue(1)); // This enables the "orchestrator" by having the consumer set the head service to /serviceOrchestration
+  userApp.SetAttribute("Frequency", DoubleValue(10));       // 10 interests per second on average (Poisson process)
+  userApp.SetAttribute("NumInterests", UintegerValue(100)); // 100 total interests will be generated
   userApp.Install(consumer).Start(Seconds(0));
 
 /*
@@ -367,10 +396,10 @@ main(int argc, char* argv[])
 
 
 
-  Simulator::Stop(Seconds(3));
+  Simulator::Stop(Seconds(50));
 
-  ndn::L3RateTracer::InstallAll("rate-trace_cabeee-20sensor-parallel.txt", Seconds(0.1));
-  ndn::CsTracer::InstallAll("cs-trace_cabeee-20sensor-parallel.txt", Seconds(0.1));
+  //ndn::L3RateTracer::InstallAll("rate-trace_cabeee-20sensor-orchestratorA.txt", Seconds(0.1));
+  //ndn::CsTracer::InstallAll("cs-trace_cabeee-20sensor-orchestratorA.txt", Seconds(0.1));
 
   Simulator::Run();
   Simulator::Destroy();

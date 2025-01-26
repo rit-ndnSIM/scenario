@@ -704,7 +704,6 @@ DagForwarderApp::OnData(std::shared_ptr<const ndn::Data> data)
 
     //auto new_data = std::make_shared<ndn::Data>(new_name);
     auto new_data = std::make_shared<ndn::Data>(m_nameAndDigest);
-    //new_data->setFreshnessPeriod(ndn::time::milliseconds(9000));
     new_data->setFreshnessPeriod(ndn::time::milliseconds(m_lowestFreshness));
 
     //new_data->setContent(std::make_shared< ::ndn::Buffer>(1024));
@@ -719,13 +718,16 @@ DagForwarderApp::OnData(std::shared_ptr<const ndn::Data> data)
     m_appLink->onReceiveData(*new_data);
 
 
-    // now that we have run the service (and possibly cached the result data), we set inputs to "not received"
-    // this is done so when cached results expire, any new interests will trigger inputs to be fetched again, and the service will run again.
+    // now that we have run the service (and sent the result data out - and caching it), we set inputs to "not received"
+    // this is done so when cached results expire due to freshness, any new interests will trigger inputs to be fetched again, and the service will run again.
     allInputsReceived = 0;
+    /*
     for (auto& serviceInput : m_dagServTracker[m_nameUri]["inputsRxed"].items())
     {
       serviceInput.value() = 0;
     }
+    */
+    m_dagServTracker.clear();
 
 
 

@@ -85,6 +85,7 @@ DagServiceA_App::StartApplication()
 
   m_done = false;
   m_nameUri = m_service.ndn::Name::toUri();
+  m_lowestFreshness = ndn::time::milliseconds(100000); // set to a high value (I know no producer freshness value is higher than 100 seconds)
 
 }
 
@@ -124,7 +125,7 @@ DagServiceA_App::SendInterest(const std::string& interestName, std::string dagSt
   Ptr<UniformRandomVariable> rand = CreateObject<UniformRandomVariable>();
   interest->setNonce(rand->GetValue(0, std::numeric_limits<uint32_t>::max()));
   interest->setInterestLifetime(ndn::time::seconds(5));
-  //interest->setMustBeFresh(true);
+  interest->setMustBeFresh(true);
 
 
 
@@ -177,7 +178,7 @@ DagServiceA_App::OnInterest(std::shared_ptr<const ndn::Interest> interest)
     // send stored result
     //auto new_data = std::make_shared<ndn::Data>(new_name);
     auto new_data = std::make_shared<ndn::Data>(interest->getName());
-    new_data->setFreshnessPeriod(ndn::time::milliseconds(9000));
+    new_data->setFreshnessPeriod(ndn::time::milliseconds(m_lowestFreshness));
     //new_data->setContent(std::make_shared< ::ndn::Buffer>(1024));
     unsigned char myBuffer[1024];
     // write to the buffer
@@ -297,6 +298,11 @@ DagServiceA_App::OnData(std::shared_ptr<const ndn::Data> data)
   pServiceInput++;  // now this points to the second size octet
   pServiceInput++;  // now we are pointing at the first byte of the true content
   //m_mapOfServiceInputs[rxedDataName] = (*pServiceInput);
+
+  ndn::time::milliseconds data_freshnessPeriod = data->getFreshnessPeriod();
+  if (data_freshnessPeriod < m_lowestFreshness) {
+    m_lowestFreshness = data_freshnessPeriod;
+  }
 
   // we keep track of which input is for which interest that was sent out. Data packets may arrive in different order than how interests were sent out.
   // just read the index from the dagObject JSON structure
@@ -459,7 +465,7 @@ DagServiceA_App::OnData(std::shared_ptr<const ndn::Data> data)
 
     //auto new_data = std::make_shared<ndn::Data>(new_name);
     auto new_data = std::make_shared<ndn::Data>(m_nameAndDigest);
-    new_data->setFreshnessPeriod(ndn::time::milliseconds(9000));
+    new_data->setFreshnessPeriod(ndn::time::milliseconds(m_lowestFreshness));
     //new_data->setContent(std::make_shared< ::ndn::Buffer>(1024));
     unsigned char myBuffer[1024];
     // write to the buffer
@@ -472,12 +478,25 @@ DagServiceA_App::OnData(std::shared_ptr<const ndn::Data> data)
     m_appLink->onReceiveData(*new_data);
 
 
+    // now that we have run the service (and sent the result data out - and caching it), we set inputs to "not received"
+    // this is done so when cached results expire due to freshness, any new interests will trigger inputs to be fetched again, and the service will run again.
+    allInputsReceived = 0;
+    /*
+    for (auto& serviceInput : m_dagServTracker[m_nameUri]["inputsRxed"].items())
+    {
+      serviceInput.value() = 0;
+    }
+    */
+    m_dagServTracker.clear();
+
+
+
     // in order to "host" the data locally, we must store it, and set a flag that is checked at "onInterest" above
     // This is a one time deal. Assumes data will be available and fresh from now on.
+    //m_done = true;
     // OR we can just let the content store deal with storing results
 
     // so now, we do the same for the copy that we store in m_data as we did for new_data above
-    m_done = true;
     //m_data.ndn::setName(m_nameAndDigest);
     //m_data.setFreshnessPeriod(ndn::time::milliseconds(9000));
     //m_data.setContent(myBuffer, 1024);

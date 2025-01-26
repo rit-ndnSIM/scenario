@@ -24,7 +24,7 @@
 #include "ns3/ndnSIM-module.h"
 #include "ns3/string.h"
 
-#define PREFIX "/nesco"
+#define PREFIX "/nescoSCOPT"
 
 namespace ns3 {
 
@@ -325,7 +325,7 @@ main(int argc, char* argv[])
   routerApp.SetAttribute("Service", StringValue("serviceP21"));
   routerApp.Install(router3).Start(Seconds(0));
 
-  // Custom App for User(ConsumerPoisson)
+  // Custom App for User(Consumer)
   ndn::AppHelper userApp("CustomAppConsumerPoisson");
   userApp.SetPrefix(Prefix); // this is only a placeholder. The app will read the JSON workflow, and figure out which service is "last"
   userApp.SetAttribute("Service", StringValue("consumer"));

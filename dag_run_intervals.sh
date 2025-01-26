@@ -15,6 +15,7 @@ clear
 set -e
 
 LOGS=CustomAppConsumer
+LOGS=$LOGS:CustomAppConsumerPoisson
 LOGS=$LOGS:CustomAppConsumer2
 LOGS=$LOGS:CustomAppProducer
 LOGS=$LOGS:DagForwarderApp
@@ -36,19 +37,19 @@ TOPOLOGY_DIR="$HOME/ndnSIM/scenario/topologies"
 declare -a scenarios=(
 	# 20 Sensor (using 3node topology)
 	#"ndn-cabeee-intervals-20sensor-orchestratorA orchA 20-sensor.json 20-sensor-in3node.hosting topo-cabeee-3node.txt"
-	#"ndn-cabeee-intervals-20sensor-orchestratorB orchB 20-sensor.json 20-sensor-in3node.hosting topo-cabeee-3node.txt"
-	"ndn-cabeee-intervals-20sensor-CaSCON nesco 20-sensor.json 20-sensor-in3node.hosting topo-cabeee-3node.txt"
-	#"ndn-cabeee-intervals-20sensor-nescoSCOPT nescoSCOPT 20-sensor.json 20-sensor-in3node.hosting topo-cabeee-3node.txt"
+	"ndn-cabeee-intervals-20sensor-orchestratorB orchB 20-sensor.json 20-sensor-in3node.hosting topo-cabeee-3node.txt"
+	#"ndn-cabeee-intervals-20sensor-CaSCON nesco 20-sensor.json 20-sensor-in3node.hosting topo-cabeee-3node.txt"
+	#"ndn-cabeee-intervals-20sensor-CaSCONPIP nescoSCOPT 20-sensor.json 20-sensor-in3node.hosting topo-cabeee-3node.txt"
 	# 20 Linear (using 3node topology)
 	#"ndn-cabeee-intervals-20linear-orchestratorA orchA 20-linear.json 20-linear-in3node.hosting topo-cabeee-3node.txt"
 	#"ndn-cabeee-intervals-20linear-orchestratorB orchB 20-linear.json 20-linear-in3node.hosting topo-cabeee-3node.txt"
-	#"ndn-cabeee-intervals-20linear-nesco nesco 20-linear.json 20-linear-in3node.hosting topo-cabeee-3node.txt"
-	#"ndn-cabeee-intervals-20linear-nescoSCOPT nescoSCOPT 20-linear.json 20-linear-in3node.hosting topo-cabeee-3node.txt"
+	#"ndn-cabeee-intervals-20linear-CaSCON nesco 20-linear.json 20-linear-in3node.hosting topo-cabeee-3node.txt"
+	#"ndn-cabeee-intervals-20linear-CaSCONPIP nescoSCOPT 20-linear.json 20-linear-in3node.hosting topo-cabeee-3node.txt"
 	# 20 Scramble (using 3node topology)
 	#"ndn-cabeee-intervals-20scrambled-orchestratorA orchA 20-linear.json 20-scrambled-in3node.hosting topo-cabeee-3node.txt"
 	#"ndn-cabeee-intervals-20scrambled-orchestratorB orchB 20-linear.json 20-scrambled-in3node.hosting topo-cabeee-3node.txt"
-	#"ndn-cabeee-intervals-20scrambled-nesco nesco 20-linear.json 20-scrambled-in3node.hosting topo-cabeee-3node.txt"
-	#"ndn-cabeee-intervals-20scrambled-nescoSCOPT nescoSCOPT 20-linear.json 20-scrambled-in3node.hosting topo-cabeee-3node.txt"
+	#"ndn-cabeee-intervals-20scrambled-CaSCON nesco 20-linear.json 20-scrambled-in3node.hosting topo-cabeee-3node.txt"
+	#"ndn-cabeee-intervals-20scrambled-CaSCONPIP nescoSCOPT 20-linear.json 20-scrambled-in3node.hosting topo-cabeee-3node.txt"
 	)
 	
 scenario_log="$SCENARIO_DIR/scenario.log"

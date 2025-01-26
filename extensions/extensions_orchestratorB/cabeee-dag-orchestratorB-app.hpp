@@ -89,6 +89,7 @@ private:
   std::list <std::string> m_listOfServicesWithInputs;   // keeps track of which services have inputs
   std::list <std::string> m_listOfRootServices;         // keeps track of which services don't have any inputs
   std::list <std::string> m_listOfSinkNodes;            // keeps track of which node doesn't have an output (usually this is just the consumer)
+  ndn::time::milliseconds m_lowestFreshness;
 };
 
 } // namespace ns3

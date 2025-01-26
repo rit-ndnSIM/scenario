@@ -91,6 +91,7 @@ DagOrchestratorB_App::StartApplication()
   ndn::FibHelper::AddRoute(GetNode(), m_name, m_face, 0);
 
   m_serviceInputIndex = 0;
+  m_lowestFreshness = ndn::time::milliseconds(100000); // set to a high value (I know no producer freshness value is higher than 100 seconds)
 
 }
 
@@ -129,7 +130,7 @@ DagOrchestratorB_App::SendInterest(const std::string& interestName, std::string 
   Ptr<UniformRandomVariable> rand = CreateObject<UniformRandomVariable>();
   interest->setNonce(rand->GetValue(0, std::numeric_limits<uint32_t>::max()));
   interest->setInterestLifetime(ndn::time::seconds(5));
-  //interest->setMustBeFresh(true);
+  interest->setMustBeFresh(true);
 
 
 
@@ -184,6 +185,7 @@ DagOrchestratorB_App::OnInterest(std::shared_ptr<const ndn::Interest> interest)
 
   if (nameUri == "/serviceOrchestration/dag") // if interest is for orchestration (from consumer)
   {
+    std::cout << "Received Interest packet for orchestration: " << nameUri << ", full name with digest: " << nameAndDigest << std::endl;
 
     m_nameAndDigest = interest->getName();  // store the name with digest so that we can later generate the final result data packet with the same name/digest!
 
@@ -212,6 +214,9 @@ DagOrchestratorB_App::OnInterest(std::shared_ptr<const ndn::Interest> interest)
     // to do this, we must discover which services in the DAG are "root" services (services which don't have inputs coming from other services, for example: sensors).
 
 
+    m_listOfServicesWithInputs.clear();
+    m_listOfRootServices.clear();
+    m_listOfSinkNodes.clear();
     for (auto& x : m_dagObject["dag"].items())
     {
       m_listOfRootServices.push_back(x.key()); // for now, add ALL keys to the list, we'll remove non-root ones later
@@ -278,6 +283,7 @@ DagOrchestratorB_App::OnInterest(std::shared_ptr<const ndn::Interest> interest)
     {
       // generate new interest for root services if one has not yet been generated
       NS_LOG_DEBUG("Generating interest for: " << rootService);
+      std::cout << "Generating interest for: " << rootService << std::endl;
 
       // We need to see if this interest has already been generated. If so, don't increment
       // if this is a new interest (if interest is not in our list of generated interests)
@@ -325,7 +331,7 @@ DagOrchestratorB_App::OnInterest(std::shared_ptr<const ndn::Interest> interest)
             // send that data at that index as a response for this interest
             NS_LOG_DEBUG("Generating data packet for: " << nameAndDigest.ndn::Name::toUri());
             auto new_data = std::make_shared<ndn::Data>(nameAndDigest);
-            new_data->setFreshnessPeriod(ndn::time::milliseconds(9000));
+            new_data->setFreshnessPeriod(ndn::time::milliseconds(m_lowestFreshness));
             //new_data->setContent(std::make_shared< ::ndn::Buffer>(1024));
             unsigned char myBuffer[1024];
             // write to the buffer
@@ -421,6 +427,10 @@ DagOrchestratorB_App::OnData(std::shared_ptr<const ndn::Data> data)
   //m_vectorOfServiceInputs[m_serviceInputIndex] = (unsigned char)(*pServiceInput);
 
 
+  ndn::time::milliseconds data_freshnessPeriod = data->getFreshnessPeriod();
+  if (data_freshnessPeriod < m_lowestFreshness) {
+    m_lowestFreshness = data_freshnessPeriod;
+  }
 
   //std::cout << "Marking down this input as having been received\n";
   // mark down this input as having been received for all services that use this data as an input
@@ -518,13 +528,38 @@ DagOrchestratorB_App::OnData(std::shared_ptr<const ndn::Data> data)
         NS_LOG_DEBUG("Final data packet! Creating data for name: " << m_nameAndDigest);   // m_name doesn't have the sha256 digest, so it doesn't match the original interest!
                                                                                           // We use m_nameAndDigest to store the old name with the digest.
         auto new_data = std::make_shared<ndn::Data>(m_nameAndDigest);
-        new_data->setFreshnessPeriod(ndn::time::milliseconds(9000));
+        new_data->setFreshnessPeriod(ndn::time::milliseconds(m_lowestFreshness));
 
         new_data->setContent(data->getContent());
         ndn::StackHelper::getKeyChain().sign(*new_data);
         // Call trace (for logging purposes)
         m_transmittedDatas(new_data, this, m_face);
         m_appLink->onReceiveData(*new_data);
+
+        // now that we have run the service (and sent the result data out - and caching it), we set inputs to "not received"
+        // this is done so when cached results expire due to freshness, any new interests will trigger inputs to be fetched again, and the service will run again.
+        /*
+        for (auto& service : m_dagOrchTracker.items())  // for each service in the tracker
+        {
+          for (auto& serviceInput : m_dagOrchTracker[(std::string)service.key()]["inputsRxed"].items())
+          {
+            serviceInput.value() = -1;
+          }
+          for (auto& serviceInput : m_dagOrchTracker[(std::string)service.key()]["inputsTxed"].items())
+          {
+            serviceInput.value() = 0;
+          }
+          service.value()["interestGenerated"] = 0;
+        }
+        */
+        m_dagOrchTracker.clear();
+        m_vectorOfServiceInputs.erase(m_vectorOfServiceInputs.begin(), m_vectorOfServiceInputs.end());
+        m_listOfServicesWithInputs.clear();
+        m_listOfRootServices.clear();
+        //m_listOfSinkNodes.clear();
+        m_serviceInputIndex = 0;
+        //std::cout << "Updated dagOrchTracker data structure: " << std::setw(2) << m_dagOrchTracker << '\n';
+
       }
     }
   }

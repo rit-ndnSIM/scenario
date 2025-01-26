@@ -90,6 +90,7 @@ private:
   //std::map <std::string, std::vector<ndn::Block> > m_mapOfRxedBlocks;
   //std::map <std::string, std::vector<std::string> > m_mapOfRxedBlocks;
   std::vector <unsigned char> m_vectorOfServiceInputs;
+  ndn::time::milliseconds m_lowestFreshness;
 };
 
 } // namespace ns3

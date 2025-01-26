@@ -132,6 +132,7 @@ CustomAppConsumerPoisson::SendInterest()
     return;
   }
 
+  std::cout << "\n  Sending new workflow interest: " << m_interestNum << "/" << m_numInterests << std::endl;
 
   m_startTime = Simulator::Now();
 
