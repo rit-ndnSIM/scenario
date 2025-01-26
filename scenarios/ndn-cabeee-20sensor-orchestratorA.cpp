@@ -29,45 +29,42 @@
 namespace ns3 {
 
 /**
-*       /-------\        /--------\     /--------\ Fapp   ----------------
-*  node0|sensor1|--------|sensor-n|-----|sensor20|--------| Producer APPs| Sensor Data
-*       \-------/        \--------/     \--------/        ----------------
-*         ^ F8             ^ F3            ^ F1
-*         |                |               |
-*         |                |               |
-*         |                |               v F2
-*         |                |             /-------\ Fapp   ---------------------
-*         |                |        node1| rtr-1 |--------| Service_A APP     | Service 20
-*         |                |             \-------/        ---------------------
-*         |                |               ^
-*         |                v F6            |
-*         |              /-------\ Fapp    |              ---------------------
-*         |         node1| rtr-1 |---------|--------------| Service_A APP     | Service n
-*         |              \-------/         |              ---------------------
-*         |                ^               |
-*         v F6             |               | 
-*       /-------\ Fapp     |               |              ---------------------
-*  node1| rtr-1 |----------|---------------|--------------| Service_A APP     | Service 1
-*       \-------/          |               |              ---------------------
-*         ^ F7             |               |
-*         |                |               |
-*         |                |               |
-*         v F8             v               v
-*       /--------------------------------------\ Fapp     ---------------------
-*  node2|              rtr-2                   |----------| Service_A APP     | Service 21
-*       \--------------------------------------/          ---------------------
-*         ^ F7
+*       /------\ Fapp x20 ----------------
+*  node0|sensor|----------| Producer APP | Sensor 1-20
+*       \------/          ----------------
+*         ^ F1
+*         |
+*         |
+*         v F2
+*       /-------\ Fapp    ---------------------
+*  node1| rtr-1 |---------|                   | No application, just a regular NDN forwarder
+*       \-------/         ---------------------
+*         ^ F3
+*         |
+*         .
+*         .
+*         .
+*         |
+*         v F4
+*       /-------\ Fapp x20---------------------
+*  node2| rtr-2 |---------| ServiceA APP      | Service 1-20
+*       \-------/         ---------------------
+*         ^ F5
+*         |
+*         .
+*         .
 *         |
 *         v F6
-*       /--------\ Fapp                                   ----------------------
-*  node3|  orch  |----------------------------------------| Orchestrator_A APP | ServiceOrchestration
-*       \--------/                                        ----------------------
-*         ^ F9
-*     0ms |
-*         v FA
-*       /--------\ Fapp   ----------------
-*  node3|  user  |--------| Consumer APP |
-*       \--------/        ----------------
+*       /-------\ Fapp    ---------------------
+*  node3| rtr-3 |-- ------| ServiceA APP      | Service 21
+*       \-------/         ---------------------
+*         ^ F7
+*         |
+*         |
+*         v F8
+*       /--------\ Fapp x2-----------------------------------
+*  node4|  user  |--------| Consumer APP, OrchestratorA APP |
+*       \--------/        -----------------------------------
 * 
 *     NS_LOG=CustomAppConsumer:CustomAppProducer:DagForwarderApp ./waf --run=ndn-cabeee-20sensor-orchestratorA
 */
@@ -110,7 +107,7 @@ main(int argc, char* argv[])
   ndnHelper.setCsSize(0); // disable content store
   ndnHelper.Install(consumer);
 
-  ndnHelper.setCsSize(0); // enable/disable content store by setting size
+  ndnHelper.setCsSize(100); // enable/disable content store by setting size
   ndnHelper.Install(router1);
   ndnHelper.Install(router2);
   ndnHelper.Install(router3);

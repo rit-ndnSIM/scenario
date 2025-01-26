@@ -37,7 +37,7 @@ namespace ns3 {
 *         |
 *         v F2
 *       /-------\ Fapp    ---------------------
-*  node1| rtr-2 |---------| DAG Forwarder APP | Service 1
+*  node1| rtr-1 |---------| DAG Forwarder APP | Service x
 *       \-------/         ---------------------
 *         ^ F3
 *         |
@@ -45,11 +45,11 @@ namespace ns3 {
 *         .
 *         .
 *         |
-*         v F6
+*         v F4
 *       /-------\ Fapp    ---------------------
-*  noden| rtr-n |---------| DAG Forwarder APP | Service n
+*  node2| rtr-2 |---------| DAG Forwarder APP | Service x
 *       \-------/         ---------------------
-*         ^ F7
+*         ^ F5
 *         |
 *         . Note: routers alternate per service as shown in the code below!
 *         .
@@ -57,20 +57,14 @@ namespace ns3 {
 *         |
 *         v F6
 *       /-------\ Fapp    ---------------------
-*  node?| rtr-3 |-- ------| DAG Forwarder APP | Service 20
+*  node3| rtr-3 |-- ------| DAG Forwarder APP | Service x
 *       \-------/         ---------------------
 *         ^ F7
 *         |
 *         |
 *         v F8
-*       /--------\ 
-*  node?|  orch  |
-*       \--------/
-*         ^ F9
-*     0ms |
-*         v FA
 *       /--------\ Fapp   ----------------
-*  node?|  user  |--------| Consumer APP |
+*  node4|  user  |--------| Consumer APP |
 *       \--------/        ----------------
 * 
 *     NS_LOG=CustomAppConsumer:CustomAppProducer:DagForwarderApp ./waf --run=ndn-cabeee-20scrambled
@@ -113,7 +107,7 @@ main(int argc, char* argv[])
   ndnHelper.setCsSize(0); // disable content store
   ndnHelper.Install(consumer);
 
-  ndnHelper.setCsSize(0); // enable/disable content store
+  ndnHelper.setCsSize(100); // enable/disable content store
   ndnHelper.Install(router1);
   ndnHelper.Install(router2);
   ndnHelper.Install(router3);

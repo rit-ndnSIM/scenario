@@ -107,15 +107,9 @@ main(int argc, char* argv[])
   ndnHelper.Install(producer);
 
   //ndnHelper.setCsSize(0); // enable/disable content store
-  ndnHelper.setCsSize(0); // enable/disable content store
+  ndnHelper.setCsSize(100); // enable/disable content store
   ndnHelper.Install(router1);
-
-  //ndnHelper.setCsSize(0); // enable/disable content store
-  ndnHelper.setCsSize(0); // enable/disable content store
   ndnHelper.Install(router2);
-
-  //ndnHelper.setCsSize(0); // enable/disable content store
-  ndnHelper.setCsSize(0); // enable/disable content store
   ndnHelper.Install(router3);
 
   //ndnHelper.setCsSize(0); // disable content store

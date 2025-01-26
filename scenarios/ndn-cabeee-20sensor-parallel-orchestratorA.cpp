@@ -166,7 +166,7 @@ main(int argc, char* argv[])
   ndnHelper.setCsSize(0); // disable content store
   ndnHelper.Install(consumer);
 
-  ndnHelper.setCsSize(0); // enable/disable content store by setting size
+  ndnHelper.setCsSize(100); // enable/disable content store by setting size
   ndnHelper.Install(router1);
   ndnHelper.Install(router2);
   ndnHelper.Install(router3);

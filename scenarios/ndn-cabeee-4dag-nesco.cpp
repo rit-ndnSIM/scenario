@@ -23,6 +23,8 @@
 #include "ns3/network-module.h"
 #include "ns3/ndnSIM-module.h"
 #include "ns3/string.h"
+#include "ns3/point-to-point-module.h" // added for pCap generation
+
 
 #define PREFIX "/nesco"
 
@@ -69,6 +71,28 @@ namespace ns3 {
 * 
 *     NS_LOG=CustomAppConsumer:CustomAppProducer:DagForwarderApp ./waf --run=ndn-cabeee-4dag
 */
+
+class PcapWriter {
+public:
+  PcapWriter(const std::string& file)
+  {
+    PcapHelper helper;
+    m_pcap = helper.CreateFile(file, std::ios::out, PcapHelper::DLT_PPP);
+  }
+
+  void
+  TracePacket(Ptr<const Packet> packet)
+  {
+    static PppHeader pppHeader;
+    pppHeader.SetProtocol(0x0077);
+
+    m_pcap->Write(Simulator::Now(), pppHeader, packet);
+  }
+
+private:
+  Ptr<PcapFileWrapper> m_pcap;
+};
+
 int
 main(int argc, char* argv[])
 {
@@ -107,15 +131,9 @@ main(int argc, char* argv[])
   ndnHelper.Install(producer);
 
   //ndnHelper.setCsSize(0); // enable/disable content store
-  ndnHelper.setCsSize(0); // enable/disable content store
+  ndnHelper.setCsSize(100); // enable/disable content store
   ndnHelper.Install(router1);
-
-  //ndnHelper.setCsSize(0); // enable/disable content store
-  ndnHelper.setCsSize(0); // enable/disable content store
   ndnHelper.Install(router2);
-
-  //ndnHelper.setCsSize(0); // enable/disable content store
-  ndnHelper.setCsSize(0); // enable/disable content store
   ndnHelper.Install(router3);
 
   //ndnHelper.setCsSize(0); // disable content store
@@ -238,15 +256,20 @@ main(int argc, char* argv[])
   // set the routes, OR set the forwarding strategy to multi-cast with the appropriate prefixes
 
 
-
+  PcapWriter trace("ndn-cabeee-4dag-nesco-trace.pcap");
+  Config::ConnectWithoutContext("/NodeList/*/DeviceList/*/$ns3::PointToPointNetDevice/MacTx",
+                                MakeCallback(&PcapWriter::TracePacket, &trace));
 
   Simulator::Stop(Seconds(1.1));
 
-  //ndn::L3RateTracer::InstallAll("rate-trace_cabeee-4dag.txt", Seconds(0.0005));
-  //ndn::CsTracer::InstallAll("cs-trace_cabeee-4dag.txt", Seconds(0.0005));
+  ndn::L3RateTracer::InstallAll("rate-trace_cabeee-4dag.txt", Seconds(0.0005));
+  ndn::CsTracer::InstallAll("cs-trace_cabeee-4dag.txt", Seconds(0.0005));
 
   Simulator::Run();
   Simulator::Destroy();
+
+  //tshark -r ndn-cabeee-4dag-nesco-trace.pcap -z io,stat,0,"SUM(frame.len)frame.len" // this prints out total number of bytes in the pcap file
+
 
   return 0;
 }
