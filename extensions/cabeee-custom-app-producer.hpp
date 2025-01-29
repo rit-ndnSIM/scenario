@@ -72,6 +72,9 @@ private:
   ndn::Name m_prefix;
   ndn::Name m_service;
   int m_freshnessPeriod;
+  int m_uniformFreshness;
+  int m_freshnessMin;
+  int m_freshnessMax;
 };
 
 } // namespace ns3

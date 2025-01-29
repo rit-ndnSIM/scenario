@@ -125,7 +125,7 @@ DagOrchestratorA_App::SendInterest(const std::string& interestName, std::string 
   auto interest = std::make_shared<ndn::Interest>(m_prefix.ndn::Name::toUri() + interestName);
   Ptr<UniformRandomVariable> rand = CreateObject<UniformRandomVariable>();
   interest->setNonce(rand->GetValue(0, std::numeric_limits<uint32_t>::max()));
-  interest->setInterestLifetime(ndn::time::seconds(5));
+  interest->setInterestLifetime(ndn::time::seconds(10));
   interest->setMustBeFresh(true);
 
 
@@ -411,6 +411,7 @@ DagOrchestratorA_App::OnData(std::shared_ptr<const ndn::Data> data)
         m_dagOrchTracker.clear();
         m_listOfServicesWithInputs.clear();
         m_listOfRootServices.clear();
+        m_lowestFreshness = ndn::time::milliseconds(100000); // set to a high value (I know no producer freshness value is higher than 100 seconds)
         //m_listOfSinkNodes.clear();
 
       }

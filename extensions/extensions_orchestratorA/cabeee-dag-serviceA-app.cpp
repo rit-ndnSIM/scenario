@@ -124,7 +124,7 @@ DagServiceA_App::SendInterest(const std::string& interestName, std::string dagSt
   auto interest = std::make_shared<ndn::Interest>(m_prefix.ndn::Name::toUri() + interestName);
   Ptr<UniformRandomVariable> rand = CreateObject<UniformRandomVariable>();
   interest->setNonce(rand->GetValue(0, std::numeric_limits<uint32_t>::max()));
-  interest->setInterestLifetime(ndn::time::seconds(5));
+  interest->setInterestLifetime(ndn::time::seconds(10));
   interest->setMustBeFresh(true);
 
 
@@ -486,8 +486,10 @@ DagServiceA_App::OnData(std::shared_ptr<const ndn::Data> data)
     {
       serviceInput.value() = 0;
     }
-    */
+    */  
     m_dagServTracker.clear();
+    m_vectorOfServiceInputs.erase(m_vectorOfServiceInputs.begin(), m_vectorOfServiceInputs.end());
+    m_lowestFreshness = ndn::time::milliseconds(100000); // set to a high value (I know no producer freshness value is higher than 100 seconds)
 
 
 

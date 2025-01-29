@@ -728,6 +728,7 @@ DagForwarderApp::OnData(std::shared_ptr<const ndn::Data> data)
     }
     */
     m_dagServTracker.clear();
+    m_lowestFreshness = ndn::time::milliseconds(100000); // set to a high value (I know no producer freshness value is higher than 100 seconds)
 
 
 

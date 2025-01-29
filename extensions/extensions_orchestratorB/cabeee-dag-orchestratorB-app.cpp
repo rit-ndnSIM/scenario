@@ -129,8 +129,8 @@ DagOrchestratorB_App::SendInterest(const std::string& interestName, std::string 
   auto interest = std::make_shared<ndn::Interest>(m_prefix.ndn::Name::toUri() + interestName);
   Ptr<UniformRandomVariable> rand = CreateObject<UniformRandomVariable>();
   interest->setNonce(rand->GetValue(0, std::numeric_limits<uint32_t>::max()));
-  interest->setInterestLifetime(ndn::time::seconds(5));
-  interest->setMustBeFresh(true);
+  interest->setInterestLifetime(ndn::time::seconds(10));
+  interest->setMustBeFresh(false);
 
 
 
@@ -185,7 +185,6 @@ DagOrchestratorB_App::OnInterest(std::shared_ptr<const ndn::Interest> interest)
 
   if (nameUri == "/serviceOrchestration/dag") // if interest is for orchestration (from consumer)
   {
-    std::cout << "Received Interest packet for orchestration: " << nameUri << ", full name with digest: " << nameAndDigest << std::endl;
 
     m_nameAndDigest = interest->getName();  // store the name with digest so that we can later generate the final result data packet with the same name/digest!
 
@@ -283,7 +282,6 @@ DagOrchestratorB_App::OnInterest(std::shared_ptr<const ndn::Interest> interest)
     {
       // generate new interest for root services if one has not yet been generated
       NS_LOG_DEBUG("Generating interest for: " << rootService);
-      std::cout << "Generating interest for: " << rootService << std::endl;
 
       // We need to see if this interest has already been generated. If so, don't increment
       // if this is a new interest (if interest is not in our list of generated interests)
@@ -331,6 +329,7 @@ DagOrchestratorB_App::OnInterest(std::shared_ptr<const ndn::Interest> interest)
             // send that data at that index as a response for this interest
             NS_LOG_DEBUG("Generating data packet for: " << nameAndDigest.ndn::Name::toUri());
             auto new_data = std::make_shared<ndn::Data>(nameAndDigest);
+            //new_data->setFreshnessPeriod(ndn::time::milliseconds(0)); // we set the freshness to zero, so that it is not cached. We can't cache it because future requests need to be served from the orchestrator to keep the dagOrchTracker updated.
             new_data->setFreshnessPeriod(ndn::time::milliseconds(m_lowestFreshness));
             //new_data->setContent(std::make_shared< ::ndn::Buffer>(1024));
             unsigned char myBuffer[1024];
@@ -525,8 +524,8 @@ DagOrchestratorB_App::OnData(std::shared_ptr<const ndn::Data> data)
     {
       if (sinkNode == serviceFeed.key())
       {
-        NS_LOG_DEBUG("Final data packet! Creating data for name: " << m_nameAndDigest);   // m_name doesn't have the sha256 digest, so it doesn't match the original interest!
-                                                                                          // We use m_nameAndDigest to store the old name with the digest.
+        NS_LOG_DEBUG("Final data packet! Creating data for name: " << m_nameAndDigest << ", with freshness" << m_lowestFreshness << std::endl);   // m_name doesn't have the sha256 digest, so it doesn't match the original interest!
+                                                                                                                                                  // We use m_nameAndDigest to store the old name with the digest.
         auto new_data = std::make_shared<ndn::Data>(m_nameAndDigest);
         new_data->setFreshnessPeriod(ndn::time::milliseconds(m_lowestFreshness));
 
@@ -553,11 +552,13 @@ DagOrchestratorB_App::OnData(std::shared_ptr<const ndn::Data> data)
         }
         */
         m_dagOrchTracker.clear();
+        //m_dagObject.clear(); // can't delete here, as we are still using it for iteration. No need to delete anyways, as we overwrite the old one when a workflow interest comes in from the user.
         m_vectorOfServiceInputs.erase(m_vectorOfServiceInputs.begin(), m_vectorOfServiceInputs.end());
         m_listOfServicesWithInputs.clear();
         m_listOfRootServices.clear();
-        //m_listOfSinkNodes.clear();
+        //m_listOfSinkNodes.clear(); // can't delete here, as we are still using it for iteration. Delete above when we receive the workflow request from the user.
         m_serviceInputIndex = 0;
+        m_lowestFreshness = ndn::time::milliseconds(100000); // set to a high value (I know no producer freshness value is higher than 100 seconds)
         //std::cout << "Updated dagOrchTracker data structure: " << std::setw(2) << m_dagOrchTracker << '\n';
 
       }

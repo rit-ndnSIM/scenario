@@ -66,7 +66,7 @@ namespace ns3 {
 *  node4|  user  |--------| Consumer APP, OrchestratorB APP |
 *       \--------/        -----------------------------------
 * 
-*     NS_LOG=CustomAppConsumer:CustomAppProducer:DagForwarderApp ./waf --run=ndn-cabeee-20sensor-orchestratorB
+*     NS_LOG=CustomAppConsumer:CustomAppProducer:DagForwarderApp ./waf --run=ndn-cabeee-intervals-20sensor-orchestratorB
 */
 int
 main(int argc, char* argv[])
@@ -107,7 +107,8 @@ main(int argc, char* argv[])
   ndnHelper.setCsSize(0); // disable content store
   ndnHelper.Install(consumer);
 
-  ndnHelper.setCsSize(1000); // enable/disable content store by setting size
+  //ndnHelper.setCsSize(1000); // enable/disable content store by setting size
+  ndnHelper.setCsSize(0); // we can't use caching in intervals orchestratorB scenarios because interest packets have to travel all the way to the orchestrator to keep the tracker data structures up to date.
   ndnHelper.Install(router1);
   ndnHelper.Install(router2);
   ndnHelper.Install(router3);
@@ -119,7 +120,7 @@ main(int argc, char* argv[])
 
 
   // Choosing forwarding strategy
-  //ndn::StrategyChoiceHelper::InstallAll("/serviceOrchestration", "/localhost/nfd/strategy/best-route");
+  //ndn::StrategyChoiceHelper::InstallAll(Prefix + "/serviceOrchestration", "/localhost/nfd/strategy/best-route");
   ndn::StrategyChoiceHelper::InstallAll(Prefix + "/serviceOrchestration", "/localhost/nfd/strategy/multicast");
   ndn::StrategyChoiceHelper::InstallAll(Prefix + "/sensor1", "/localhost/nfd/strategy/multicast");
   ndn::StrategyChoiceHelper::InstallAll(Prefix + "/sensor2", "/localhost/nfd/strategy/multicast");
@@ -181,6 +182,10 @@ main(int argc, char* argv[])
   ndn::AppHelper sensorApp("CustomAppProducer");
   sensorApp.SetPrefix(Prefix);
   sensorApp.SetAttribute("Service", StringValue("sensor1"));
+  //sensorApp.SetAttribute("UniformFreshness", UintegerValue(1));   // this will override the FreshnessPeriod_ms setting below, and use Uniform Distribution to pick value ONCE!
+  //sensorApp.SetAttribute("UniformFreshness", UintegerValue(2));   // this will override the FreshnessPeriod_ms setting below, and use Uniform Distribution to pick new value EVERY TIME!
+  //sensorApp.SetAttribute("minFreshness_ms", UintegerValue(100));
+  //sensorApp.SetAttribute("maxFreshness_ms", UintegerValue(1000));
   sensorApp.SetAttribute("FreshnessPeriod_ms", UintegerValue(1000));
   sensorApp.Install(producer).Start(Seconds(0));
   sensorApp.SetPrefix(Prefix);
@@ -258,7 +263,7 @@ main(int argc, char* argv[])
   sensorApp.SetPrefix(Prefix);
   sensorApp.SetAttribute("Service", StringValue("sensor20"));
   sensorApp.SetAttribute("FreshnessPeriod_ms", UintegerValue(100));
-  sensorApp.Install(producer).Start(Seconds(0)); 
+  sensorApp.Install(producer).Start(Seconds(0));
 
   // Custom App for routers
   ndn::AppHelper routerApp("DagServiceB_App");

@@ -24,7 +24,7 @@
 #include "ns3/ndnSIM-module.h"
 #include "ns3/string.h"
 
-#define PREFIX "/nesco"
+#define PREFIX "/nescoSCOPT"
 
 namespace ns3 {
 
@@ -66,7 +66,7 @@ namespace ns3 {
 *  node4|  user  |--------| Consumer APP |
 *       \--------/        ----------------
 * 
-*     NS_LOG=CustomAppConsumer:CustomAppProducer:DagForwarderApp ./waf --run=ndn-cabeee-20sensor
+*     NS_LOG=CustomAppConsumer:CustomAppProducer:DagForwarderApp ./waf --run=ndn-cabeee-intervals-20sensor-CaSCONPIP
 */
 int
 main(int argc, char* argv[])
@@ -180,6 +180,10 @@ main(int argc, char* argv[])
   ndn::AppHelper sensorApp("CustomAppProducer");
   sensorApp.SetPrefix(Prefix);
   sensorApp.SetAttribute("Service", StringValue("sensor1"));
+  //sensorApp.SetAttribute("UniformFreshness", UintegerValue(1));   // this will override the FreshnessPeriod_ms setting below, and use Uniform Distribution to pick value ONCE!
+  //sensorApp.SetAttribute("UniformFreshness", UintegerValue(2));   // this will override the FreshnessPeriod_ms setting below, and use Uniform Distribution to pick new value EVERY TIME!
+  //sensorApp.SetAttribute("minFreshness_ms", UintegerValue(100));
+  //sensorApp.SetAttribute("maxFreshness_ms", UintegerValue(1000));
   sensorApp.SetAttribute("FreshnessPeriod_ms", UintegerValue(1000));
   sensorApp.Install(producer).Start(Seconds(0));
   sensorApp.SetPrefix(Prefix);
@@ -325,7 +329,7 @@ main(int argc, char* argv[])
   routerApp.SetAttribute("Service", StringValue("serviceP21"));
   routerApp.Install(router3).Start(Seconds(0));
 
-  // Custom App for User(ConsumerPoisson)
+  // Custom App for User(Consumer)
   ndn::AppHelper userApp("CustomAppConsumerPoisson");
   userApp.SetPrefix(Prefix); // this is only a placeholder. The app will read the JSON workflow, and figure out which service is "last"
   userApp.SetAttribute("Service", StringValue("consumer"));

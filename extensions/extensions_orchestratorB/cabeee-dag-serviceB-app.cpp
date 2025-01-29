@@ -122,8 +122,8 @@ DagServiceB_App::SendInterest(const std::string& interestName, std::string dagSt
   auto interest = std::make_shared<ndn::Interest>(m_prefix.ndn::Name::toUri() + interestName);
   Ptr<UniformRandomVariable> rand = CreateObject<UniformRandomVariable>();
   interest->setNonce(rand->GetValue(0, std::numeric_limits<uint32_t>::max()));
-  interest->setInterestLifetime(ndn::time::seconds(5));
-  interest->setMustBeFresh(true);
+  interest->setInterestLifetime(ndn::time::seconds(10));
+  interest->setMustBeFresh(false); // the data coming back will have freshness set to 0, so that it is not cached. We can't cache it because future requests need to be served from the orchestrator to keep its dagOrchTracker updated.
 
 
 
@@ -271,14 +271,17 @@ DagServiceB_App::OnInterest(std::shared_ptr<const ndn::Interest> interest)
       }
       */
       m_dagServTracker.clear();
+      m_vectorOfServiceInputs.erase(m_vectorOfServiceInputs.begin(), m_vectorOfServiceInputs.end());
       m_done = false;
+      m_extracted = false;
+      m_lowestFreshness = ndn::time::milliseconds(100000); // set to a high value (I know no producer freshness value is higher than 100 seconds)
 
       return;
     }
 
 
 
-    // check which data inputs have not yet been received! Technically, the orchestrator should have already sent us all of them before genreating the main interest for service
+    // check which data inputs have not yet been received! Technically, the orchestrator should have already sent us all of them before generating the main interest for service
     // generate all the interests for required inputs
     for (auto& serviceInput : m_dagServTracker[(std::string)m_nameUri]["inputsRxed"].items())
     {
@@ -311,7 +314,7 @@ DagServiceB_App::OnData(std::shared_ptr<const ndn::Data> data)
 {
   NS_LOG_DEBUG("Receiving Data packet for " << data->getName());
 
-  //std::cout << "DATA received for name " << data->getName() << std::endl;
+  //std::cout << m_service << " just received DATA with name " << data->getName() << std::endl;
 
   //std::cout << "content = " << data->getContent() << std::endl;
 
@@ -339,11 +342,13 @@ DagServiceB_App::OnData(std::shared_ptr<const ndn::Data> data)
     inputNumString = inputNumString.erase(0,1); // remove the "/" at the beginning of the Uri Name, to leave just the number (still as a string)
     inputNum = stoi(inputNumString);
     NS_LOG_DEBUG("Service received data for: " << firstTwo << ", requested service name: " << requestedService << ", stored at index " << inputNumString << ", by requestor: " << requestorService);
+    //std::cout << "Service received data for: " << firstTwo << ", requested service name: " << requestedService << ", stored at index " << inputNumString << ", by requestor: " << requestorService << std::endl;
     rxedDataName = requestedService;
   }
 
   else
   {
+std::cout << "        DOES THIS EVER HAPPEN?? " << m_service << " received DATA for name " << data->getName() << std::endl;
     ndn::Name simpleName;
     simpleName = (data->getName()).getPrefix(-1); // remove the last component of the name (the parameter digest) so we have just the raw name, and convert to Uri string
     simpleName = simpleName.getSubName(1); // remove the first component of the name (/interCACHE)
@@ -403,6 +408,7 @@ DagServiceB_App::OnData(std::shared_ptr<const ndn::Data> data)
 
   // mark this input as having been received
   m_dagServTracker[m_nameUri]["inputsRxed"][rxedDataName] = 1;
+  //std::cout << "ServiceB dagServTracker data structure: " << std::setw(2) << m_dagServTracker << '\n';
 
   // we have to check if we have received all necessary inputs for this instance of the hosted service!
   //      if so, run the service below and generate new data packet to go downstream.
@@ -419,7 +425,7 @@ DagServiceB_App::OnData(std::shared_ptr<const ndn::Data> data)
   if (allInputsReceived == 1)
   {
     //"RUN" the service, and create a new data packet to respond downstream
-    NS_LOG_DEBUG("Running service " << m_service);
+    NS_LOG_DEBUG("All inputs received. Running service " << m_service);
 
     // run operation. First we need to figure out what service this is, so we know the operation. This screams to be a function pointer! For now just use if's
 

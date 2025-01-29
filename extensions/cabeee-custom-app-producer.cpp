@@ -48,6 +48,12 @@ CustomAppProducer::GetTypeId()
     .AddConstructor<CustomAppProducer>()
     .AddAttribute("FreshnessPeriod_ms", "Requested freshness period milliseconds", UintegerValue(60000),
                     MakeUintegerAccessor(&CustomAppProducer::m_freshnessPeriod), MakeUintegerChecker<uint32_t>())
+    .AddAttribute("UniformFreshness", "Requested uniform distribution for freshness period", UintegerValue(0),
+                    MakeUintegerAccessor(&CustomAppProducer::m_uniformFreshness), MakeUintegerChecker<uint32_t>())
+    .AddAttribute("minFreshness_ms", "Requested freshness period milliseconds", UintegerValue(100),
+                    MakeUintegerAccessor(&CustomAppProducer::m_freshnessMin), MakeUintegerChecker<uint32_t>())
+    .AddAttribute("maxFreshness_ms", "Requested freshness period milliseconds", UintegerValue(1000),
+                    MakeUintegerAccessor(&CustomAppProducer::m_freshnessMax), MakeUintegerChecker<uint32_t>())
     .AddAttribute("Prefix", "Requested prefix", StringValue("/dumb-interest"),
                     ndn::MakeNameAccessor(&CustomAppProducer::m_prefix), ndn::MakeNameChecker())
     .AddAttribute("Service", "Requested service", StringValue("dumb-service"),
@@ -73,6 +79,12 @@ CustomAppProducer::StartApplication()
   // Add entry to FIB for `/prefix/sub`
   //ndn::FibHelper::AddRoute(GetNode(), "/prefix/sub", m_face, 0);
   ndn::FibHelper::AddRoute(GetNode(), m_name, m_face, 0);
+
+  if (m_uniformFreshness == 1)
+  {
+    Ptr<UniformRandomVariable> rand = CreateObject<UniformRandomVariable>();
+    m_freshnessPeriod = rand->GetValue(m_freshnessMin, m_freshnessMax);
+  }
 
   // Schedule send of first interest
   //Simulator::Schedule(Seconds(1.0), &CustomAppProducer::SendInterest, this);
@@ -121,6 +133,11 @@ CustomAppProducer::OnInterest(std::shared_ptr<const ndn::Interest> interest)
   // Note that Interests send out by the app will not be sent back to the app !
 
   auto data = std::make_shared<ndn::Data>(interest->getName());
+  if (m_uniformFreshness == 2)
+  {
+    Ptr<UniformRandomVariable> rand = CreateObject<UniformRandomVariable>();
+    m_freshnessPeriod = rand->GetValue(m_freshnessMin, m_freshnessMax);
+  }
   //data->setFreshnessPeriod(ndn::time::milliseconds(60000));
   data->setFreshnessPeriod(ndn::time::milliseconds(m_freshnessPeriod));
 
