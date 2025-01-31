@@ -1,4 +1,5 @@
 import re
+import numpy as np
 
 # Function to parse the file and compute the stats
 def process_latency_file(file_path):
@@ -24,16 +25,20 @@ def process_latency_file(file_path):
             return
 
         # Calculate statistics
-        minimum = min(trial_results)
-        maximum = max(trial_results)
         total = sum(trial_results)
+        minimum = min(trial_results)
+        low_quartile = np.quantile(trial_results, 0.25)
         average = total / len(trial_results)
+        high_quartile = np.quantile(trial_results, 0.75)
+        maximum = max(trial_results)
 
         # Print the results
         print("")
         print(f"min latency: {minimum} microseconds")
-        print(f"max latency: {maximum} microseconds")
+        print(f"low latency: {low_quartile} microseconds")
         print(f"avg latency: {average} microseconds")
+        print(f"high latency: {high_quartile} microseconds")
+        print(f"max latency: {maximum} microseconds")
         print(f"total latency: {total} microseconds")
         print("")
 

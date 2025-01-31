@@ -58,7 +58,7 @@ csv_out="$SCENARIO_DIR/perf-results-simulation-intervals.csv"
 
 
 
-header="Example, Interest Packets Generated, Data Packets Generated, Interest Packets Transmitted, Data Packets Transmitted, Critical-Path-Metric, CPM-t_exec(s), Min Service Latency(us), Max Service Latency(us), Avg Service Latency(us), Total Service Latency(us), Final Result, Time, ns-3 commit, pybindgen commit, scenario commit, ndnSIM commit"
+header="Example, Interest Packets Generated, Data Packets Generated, Interest Packets Transmitted, Data Packets Transmitted, Critical-Path-Metric, CPM-t_exec(s), Min Service Latency (us), Low Quartile Service Latency (us), Avg Service Latency (us), High Quartile Service Latency (us), Max Service Latency (us), Total Service Latency(us), Final Result, Time, ns-3 commit, pybindgen commit, scenario commit, ndnSIM commit"
 
 if [ ! -f "$csv_out" ]; then
 	echo "$header" > "$csv_out"
@@ -105,15 +105,19 @@ do
 	latencies=$( \
 		python process_nfd_logs_intervals.py | sed -n \
 		-e 's/^\s*min latency: \([0-9\.]*\) microseconds$/\1,/p' \
-		-e 's/^\s*max latency: \([0-9\.]*\) microseconds$/\1,/p' \
+		-e 's/^\s*low latency: \([0-9\.]*\) microseconds$/\1,/p' \
 		-e 's/^\s*avg latency: \([0-9\.]*\) microseconds$/\1,/p' \
+		-e 's/^\s*high latency: \([0-9\.]*\) microseconds$/\1,/p' \
+		-e 's/^\s*max latency: \([0-9\.]*\) microseconds$/\1,/p' \
 		-e 's/^\s*total latency: \([0-9\.]*\) microseconds$/\1,/p' \
 		| tr -d '\n' \
 	)
 	min_latency="$(echo "$latencies" | cut -d',' -f1)"
-	max_latency="$(echo "$latencies" | cut -d',' -f2)"
+	low_latency="$(echo "$latencies" | cut -d',' -f2)"
 	avg_latency="$(echo "$latencies" | cut -d',' -f3)"
-	total_latency="$(echo "$latencies" | cut -d',' -f4)"
+	high_latency="$(echo "$latencies" | cut -d',' -f4)"
+	max_latency="$(echo "$latencies" | cut -d',' -f5)"
+	total_latency="$(echo "$latencies" | cut -d',' -f6)"
 
 	packets=$( \
 		python process_nfd_logs.py | sed -n \
@@ -140,7 +144,7 @@ do
 		| tr -d '\n' \
 	)
 
-	row="$scenario, $interest_gen, $data_gen, $interest_trans, $data_trans, $cpm, $cpm_t, $min_latency, $max_latency, $avg_latency, $total_latency, $result, $now, $ns_3_hash, $pybindgen_hash, $scenario_hash, $ndnsim_hash"
+	row="$scenario, $interest_gen, $data_gen, $interest_trans, $data_trans, $cpm, $cpm_t, $min_latency, $low_latency, $avg_latency, $high_latency, $max_latency, $total_latency, $result, $now, $ns_3_hash, $pybindgen_hash, $scenario_hash, $ndnsim_hash"
 
 	echo "Dumping to csv..."
 	line_num="$(grep -n -F "$scenario," "$csv_out" | cut -d: -f1 | head -1)"
