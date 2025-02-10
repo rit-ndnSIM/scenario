@@ -28,18 +28,20 @@ def process_latency_file(file_path):
         total = sum(trial_results)
         minimum = min(trial_results)
         low_quartile = np.quantile(trial_results, 0.25)
-        average = total / len(trial_results)
+        mid_quartile = np.quantile(trial_results, 0.5)
         high_quartile = np.quantile(trial_results, 0.75)
         maximum = max(trial_results)
+        average = total / len(trial_results)
 
         # Print the results
         print("")
         print(f"min latency: {minimum} microseconds")
         print(f"low latency: {low_quartile} microseconds")
-        print(f"avg latency: {average} microseconds")
+        print(f"mid latency: {mid_quartile} microseconds")
         print(f"high latency: {high_quartile} microseconds")
         print(f"max latency: {maximum} microseconds")
         print(f"total latency: {total} microseconds")
+        print(f"avg latency: {average} microseconds")
         print("")
 
     except FileNotFoundError:
