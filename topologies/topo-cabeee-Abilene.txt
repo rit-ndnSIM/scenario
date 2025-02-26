@@ -1,0 +1,74 @@
+# topo-cabeee-Abilene.txt
+# manually created by cabeee
+# February 2025
+
+router
+
+#node	city	y	x	mpi-partition
+rtr-A	NA
+rtr-A1	NA
+rtr-A1a	NA
+rtr-A2	NA
+rtr-A2a	NA
+rtr-B	NA
+rtr-B1	NA
+rtr-B1a	NA
+rtr-C	NA
+rtr-C1	NA
+rtr-C1a	NA
+rtr-C1b	NA
+rtr-D	NA
+rtr-D1	NA
+rtr-D2	NA
+rtr-E	NA
+rtr-E1	NA
+rtr-E1a	NA
+rtr-F	NA
+rtr-F1	NA
+rtr-F2	NA
+rtr-F2a	NA
+rtr-G	NA
+rtr-H	NA
+rtr-H1	NA
+rtr-H1a	NA
+rtr-I	NA
+rtr-J	NA
+rtr-K	NA
+
+link
+
+# from	    to		capacity	metric	delay	queue
+rtr-A	    rtr-B	100Mbps		1	10ms	100
+rtr-A	    rtr-C	100Mbps		1	10ms	100
+rtr-B	    rtr-C	100Mbps		1	10ms	100
+rtr-C	    rtr-E	100Mbps		1	10ms	100
+rtr-E	    rtr-G	100Mbps		1	10ms	100
+rtr-G	    rtr-I	100Mbps		1	10ms	100
+rtr-I	    rtr-K	100Mbps		1	10ms	100
+rtr-K	    rtr-J	100Mbps		1	10ms	100
+rtr-J	    rtr-H	100Mbps		1	10ms	100
+rtr-H	    rtr-F	100Mbps		1	10ms	100
+rtr-F	    rtr-D	100Mbps		1	10ms	100
+rtr-D	    rtr-B	100Mbps		1	10ms	100
+rtr-E	    rtr-F	100Mbps		1	10ms	100
+rtr-G	    rtr-H	100Mbps		1	10ms	100
+
+rtr-A	    rtr-A1	10Mbps		1	2ms	100
+rtr-A	    rtr-A2	10Mbps		1	2ms	100
+rtr-C	    rtr-C1	10Mbps		1	2ms	100
+rtr-E	    rtr-E1	10Mbps		1	2ms	100
+rtr-H	    rtr-H1	10Mbps		1	2ms	100
+rtr-F	    rtr-F1	10Mbps		1	2ms	100
+rtr-F	    rtr-F2	10Mbps		1	2ms	100
+rtr-D	    rtr-D1	10Mbps		1	2ms	100
+rtr-D	    rtr-D2	10Mbps		1	2ms	100
+rtr-B	    rtr-B1	10Mbps		1	2ms	100
+
+rtr-A1	    rtr-A1a	10Mbps		1	1ms	100
+rtr-A2	    rtr-A2a	10Mbps		1	1ms	100
+rtr-C1	    rtr-C1a	10Mbps		1	1ms	100
+rtr-C1	    rtr-C1b	10Mbps		1	1ms	100
+rtr-E1	    rtr-E1a	10Mbps		1	1ms	100
+rtr-H1	    rtr-H1a	10Mbps		1	1ms	100
+rtr-F2	    rtr-F2a	10Mbps		1	1ms	100
+rtr-B1	    rtr-B1a	10Mbps		1	1ms	100

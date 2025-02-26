@@ -525,6 +525,14 @@ std::cout << "        DOES THIS EVER HAPPEN?? " << m_service << " received DATA 
     if (m_service.ndn::Name::toUri().rfind("/serviceCPM-", 0) == 0) { // if name of string starts with /serviceCPM- (any of the 001-100 CPM services)
       m_serviceOutput = (m_vectorOfServiceInputs[0])+1;
     }
+    if ((m_service.ndn::Name::toUri() == "/serviceP22") ||
+        (m_service.ndn::Name::toUri() == "/serviceP23") ||
+        (m_service.ndn::Name::toUri() == "/serviceR1")){
+      m_serviceOutput =
+            (m_vectorOfServiceInputs[0])+
+            (m_vectorOfServiceInputs[1])+
+            (m_vectorOfServiceInputs[2]);
+    }
     
     // we stored the result so we can respond later when the main service interest comes in!!
 

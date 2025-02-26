@@ -690,6 +690,14 @@ DagForwarderApp::OnData(std::shared_ptr<const ndn::Data> data)
     if (m_service.ndn::Name::toUri().rfind("/serviceCPM-", 0) == 0) { // if name of string starts with /serviceCPM- (any of the 001-100 CPM services)
       serviceOutput = (m_vectorOfServiceInputs[0])+1;
     }
+    if ((m_service.ndn::Name::toUri() == "/serviceP22") ||
+        (m_service.ndn::Name::toUri() == "/serviceP23") ||
+        (m_service.ndn::Name::toUri() == "/serviceR1")){
+      serviceOutput =
+            (m_vectorOfServiceInputs[0])+
+            (m_vectorOfServiceInputs[1])+
+            (m_vectorOfServiceInputs[2]);
+    }
     
     NS_LOG_DEBUG("Service " << m_service.ndn::Name::toUri() << " has output: " << (int)serviceOutput);
   

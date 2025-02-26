@@ -50,11 +50,6 @@ declare -a scenarios=(
 	"ndn-cabeee-8dag-caching-orchestratorB orchB 8dag.json 8dag.hosting topo-cabeee-3node.json"
 	"ndn-cabeee-8dag-caching-nesco nesco 8dag.json 8dag.hosting topo-cabeee-3node.json"
 	"ndn-cabeee-8dag-caching-nescoSCOPT nescoSCOPT 8dag.json 8dag.hosting topo-cabeee-3node.json"
-	# 20 Parallel (new hosting using 3node topology)
-	"ndn-cabeee-20parallel-orchestratorA orchA 20-parallel.json 20-parallel-in3node.hosting topo-cabeee-3node.json"
-	"ndn-cabeee-20parallel-orchestratorB orchB 20-parallel.json 20-parallel-in3node.hosting topo-cabeee-3node.json"
-	"ndn-cabeee-20parallel-nesco nesco 20-parallel.json 20-parallel-in3node.hosting topo-cabeee-3node.json"
-	"ndn-cabeee-20parallel-nescoSCOPT nescoSCOPT 20-parallel.json 20-parallel-in3node.hosting topo-cabeee-3node.json"
 	# 20 Sensor (new hosting using 3node topology)
 	"ndn-cabeee-20sensor-orchestratorA orchA 20-sensor.json 20-sensor-in3node.hosting topo-cabeee-3node.json"
 	"ndn-cabeee-20sensor-orchestratorB orchB 20-sensor.json 20-sensor-in3node.hosting topo-cabeee-3node.json"
@@ -65,12 +60,22 @@ declare -a scenarios=(
 	"ndn-cabeee-20linear-orchestratorB orchB 20-linear.json 20-linear-in3node.hosting topo-cabeee-3node.json"
 	"ndn-cabeee-20linear-nesco nesco 20-linear.json 20-linear-in3node.hosting topo-cabeee-3node.json"
 	"ndn-cabeee-20linear-nescoSCOPT nescoSCOPT 20-linear.json 20-linear-in3node.hosting topo-cabeee-3node.json"
-	# 20 Scramble (new hosting using 3node topology)
-	"ndn-cabeee-20scrambled-orchestratorA orchA 20-linear.json 20-scrambled-in3node.hosting topo-cabeee-3node.json"
-	"ndn-cabeee-20scrambled-orchestratorB orchB 20-linear.json 20-scrambled-in3node.hosting topo-cabeee-3node.json"
-	"ndn-cabeee-20scrambled-nesco nesco 20-linear.json 20-scrambled-in3node.hosting topo-cabeee-3node.json"
-	"ndn-cabeee-20scrambled-nescoSCOPT nescoSCOPT 20-linear.json 20-scrambled-in3node.hosting topo-cabeee-3node.json"
+	# 20 Reuse (new hosting using 3node topology)
+	"ndn-cabeee-20reuse-orchestratorA orchA 20-reuse.json 20-reuse-in3node.hosting topo-cabeee-3node.json"
+	"ndn-cabeee-20reuse-orchestratorB orchB 20-reuse.json 20-reuse-in3node.hosting topo-cabeee-3node.json"
+	"ndn-cabeee-20reuse-nesco nesco 20-reuse.json 20-reuse-in3node.hosting topo-cabeee-3node.json"
+	"ndn-cabeee-20reuse-nescoSCOPT nescoSCOPT 20-reuse.json 20-reuse-in3node.hosting topo-cabeee-3node.json"
 
+	# 20 Scramble (new hosting using 3node topology)
+	#"ndn-cabeee-20scrambled-orchestratorA orchA 20-linear.json 20-scrambled-in3node.hosting topo-cabeee-3node.json"
+	#"ndn-cabeee-20scrambled-orchestratorB orchB 20-linear.json 20-scrambled-in3node.hosting topo-cabeee-3node.json"
+	#"ndn-cabeee-20scrambled-nesco nesco 20-linear.json 20-scrambled-in3node.hosting topo-cabeee-3node.json"
+	#"ndn-cabeee-20scrambled-nescoSCOPT nescoSCOPT 20-linear.json 20-scrambled-in3node.hosting topo-cabeee-3node.json"
+	# 20 Parallel (new hosting using 3node topology)
+	#"ndn-cabeee-20parallel-orchestratorA orchA 20-parallel.json 20-parallel-in3node.hosting topo-cabeee-3node.json"
+	#"ndn-cabeee-20parallel-orchestratorB orchB 20-parallel.json 20-parallel-in3node.hosting topo-cabeee-3node.json"
+	#"ndn-cabeee-20parallel-nesco nesco 20-parallel.json 20-parallel-in3node.hosting topo-cabeee-3node.json"
+	#"ndn-cabeee-20parallel-nescoSCOPT nescoSCOPT 20-parallel.json 20-parallel-in3node.hosting topo-cabeee-3node.json"
 	# 20-Node Linear
 	#"ndn-cabeee-20node-linear-orchestratorA orchA 20-linear.json 20-linear.hosting topo-cabeee-20node-linear.json"
 	#"ndn-cabeee-20node-linear-orchestratorB orchB 20-linear.json 20-linear.hosting topo-cabeee-20node-linear.json"
@@ -87,7 +92,6 @@ declare -a scenarios=(
 	#"ndn-cabeee-20sensor-parallel-nesco nescoSCOPT 20-sensor.json 20-sensor.hosting topo-cabeee-20sensor.json"
 	#"ndn-cabeee-20sensor-parallel-nescoSCOPT nescoSCOPT 20-sensor.json 20-sensor.hosting topo-cabeee-20sensor.json"
 	# 20-Node Scrambled
-	#TODO (emulation only has nesco and nescoSCOPT)
 	# Misc
 	#"ndn-cabeee-8dag-reuse"
 	#"ndn-cabeee-20sensor-3node"
