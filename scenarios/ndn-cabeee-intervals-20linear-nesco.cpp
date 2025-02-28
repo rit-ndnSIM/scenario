@@ -119,7 +119,7 @@ main(int argc, char* argv[])
 
   // Choosing forwarding strategy
   //ndn::StrategyChoiceHelper::InstallAll(Prefix + "/sensor", "/localhost/nfd/strategy/best-route");
-  ndn::StrategyChoiceHelper::InstallAll(Prefix + "/sensor", "/localhost/nfd/strategy/multicast");
+  ndn::StrategyChoiceHelper::InstallAll(Prefix + "/sensorL", "/localhost/nfd/strategy/multicast");
   ndn::StrategyChoiceHelper::InstallAll(Prefix + "/serviceL1", "/localhost/nfd/strategy/multicast");
   ndn::StrategyChoiceHelper::InstallAll(Prefix + "/serviceL2", "/localhost/nfd/strategy/multicast");
   ndn::StrategyChoiceHelper::InstallAll(Prefix + "/serviceL3", "/localhost/nfd/strategy/multicast");
@@ -158,7 +158,7 @@ main(int argc, char* argv[])
   // Custom App for Sensor(Producer)
   ndn::AppHelper sensorApp("CustomAppProducer");
   sensorApp.SetPrefix(Prefix);
-  sensorApp.SetAttribute("Service", StringValue("sensor"));
+  sensorApp.SetAttribute("Service", StringValue("sensorL"));
   //sensorApp.SetAttribute("UniformFreshness", UintegerValue(1));   // this will override the FreshnessPeriod_ms setting below, and use Uniform Distribution to pick value ONCE!
   //sensorApp.SetAttribute("UniformFreshness", UintegerValue(2));   // this will override the FreshnessPeriod_ms setting below, and use Uniform Distribution to pick new value EVERY TIME!
   //sensorApp.SetAttribute("minFreshness_ms", UintegerValue(100));

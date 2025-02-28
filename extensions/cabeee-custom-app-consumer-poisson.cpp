@@ -132,7 +132,7 @@ CustomAppConsumerPoisson::SendInterest()
     return;
   }
 
-  std::cout << "\n  Sending new workflow interest: " << m_interestNum << "/" << m_numInterests << std::endl;
+  //std::cout << "\n  Sending new workflow interest: " << m_interestNum << "/" << m_numInterests << std::endl;
 
   m_startTime = Simulator::Now();
 
@@ -406,7 +406,7 @@ CustomAppConsumerPoisson::OnData(std::shared_ptr<const ndn::Data> data)
 {
   NS_LOG_DEBUG("Receiving Data packet for " << data->getName());
 
-  std::cout << "\n\n      CONSUMER: DATA received for name " << data->getName() << std::endl << "\n\n";
+  //std::cout << "\n\n      CONSUMER: DATA received for name " << data->getName() << std::endl << "\n\n";
 
   ndn::Block myRxedBlock = data->getContent();
   //std::cout << "\nCONSUMER: result = " << myRxedBlock << std::endl << "\n\n";
@@ -416,12 +416,14 @@ CustomAppConsumerPoisson::OnData(std::shared_ptr<const ndn::Data> data)
   pContent++;  // now this points to the first size octet
   pContent++;  // now this points to the second size octet
   pContent++;  // now we are pointing at the first byte of the true content
-  std::cout << "\n  The final answer is: " <<  (int)(*pContent) << std::endl << "\n\n";
+  std::cout << "  Final answer for    " << m_service.ndn::Name::toUri() << " " << m_interestNum << "/" << m_numInterests << ": " <<  (int)(*pContent)  << std::endl;
 
   m_endTime = Simulator::Now();
   Time serviceLatency = m_endTime - m_startTime;
-  std::cout << "\n  Service Latency " << m_interestNum << "/" << m_numInterests << ": " <<  serviceLatency.GetMilliSeconds() << " milliseconds." << std::endl;
-  std::cout << "\n  Service Latency " << m_interestNum << "/" << m_numInterests << ": " <<  serviceLatency.GetMicroSeconds() << " microseconds." << std::endl;
+  std::cout << "  Service Latency for " << m_service.ndn::Name::toUri() << " " << m_interestNum << "/" << m_numInterests << ": " <<  serviceLatency.GetMilliSeconds() << " milliseconds." << std::endl;
+  std::cout << "  Service Latency for " << m_service.ndn::Name::toUri() << " " << m_interestNum << "/" << m_numInterests << ": " <<  serviceLatency.GetMicroSeconds() << " microseconds." << std::endl;
+
+  std::cout << std::endl;
 
 
   // now that the previous workflow interest has been satisfied, we can schedule the next one. We wait so that we don't have more

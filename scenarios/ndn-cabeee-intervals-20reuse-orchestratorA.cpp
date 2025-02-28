@@ -24,14 +24,14 @@
 #include "ns3/ndnSIM-module.h"
 #include "ns3/string.h"
 
-#define PREFIX "/nesco"
+#define PREFIX "/orchA"
 
 namespace ns3 {
 
 /**
 *     Uses Abilene topology
 * 
-*     NS_LOG=CustomAppConsumer:CustomAppProducer:DagForwarderApp ./waf --run=ndn-cabeee-20reuse-nesco
+*     NS_LOG=CustomAppConsumer:CustomAppProducer:DagForwarderApp ./waf --run=ndn-cabeee-20reuse-orchestratorA
 */
 int
 main(int argc, char* argv[])
@@ -140,6 +140,7 @@ main(int argc, char* argv[])
 
   // Choosing forwarding strategy
   //ndn::StrategyChoiceHelper::InstallAll(Prefix + "/sensor", "/localhost/nfd/strategy/best-route");
+  ndn::StrategyChoiceHelper::InstallAll(Prefix + "/serviceOrchestration", "/localhost/nfd/strategy/multicast");
   ndn::StrategyChoiceHelper::InstallAll(Prefix + "/sensor1", "/localhost/nfd/strategy/multicast");
   ndn::StrategyChoiceHelper::InstallAll(Prefix + "/sensor2", "/localhost/nfd/strategy/multicast");
   ndn::StrategyChoiceHelper::InstallAll(Prefix + "/sensor3", "/localhost/nfd/strategy/multicast");
@@ -300,7 +301,7 @@ main(int argc, char* argv[])
 
 
   // Custom App for routers
-  ndn::AppHelper routerApp("DagForwarderApp");
+  ndn::AppHelper routerApp("DagServiceA_App");
   routerApp.SetPrefix(Prefix);
 
   routerApp.SetAttribute("Service", StringValue("serviceP1"));
@@ -399,27 +400,42 @@ main(int argc, char* argv[])
   routerApp.Install(rtrG).Start(Seconds(0));
 
 
+  ndn::AppHelper orchestratorApp("DagOrchestratorA_App");
+  orchestratorApp.SetPrefix(Prefix);
+  orchestratorApp.SetAttribute("Service", StringValue("serviceOrchestration"));
+  //orchestratorApp.Install(orchestrator).Start(Seconds(0));
+  orchestratorApp.Install(rtrH).Start(Seconds(0));  //TODO: need to figure out how to separate packets that should go to each of the consumers!
+                                                        //TODO: just use 4 names (will need to update orchA extensions to check for all 4):
+                                                                  // 1) serviceOrchestration (to be backwards compatible)
+                                                                  // 2) serviceOrchestration20Sensor
+                                                                  // 3) serviceOrchestration20linear
+                                                                  // 4) serviceOrchestrationReuse
+
+                                                        //TODO: OR, just put all 3 consumers in the same node? (would have to separate data structures)
+                                                        //TODO: OR, just put all 3 orchestrators in the same node? (would have to separate data structures)
+                                                        //TODO: OR, do we just run orchestratorA scenarios on their own (no real reuse)?
+
 
   // Custom App for User(Consumer)
   ndn::AppHelper userApp("CustomAppConsumerPoisson");
   userApp.SetPrefix(Prefix);
   userApp.SetAttribute("Service", StringValue("consumerP"));
   userApp.SetAttribute("Workflow", StringValue("workflows/20-sensor.json"));
-  userApp.SetAttribute("Orchestrate", UintegerValue(0));
+  userApp.SetAttribute("Orchestrate", UintegerValue(1)); // This enables the "orchestrator" by having the consumer set the head service to /serviceOrchestration
   userApp.SetAttribute("Frequency", DoubleValue(10));       // 10 interests per second on average (Poisson process)
   userApp.SetAttribute("NumInterests", UintegerValue(100)); // 100 total interests will be generated
   userApp.Install(rtrE1a).Start(Seconds(0));
 
   userApp.SetAttribute("Service", StringValue("consumerL"));
   userApp.SetAttribute("Workflow", StringValue("workflows/20-linear.json"));
-  userApp.SetAttribute("Orchestrate", UintegerValue(0));
+  userApp.SetAttribute("Orchestrate", UintegerValue(1)); // This enables the "orchestrator" by having the consumer set the head service to /serviceOrchestration
   userApp.SetAttribute("Frequency", DoubleValue(10));       // 10 interests per second on average (Poisson process)
   userApp.SetAttribute("NumInterests", UintegerValue(100)); // 100 total interests will be generated
   userApp.Install(rtrH1a).Start(Seconds(0));
 
   userApp.SetAttribute("Service", StringValue("consumerR"));
   userApp.SetAttribute("Workflow", StringValue("workflows/20-reuse.json"));
-  userApp.SetAttribute("Orchestrate", UintegerValue(0));
+  userApp.SetAttribute("Orchestrate", UintegerValue(1)); // This enables the "orchestrator" by having the consumer set the head service to /serviceOrchestration
   userApp.SetAttribute("Frequency", DoubleValue(10));       // 10 interests per second on average (Poisson process)
   userApp.SetAttribute("NumInterests", UintegerValue(100)); // 100 total interests will be generated
   userApp.Install(rtrF2a).Start(Seconds(0));

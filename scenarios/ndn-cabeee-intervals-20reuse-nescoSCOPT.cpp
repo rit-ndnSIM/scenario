@@ -24,14 +24,14 @@
 #include "ns3/ndnSIM-module.h"
 #include "ns3/string.h"
 
-#define PREFIX "/nesco"
+#define PREFIX "/nescoSCOPT"
 
 namespace ns3 {
 
 /**
 *     Uses Abilene topology
 * 
-*     NS_LOG=CustomAppConsumer:CustomAppProducer:DagForwarderApp ./waf --run=ndn-cabeee-20reuse-nesco
+*     NS_LOG=CustomAppConsumer:CustomAppProducer:DagForwarderApp ./waf --run=ndn-cabeee-20reuse-nescoSCOPT
 */
 int
 main(int argc, char* argv[])

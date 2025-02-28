@@ -4,36 +4,36 @@
 
 router
 
-#node	city	y	x	mpi-partition
-rtr-A	NA
-rtr-A1	NA
-rtr-A1a	NA
-rtr-A2	NA
-rtr-A2a	NA
-rtr-B	NA
-rtr-B1	NA
-rtr-B1a	NA
-rtr-C	NA
-rtr-C1	NA
-rtr-C1a	NA
-rtr-C1b	NA
-rtr-D	NA
-rtr-D1	NA
-rtr-D2	NA
-rtr-E	NA
-rtr-E1	NA
-rtr-E1a	NA
-rtr-F	NA
-rtr-F1	NA
-rtr-F2	NA
-rtr-F2a	NA
-rtr-G	NA
-rtr-H	NA
-rtr-H1	NA
-rtr-H1a	NA
-rtr-I	NA
-rtr-J	NA
-rtr-K	NA
+#node		city	y	x	mpi-partition
+rtr-A 		NA		10 	10 	0
+rtr-A1 		NA		11 	10 	1
+rtr-A1a		NA		12 	10 	2
+rtr-A2 		NA		13 	10 	1
+rtr-A2a		NA		14 	10 	2
+rtr-B		NA		15 	10 	0
+rtr-B1		NA		16 	10 	1
+rtr-B1a		NA		17 	10 	2
+rtr-C		NA		18 	10 	0
+rtr-C1		NA		19 	10 	1
+rtr-C1a		NA		20 	10 	2
+rtr-C1b		NA		21 	10 	2
+rtr-D		NA		22 	10 	0
+rtr-D1		NA		23 	10 	1
+rtr-D2		NA		24 	10 	1
+rtr-E		NA		25 	10 	0
+rtr-E1		NA		26 	10 	1
+rtr-E1a		NA		27 	10 	2
+rtr-F		NA		28	10 	0
+rtr-F1		NA		29 	10 	1
+rtr-F2		NA		30 	10 	1
+rtr-F2a		NA		31 	10 	2
+rtr-G		NA		32	10 	0
+rtr-H		NA		33 	10 	0
+rtr-H1		NA		34 	10 	1
+rtr-H1a		NA		35 	10 	2
+rtr-I		NA		36	10 	0
+rtr-J		NA		37	10 	0
+rtr-K		NA		38 	10 	0
 
 link
 
