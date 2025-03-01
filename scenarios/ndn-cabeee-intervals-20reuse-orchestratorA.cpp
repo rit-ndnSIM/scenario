@@ -242,60 +242,60 @@ main(int argc, char* argv[])
   sensorApp.SetAttribute("FreshnessPeriod_ms", UintegerValue(500));
   sensorApp.Install(rtrA1a).Start(Seconds(0));
   sensorApp.SetAttribute("Service", StringValue("sensor4"));
-  sensorApp.SetAttribute("FreshnessPeriod_ms", UintegerValue(250));
+  sensorApp.SetAttribute("FreshnessPeriod_ms", UintegerValue(2500));
   sensorApp.Install(rtrA2a).Start(Seconds(0));
   sensorApp.SetAttribute("Service", StringValue("sensor5"));
-  sensorApp.SetAttribute("FreshnessPeriod_ms", UintegerValue(150));
+  sensorApp.SetAttribute("FreshnessPeriod_ms", UintegerValue(1500));
   sensorApp.Install(rtrA2a).Start(Seconds(0));
   sensorApp.SetAttribute("Service", StringValue("sensor6"));
-  sensorApp.SetAttribute("FreshnessPeriod_ms", UintegerValue(150));
+  sensorApp.SetAttribute("FreshnessPeriod_ms", UintegerValue(1500));
   sensorApp.Install(rtrA2a).Start(Seconds(0));
   sensorApp.SetAttribute("Service", StringValue("sensor7"));
-  sensorApp.SetAttribute("FreshnessPeriod_ms", UintegerValue(250));
+  sensorApp.SetAttribute("FreshnessPeriod_ms", UintegerValue(2500));
   sensorApp.Install(rtrC1b).Start(Seconds(0));
   sensorApp.SetAttribute("Service", StringValue("sensor8"));
-  sensorApp.SetAttribute("FreshnessPeriod_ms", UintegerValue(240));
+  sensorApp.SetAttribute("FreshnessPeriod_ms", UintegerValue(2400));
   sensorApp.Install(rtrC1b).Start(Seconds(0));
   sensorApp.SetAttribute("Service", StringValue("sensor9"));
-  sensorApp.SetAttribute("FreshnessPeriod_ms", UintegerValue(230));
+  sensorApp.SetAttribute("FreshnessPeriod_ms", UintegerValue(2300));
   sensorApp.Install(rtrC1b).Start(Seconds(0));
   sensorApp.SetAttribute("Service", StringValue("sensor10"));
-  sensorApp.SetAttribute("FreshnessPeriod_ms", UintegerValue(220));
+  sensorApp.SetAttribute("FreshnessPeriod_ms", UintegerValue(2200));
   sensorApp.Install(rtrC1b).Start(Seconds(0));
   sensorApp.SetAttribute("Service", StringValue("sensor11"));
-  sensorApp.SetAttribute("FreshnessPeriod_ms", UintegerValue(210));
+  sensorApp.SetAttribute("FreshnessPeriod_ms", UintegerValue(2100));
   sensorApp.Install(rtrC1b).Start(Seconds(0));
   sensorApp.SetAttribute("Service", StringValue("sensor12"));
-  sensorApp.SetAttribute("FreshnessPeriod_ms", UintegerValue(200));
+  sensorApp.SetAttribute("FreshnessPeriod_ms", UintegerValue(2000));
   sensorApp.Install(rtrC1b).Start(Seconds(0));
   sensorApp.SetAttribute("Service", StringValue("sensor13"));
-  sensorApp.SetAttribute("FreshnessPeriod_ms", UintegerValue(180));
+  sensorApp.SetAttribute("FreshnessPeriod_ms", UintegerValue(1800));
   sensorApp.Install(rtrC1b).Start(Seconds(0));
   sensorApp.SetAttribute("Service", StringValue("sensor14"));
-  sensorApp.SetAttribute("FreshnessPeriod_ms", UintegerValue(150));
+  sensorApp.SetAttribute("FreshnessPeriod_ms", UintegerValue(1500));
   sensorApp.Install(rtrB1a).Start(Seconds(0));
   sensorApp.SetAttribute("Service", StringValue("sensor15"));
-  sensorApp.SetAttribute("FreshnessPeriod_ms", UintegerValue(100));
+  sensorApp.SetAttribute("FreshnessPeriod_ms", UintegerValue(1000));
   sensorApp.Install(rtrB1a).Start(Seconds(0));
   sensorApp.SetAttribute("Service", StringValue("sensor16"));
-  sensorApp.SetAttribute("FreshnessPeriod_ms", UintegerValue(100));
+  sensorApp.SetAttribute("FreshnessPeriod_ms", UintegerValue(1000));
   sensorApp.Install(rtrB1a).Start(Seconds(0));
   sensorApp.SetAttribute("Service", StringValue("sensor17"));
-  sensorApp.SetAttribute("FreshnessPeriod_ms", UintegerValue(100));
+  sensorApp.SetAttribute("FreshnessPeriod_ms", UintegerValue(1000));
   sensorApp.Install(rtrB1a).Start(Seconds(0));
   sensorApp.SetAttribute("Service", StringValue("sensor18"));
-  sensorApp.SetAttribute("FreshnessPeriod_ms", UintegerValue(100));
+  sensorApp.SetAttribute("FreshnessPeriod_ms", UintegerValue(1000));
   sensorApp.Install(rtrB1a).Start(Seconds(0));
   sensorApp.SetAttribute("Service", StringValue("sensor19"));
-  sensorApp.SetAttribute("FreshnessPeriod_ms", UintegerValue(100));
+  sensorApp.SetAttribute("FreshnessPeriod_ms", UintegerValue(1000));
   sensorApp.Install(rtrB1a).Start(Seconds(0));
   sensorApp.SetAttribute("Service", StringValue("sensor20"));
-  sensorApp.SetAttribute("FreshnessPeriod_ms", UintegerValue(100));
+  sensorApp.SetAttribute("FreshnessPeriod_ms", UintegerValue(1000));
   sensorApp.Install(rtrB1a).Start(Seconds(0));
 
 
   sensorApp.SetAttribute("Service", StringValue("sensorL"));
-  sensorApp.SetAttribute("FreshnessPeriod_ms", UintegerValue(200));
+  sensorApp.SetAttribute("FreshnessPeriod_ms", UintegerValue(2000));
   sensorApp.Install(rtrC1a).Start(Seconds(0));
 
 
@@ -403,8 +403,7 @@ main(int argc, char* argv[])
   ndn::AppHelper orchestratorApp("DagOrchestratorA_App");
   orchestratorApp.SetPrefix(Prefix);
   orchestratorApp.SetAttribute("Service", StringValue("serviceOrchestration"));
-  //orchestratorApp.Install(orchestrator).Start(Seconds(0));
-  orchestratorApp.Install(rtrH).Start(Seconds(0));  //TODO: need to figure out how to separate packets that should go to each of the consumers!
+  orchestratorApp.Install(rtrE1a).Start(Seconds(0));  //TODO: need to figure out how to separate packets that should go to each of the consumers!
                                                         //TODO: just use 4 names (will need to update orchA extensions to check for all 4):
                                                                   // 1) serviceOrchestration (to be backwards compatible)
                                                                   // 2) serviceOrchestration20Sensor
@@ -414,11 +413,15 @@ main(int argc, char* argv[])
                                                         //TODO: OR, just put all 3 consumers in the same node? (would have to separate data structures)
                                                         //TODO: OR, just put all 3 orchestrators in the same node? (would have to separate data structures)
                                                         //TODO: OR, do we just run orchestratorA scenarios on their own (no real reuse)?
+  orchestratorApp.Install(rtrH1a).Start(Seconds(0));
+  orchestratorApp.Install(rtrF2a).Start(Seconds(0));
+ 
 
 
   // Custom App for User(Consumer)
   ndn::AppHelper userApp("CustomAppConsumerPoisson");
   userApp.SetPrefix(Prefix);
+
   userApp.SetAttribute("Service", StringValue("consumerP"));
   userApp.SetAttribute("Workflow", StringValue("workflows/20-sensor.json"));
   userApp.SetAttribute("Orchestrate", UintegerValue(1)); // This enables the "orchestrator" by having the consumer set the head service to /serviceOrchestration
@@ -431,14 +434,14 @@ main(int argc, char* argv[])
   userApp.SetAttribute("Orchestrate", UintegerValue(1)); // This enables the "orchestrator" by having the consumer set the head service to /serviceOrchestration
   userApp.SetAttribute("Frequency", DoubleValue(10));       // 10 interests per second on average (Poisson process)
   userApp.SetAttribute("NumInterests", UintegerValue(100)); // 100 total interests will be generated
-  userApp.Install(rtrH1a).Start(Seconds(0));
+  userApp.Install(rtrH1a).Start(Seconds(60));
 
   userApp.SetAttribute("Service", StringValue("consumerR"));
   userApp.SetAttribute("Workflow", StringValue("workflows/20-reuse.json"));
   userApp.SetAttribute("Orchestrate", UintegerValue(1)); // This enables the "orchestrator" by having the consumer set the head service to /serviceOrchestration
   userApp.SetAttribute("Frequency", DoubleValue(10));       // 10 interests per second on average (Poisson process)
   userApp.SetAttribute("NumInterests", UintegerValue(100)); // 100 total interests will be generated
-  userApp.Install(rtrF2a).Start(Seconds(0));
+  userApp.Install(rtrF2a).Start(Seconds(240));
 
 
 
@@ -464,7 +467,7 @@ main(int argc, char* argv[])
 
 
 
-  Simulator::Stop(Seconds(120));
+  Simulator::Stop(Seconds(480));
 
   //ndn::L3RateTracer::InstallAll("rate-trace_cabeee-20reuse.txt", Seconds(1.0));
   //ndn::CsTracer::InstallAll("cs-trace_cabeee-20reuse.txt", Seconds(1.0));

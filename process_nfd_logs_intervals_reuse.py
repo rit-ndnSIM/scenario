@@ -97,6 +97,7 @@ def process_latency_file(file_path):
             high_quartile = np.quantile(trial_results, 0.75)
             maximum = max(trial_results)
             average = total / len(trial_results)
+            req_fulfilled = len(trial_results)
 
             
             print(f"Statistics for type: {trial_type}")
@@ -116,10 +117,11 @@ def process_latency_file(file_path):
             print(f"  {trial_type} max latency: {int(maximum)} microseconds")
             print(f"  {trial_type} total latency: {int(total)} microseconds")
             print(f"  {trial_type} avg latency: {int(average)} microseconds")
+            print(f"  {trial_type} requests fulfilled: {int(req_fulfilled)} total requests")
             
             if trial_type in final_answers:
                 #print(f"  Final answer: {final_answers[trial_type]:.2f} microseconds")
-                print(f"  {trial_type} Final answer: {int(final_answers[trial_type])} microseconds")
+                print(f"  {trial_type} Final answer: {int(final_answers[trial_type])} numerical")
             print()
 
     except FileNotFoundError:

@@ -38,20 +38,20 @@ rtr-K		NA		38 	10 	0
 link
 
 # from	    to		capacity	metric	delay	queue
-rtr-A	    rtr-B	100Mbps		1	10ms	100
-rtr-A	    rtr-C	100Mbps		1	10ms	100
-rtr-B	    rtr-C	100Mbps		1	10ms	100
-rtr-C	    rtr-E	100Mbps		1	10ms	100
-rtr-E	    rtr-G	100Mbps		1	10ms	100
-rtr-G	    rtr-I	100Mbps		1	10ms	100
-rtr-I	    rtr-K	100Mbps		1	10ms	100
-rtr-K	    rtr-J	100Mbps		1	10ms	100
-rtr-J	    rtr-H	100Mbps		1	10ms	100
-rtr-H	    rtr-F	100Mbps		1	10ms	100
-rtr-F	    rtr-D	100Mbps		1	10ms	100
-rtr-D	    rtr-B	100Mbps		1	10ms	100
-rtr-E	    rtr-F	100Mbps		1	10ms	100
-rtr-G	    rtr-H	100Mbps		1	10ms	100
+rtr-A	    rtr-B	100Mbps		1	5ms	100
+rtr-A	    rtr-C	100Mbps		1	5ms	100
+rtr-B	    rtr-C	100Mbps		1	5ms	100
+rtr-C	    rtr-E	100Mbps		1	5ms	100
+rtr-E	    rtr-G	100Mbps		1	5ms	100
+rtr-G	    rtr-I	100Mbps		1	5ms	100
+rtr-I	    rtr-K	100Mbps		1	5ms	100
+rtr-K	    rtr-J	100Mbps		1	5ms	100
+rtr-J	    rtr-H	100Mbps		1	5ms	100
+rtr-H	    rtr-F	100Mbps		1	5ms	100
+rtr-F	    rtr-D	100Mbps		1	5ms	100
+rtr-D	    rtr-B	100Mbps		1	5ms	100
+rtr-E	    rtr-F	100Mbps		1	5ms	100
+rtr-G	    rtr-H	100Mbps		1	5ms	100
 
 rtr-A	    rtr-A1	10Mbps		1	2ms	100
 rtr-A	    rtr-A2	10Mbps		1	2ms	100
@@ -64,11 +64,11 @@ rtr-D	    rtr-D1	10Mbps		1	2ms	100
 rtr-D	    rtr-D2	10Mbps		1	2ms	100
 rtr-B	    rtr-B1	10Mbps		1	2ms	100
 
-rtr-A1	    rtr-A1a	10Mbps		1	1ms	100
-rtr-A2	    rtr-A2a	10Mbps		1	1ms	100
-rtr-C1	    rtr-C1a	10Mbps		1	1ms	100
-rtr-C1	    rtr-C1b	10Mbps		1	1ms	100
-rtr-E1	    rtr-E1a	10Mbps		1	1ms	100
-rtr-H1	    rtr-H1a	10Mbps		1	1ms	100
-rtr-F2	    rtr-F2a	10Mbps		1	1ms	100
-rtr-B1	    rtr-B1a	10Mbps		1	1ms	100
+rtr-A1	    rtr-A1a	1Mbps		1	1ms	100
+rtr-A2	    rtr-A2a	1Mbps		1	1ms	100
+rtr-C1	    rtr-C1a	1Mbps		1	1ms	100
+rtr-C1	    rtr-C1b	1Mbps		1	1ms	100
+rtr-E1	    rtr-E1a	1Mbps		1	1ms	100
+rtr-H1	    rtr-H1a	1Mbps		1	1ms	100
+rtr-F2	    rtr-F2a	1Mbps		1	1ms	100
+rtr-B1	    rtr-B1a	1Mbps		1	1ms	100

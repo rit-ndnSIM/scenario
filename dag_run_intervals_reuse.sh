@@ -15,8 +15,8 @@ clear
 set -e
 
 LOGS=CustomAppConsumer
-LOGS=$LOGS:CustomAppConsumerPoisson
-LOGS=$LOGS:CustomAppConsumer2
+#LOGS=$LOGS:CustomAppConsumerPoisson
+#LOGS=$LOGS:CustomAppConsumer2
 #LOGS=$LOGS:CustomAppProducer
 #LOGS=$LOGS:DagForwarderApp
 #LOGS=$LOGS:ndn.App
@@ -35,6 +35,13 @@ TOPOLOGY_DIR="$HOME/ndnSIM/scenario/topologies"
 
 
 declare -a scenarios=(
+	# 20 Reuse (Abilene topology)
+	"ndn-cabeee-intervals-20reuse-orchestratorA orchA 20-reuse.json 20-reuse-inAbilene.hosting topo-cabeee-Abilene.txt"
+####"ndn-cabeee-intervals-20reuse-orchestratorB orchB 20-reuse.json 20-reuse-inAbilene.hosting topo-cabeee-Abilene.txt"
+	"ndn-cabeee-intervals-20reuse-nesco nesco 20-reuse.json 20-reuse-inAbilene.hosting topo-cabeee-Abilene.txt"
+	"ndn-cabeee-intervals-20reuse-nescoSCOPT nescoSCOPT 20-reuse.json 20-reuse-inAbilene.hosting topo-cabeee-Abilene.txt"
+
+
 	# 20 Sensor (using 3node topology)
 	#"ndn-cabeee-intervals-20sensor-orchestratorA orchA 20-sensor.json 20-sensor-in3node.hosting topo-cabeee-3node.txt"
 ####"ndn-cabeee-intervals-20sensor-orchestratorB orchB 20-sensor.json 20-sensor-in3node.hosting topo-cabeee-3node.txt"
@@ -45,13 +52,6 @@ declare -a scenarios=(
 ####"ndn-cabeee-intervals-20linear-orchestratorB orchB 20-linear.json 20-linear-in3node.hosting topo-cabeee-3node.txt"
 	#"ndn-cabeee-intervals-20linear-nesco nesco 20-linear.json 20-linear-in3node.hosting topo-cabeee-3node.txt"
 	#"ndn-cabeee-intervals-20linear-nescoSCOPT nescoSCOPT 20-linear.json 20-linear-in3node.hosting topo-cabeee-3node.txt"
-	# 20 Reuse (Abilene topology)
-	#"ndn-cabeee-intervals-20reuse-orchestratorA orchA 20-reuse.json 20-reuse-inAbilene.hosting topo-cabeee-Abilene.txt"
-####"ndn-cabeee-intervals-20reuse-orchestratorB orchB 20-reuse.json 20-reuse-inAbilene.hosting topo-cabeee-Abilene.txt"
-	"ndn-cabeee-intervals-20reuse-nesco nesco 20-reuse.json 20-reuse-inAbilene.hosting topo-cabeee-Abilene.txt"
-	"ndn-cabeee-intervals-20reuse-nescoSCOPT nescoSCOPT 20-reuse.json 20-reuse-inAbilene.hosting topo-cabeee-Abilene.txt"
-
-
 	# 20 Scramble (using 3node topology)
 	#"ndn-cabeee-intervals-20scrambled-orchestratorA orchA 20-linear.json 20-scrambled-in3node.hosting topo-cabeee-3node.txt"
 ####"ndn-cabeee-intervals-20scrambled-orchestratorB orchB 20-linear.json 20-scrambled-in3node.hosting topo-cabeee-3node.txt"
@@ -60,12 +60,12 @@ declare -a scenarios=(
 	)
 	
 scenario_log="$SCENARIO_DIR/scenario.log"
-csv_out="$SCENARIO_DIR/perf-results-simulation-intervals.csv"
+csv_out="$SCENARIO_DIR/perf-results-simulation-intervals-reuse.csv"
 
 
 
 
-header="Scenario/Scheme, Scenario, Min Service Latency(us), Low Quartile Service Latency(us), Mid Quartile Service Latency(us), High Quartile Service Latency(us), Max Service Latency(us), Total Service Latency(us), Avg Service Latency(us), Final Result, Time, ns-3 commit, pybindgen commit, scenario commit, ndnSIM commit"
+header="Scenario/Scheme, Scenario, Min Service Latency(us), Low Quartile Service Latency(us), Mid Quartile Service Latency(us), High Quartile Service Latency(us), Max Service Latency(us), Total Service Latency(us), Avg Service Latency(us), Requests Fulfilled, Final Result, Time, ns-3 commit, pybindgen commit, scenario commit, ndnSIM commit"
 
 if [ ! -f "$csv_out" ]; then
 	echo "$header" > "$csv_out"
@@ -112,7 +112,8 @@ do
 		-e 's/^\s*consumerR max latency: \([0-9\.]*\) microseconds$/\1,/p' \
 		-e 's/^\s*consumerR total latency: \([0-9\.]*\) microseconds$/\1,/p' \
 		-e 's/^\s*consumerR avg latency: \([0-9\.]*\) microseconds$/\1,/p' \
-		-e 's/^\s*consumerR Final answer: \([0-9\.]*\) microseconds$/\1,/p' \
+		-e 's/^\s*consumerR requests fulfilled: \([0-9\.]*\) total requests$/\1,/p' \
+		-e 's/^\s*consumerR Final answer: \([0-9\.]*\) numerical$/\1,/p' \
 		-e 's/^\s*consumerL min latency: \([0-9\.]*\) microseconds$/\1,/p' \
 		-e 's/^\s*consumerL low latency: \([0-9\.]*\) microseconds$/\1,/p' \
 		-e 's/^\s*consumerL mid latency: \([0-9\.]*\) microseconds$/\1,/p' \
@@ -120,7 +121,8 @@ do
 		-e 's/^\s*consumerL max latency: \([0-9\.]*\) microseconds$/\1,/p' \
 		-e 's/^\s*consumerL total latency: \([0-9\.]*\) microseconds$/\1,/p' \
 		-e 's/^\s*consumerL avg latency: \([0-9\.]*\) microseconds$/\1,/p' \
-		-e 's/^\s*consumerL Final answer: \([0-9\.]*\) microseconds$/\1,/p' \
+		-e 's/^\s*consumerL requests fulfilled: \([0-9\.]*\) total requests$/\1,/p' \
+		-e 's/^\s*consumerL Final answer: \([0-9\.]*\) numerical$/\1,/p' \
 		-e 's/^\s*consumerP min latency: \([0-9\.]*\) microseconds$/\1,/p' \
 		-e 's/^\s*consumerP low latency: \([0-9\.]*\) microseconds$/\1,/p' \
 		-e 's/^\s*consumerP mid latency: \([0-9\.]*\) microseconds$/\1,/p' \
@@ -128,7 +130,8 @@ do
 		-e 's/^\s*consumerP max latency: \([0-9\.]*\) microseconds$/\1,/p' \
 		-e 's/^\s*consumerP total latency: \([0-9\.]*\) microseconds$/\1,/p' \
 		-e 's/^\s*consumerP avg latency: \([0-9\.]*\) microseconds$/\1,/p' \
-		-e 's/^\s*consumerP Final answer: \([0-9\.]*\) microseconds$/\1,/p' \
+		-e 's/^\s*consumerP requests fulfilled: \([0-9\.]*\) total requests$/\1,/p' \
+		-e 's/^\s*consumerP Final answer: \([0-9\.]*\) numerical$/\1,/p' \
 		| tr -d '\n' \
 	)
 	reuse_min_latency="$(echo "$latencies" | cut -d',' -f1)"
@@ -138,29 +141,32 @@ do
 	reuse_max_latency="$(echo "$latencies" | cut -d',' -f5)"
 	reuse_total_latency="$(echo "$latencies" | cut -d',' -f6)"
 	reuse_avg_latency="$(echo "$latencies" | cut -d',' -f7)"
-	reuse_final_answer="$(echo "$latencies" | cut -d',' -f8)"
+	reuse_requests_fulfilled="$(echo "$latencies" | cut -d',' -f8)"
+	reuse_final_answer="$(echo "$latencies" | cut -d',' -f9)"
 
-	linear_min_latency="$(echo "$latencies" | cut -d',' -f9)"
-	linear_low_latency="$(echo "$latencies" | cut -d',' -f10)"
-	linear_mid_latency="$(echo "$latencies" | cut -d',' -f11)"
-	linear_high_latency="$(echo "$latencies" | cut -d',' -f12)"
-	linear_max_latency="$(echo "$latencies" | cut -d',' -f13)"
-	linear_total_latency="$(echo "$latencies" | cut -d',' -f14)"
-	linear_avg_latency="$(echo "$latencies" | cut -d',' -f15)"
-	linear_final_answer="$(echo "$latencies" | cut -d',' -f16)"
+	linear_min_latency="$(echo "$latencies" | cut -d',' -f10)"
+	linear_low_latency="$(echo "$latencies" | cut -d',' -f11)"
+	linear_mid_latency="$(echo "$latencies" | cut -d',' -f12)"
+	linear_high_latency="$(echo "$latencies" | cut -d',' -f13)"
+	linear_max_latency="$(echo "$latencies" | cut -d',' -f14)"
+	linear_total_latency="$(echo "$latencies" | cut -d',' -f15)"
+	linear_avg_latency="$(echo "$latencies" | cut -d',' -f16)"
+	linear_requests_fulfilled="$(echo "$latencies" | cut -d',' -f17)"
+	linear_final_answer="$(echo "$latencies" | cut -d',' -f18)"
 
-	sensor_min_latency="$(echo "$latencies" | cut -d',' -f17)"
-	sensor_low_latency="$(echo "$latencies" | cut -d',' -f18)"
-	sensor_mid_latency="$(echo "$latencies" | cut -d',' -f19)"
-	sensor_high_latency="$(echo "$latencies" | cut -d',' -f20)"
-	sensor_max_latency="$(echo "$latencies" | cut -d',' -f21)"
-	sensor_total_latency="$(echo "$latencies" | cut -d',' -f22)"
-	sensor_avg_latency="$(echo "$latencies" | cut -d',' -f23)"
-	sensor_final_answer="$(echo "$latencies" | cut -d',' -f24)"
+	sensor_min_latency="$(echo "$latencies" | cut -d',' -f19)"
+	sensor_low_latency="$(echo "$latencies" | cut -d',' -f20)"
+	sensor_mid_latency="$(echo "$latencies" | cut -d',' -f21)"
+	sensor_high_latency="$(echo "$latencies" | cut -d',' -f22)"
+	sensor_max_latency="$(echo "$latencies" | cut -d',' -f23)"
+	sensor_total_latency="$(echo "$latencies" | cut -d',' -f24)"
+	sensor_avg_latency="$(echo "$latencies" | cut -d',' -f25)"
+	sensor_requests_fulfilled="$(echo "$latencies" | cut -d',' -f26)"
+	sensor_final_answer="$(echo "$latencies" | cut -d',' -f27)"
 
-	row1="$scenario, 20-sensor, $sensor_min_latency, $sensor_low_latency, $sensor_mid_latency, $sensor_high_latency, $sensor_max_latency, $sensor_total_latency, $sensor_avg_latency, $sensor_result, $now, $ns_3_hash, $pybindgen_hash, $scenario_hash, $ndnsim_hash"
-	row2="$scenario, 20-linear, $linear_min_latency, $linear_low_latency, $linear_mid_latency, $linear_high_latency, $linear_max_latency, $linear_total_latency, $linear_avg_latency, $linear_result, $now, $ns_3_hash, $pybindgen_hash, $scenario_hash, $ndnsim_hash"
-	row3="$scenario, 20-reuse, $reuse_min_latency, $reuse_low_latency, $reuse_mid_latency, $reuse_high_latency, $reuse_max_latency, $reuse_total_latency, $reuse_avg_latency, $reuse_result, $now, $ns_3_hash, $pybindgen_hash, $scenario_hash, $ndnsim_hash"
+	row1="$scenario, 20-sensor, $sensor_min_latency, $sensor_low_latency, $sensor_mid_latency, $sensor_high_latency, $sensor_max_latency, $sensor_total_latency, $sensor_avg_latency, $sensor_requests_fulfilled, $sensor_final_answer, $now, $ns_3_hash, $pybindgen_hash, $scenario_hash, $ndnsim_hash"
+	row2="$scenario, 20-linear, $linear_min_latency, $linear_low_latency, $linear_mid_latency, $linear_high_latency, $linear_max_latency, $linear_total_latency, $linear_avg_latency, $linear_requests_fulfilled, $linear_final_answer, $now, $ns_3_hash, $pybindgen_hash, $scenario_hash, $ndnsim_hash"
+	row3="$scenario, 20-reuse, $reuse_min_latency, $reuse_low_latency, $reuse_mid_latency, $reuse_high_latency, $reuse_max_latency, $reuse_total_latency, $reuse_avg_latency, $reuse_requests_fulfilled, $reuse_final_answer, $now, $ns_3_hash, $pybindgen_hash, $scenario_hash, $ndnsim_hash"
 
 	echo "Dumping to csv..."
 	#line_num="$(grep -n -F "$scenario," "$csv_out" | cut -d: -f1 | head -1)"
