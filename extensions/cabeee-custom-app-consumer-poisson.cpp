@@ -280,7 +280,8 @@ CustomAppConsumerPoisson::SendInterest()
       for (auto& y : dagObject["dag"][x.key()].items())
       {
         //std::cout << "Checking y.key: " << (std::string)y.key() << '\n';
-        if (y.key() == m_service.ndn::Name::toUri())
+        //if (y.key() == m_service.ndn::Name::toUri())
+        if (y.key() == "/consumer")
         {
           dagObject["dag"].erase(x.key());
           consumerFound = true;
