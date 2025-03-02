@@ -122,7 +122,7 @@ do
 	final_answer="$(echo "$latencies" | cut -d',' -f9)"
 
 
-	row="$scenario, $min_latency, $low_latency, $mid_latency, $high_latency, $max_latency, $total_latency, $avg_latency, $final_answer, $now, $ns_3_hash, $pybindgen_hash, $scenario_hash, $ndnsim_hash"
+	row="$scenario, $min_latency, $low_latency, $mid_latency, $high_latency, $max_latency, $total_latency, $avg_latency, $requests_fulfilled, $final_answer, $now, $ns_3_hash, $pybindgen_hash, $scenario_hash, $ndnsim_hash"
 
 	echo "Dumping to csv..."
 	line_num="$(grep -n -F "$scenario," "$csv_out" | cut -d: -f1 | head -1)"
