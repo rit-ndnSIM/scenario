@@ -40,23 +40,6 @@ declare -a scenarios=(
 ####"ndn-cabeee-intervals-20reuse-orchestratorB orchB 20-reuse.json 20-reuse-inAbilene.hosting topo-cabeee-Abilene.txt"
 	"ndn-cabeee-intervals-20reuse-nesco nesco 20-reuse.json 20-reuse-inAbilene.hosting topo-cabeee-Abilene.txt"
 	"ndn-cabeee-intervals-20reuse-nescoSCOPT nescoSCOPT 20-reuse.json 20-reuse-inAbilene.hosting topo-cabeee-Abilene.txt"
-
-
-	# 20 Sensor (using 3node topology)
-	#"ndn-cabeee-intervals-20sensor-orchestratorA orchA 20-sensor.json 20-sensor-in3node.hosting topo-cabeee-3node.txt"
-####"ndn-cabeee-intervals-20sensor-orchestratorB orchB 20-sensor.json 20-sensor-in3node.hosting topo-cabeee-3node.txt"
-	#"ndn-cabeee-intervals-20sensor-nesco nesco 20-sensor.json 20-sensor-in3node.hosting topo-cabeee-3node.txt"
-	#"ndn-cabeee-intervals-20sensor-nescoSCOPT nescoSCOPT 20-sensor.json 20-sensor-in3node.hosting topo-cabeee-3node.txt"
-	# 20 Linear (using 3node topology)
-	#"ndn-cabeee-intervals-20linear-orchestratorA orchA 20-linear.json 20-linear-in3node.hosting topo-cabeee-3node.txt"
-####"ndn-cabeee-intervals-20linear-orchestratorB orchB 20-linear.json 20-linear-in3node.hosting topo-cabeee-3node.txt"
-	#"ndn-cabeee-intervals-20linear-nesco nesco 20-linear.json 20-linear-in3node.hosting topo-cabeee-3node.txt"
-	#"ndn-cabeee-intervals-20linear-nescoSCOPT nescoSCOPT 20-linear.json 20-linear-in3node.hosting topo-cabeee-3node.txt"
-	# 20 Scramble (using 3node topology)
-	#"ndn-cabeee-intervals-20scrambled-orchestratorA orchA 20-linear.json 20-scrambled-in3node.hosting topo-cabeee-3node.txt"
-####"ndn-cabeee-intervals-20scrambled-orchestratorB orchB 20-linear.json 20-scrambled-in3node.hosting topo-cabeee-3node.txt"
-	#"ndn-cabeee-intervals-20scrambled-nesco nesco 20-linear.json 20-scrambled-in3node.hosting topo-cabeee-3node.txt"
-	#"ndn-cabeee-intervals-20scrambled-nescoSCOPT nescoSCOPT 20-linear.json 20-scrambled-in3node.hosting topo-cabeee-3node.txt"
 	)
 	
 scenario_log="$SCENARIO_DIR/scenario.log"
@@ -68,13 +51,18 @@ csv_out="$SCENARIO_DIR/perf-results-simulation-intervals-reuse.csv"
 header="Scenario/Scheme, Scenario, Min Service Latency(us), Low Quartile Service Latency(us), Mid Quartile Service Latency(us), High Quartile Service Latency(us), Max Service Latency(us), Total Service Latency(us), Avg Service Latency(us), Requests Fulfilled, Final Result, Time, ns-3 commit, pybindgen commit, scenario commit, ndnSIM commit"
 
 if [ ! -f "$csv_out" ]; then
+	echo "Creating csv..."
 	echo "$header" > "$csv_out"
 elif ! grep -q -F "$header" "$csv_out"; then
-	mv "$csv_out" "$csv_out.bak"
 	echo "Overwriting csv..."
+	mv "$csv_out" "$csv_out.bak"
 	echo "$header" > "$csv_out"
 else
-	cp "$csv_out" "$csv_out.bak"
+	#echo "Updating csv..."
+	#cp "$csv_out" "$csv_out.bak"
+	echo "Overwriting csv..."
+	mv "$csv_out" "$csv_out.bak"
+	echo "$header" > "$csv_out"
 fi
 
 
@@ -104,7 +92,7 @@ do
 
 	echo "Parsing logs..."
 	latencies=$( \
-		python process_nfd_logs_intervals_reuse.py "$scenario_log" | sed -n \
+		python process_nfd_logs_intervals.py "$scenario_log" | sed -n \
 		-e 's/^\s*consumerR min latency: \([0-9\.]*\) microseconds$/\1,/p' \
 		-e 's/^\s*consumerR low latency: \([0-9\.]*\) microseconds$/\1,/p' \
 		-e 's/^\s*consumerR mid latency: \([0-9\.]*\) microseconds$/\1,/p' \

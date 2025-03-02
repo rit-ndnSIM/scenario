@@ -15,12 +15,12 @@ clear
 set -e
 
 LOGS=CustomAppConsumer
-LOGS=$LOGS:CustomAppConsumerPoisson
-LOGS=$LOGS:CustomAppConsumer2
-LOGS=$LOGS:CustomAppProducer
-LOGS=$LOGS:DagForwarderApp
-LOGS=$LOGS:DagOrchestratorA_App
-LOGS=$LOGS:DagServiceA_App
+#LOGS=$LOGS:CustomAppConsumerPoisson
+#LOGS=$LOGS:CustomAppConsumer2
+#LOGS=$LOGS:CustomAppProducer
+#LOGS=$LOGS:DagForwarderApp
+#LOGS=$LOGS:DagOrchestratorA_App
+#LOGS=$LOGS:DagServiceA_App
 #LOGS=$LOGS:DagOrchestratorB_App
 #LOGS=$LOGS:DagServiceB_App
 #LOGS=$LOGS:ndn.App
@@ -45,18 +45,11 @@ declare -a scenarios=(
 ####"ndn-cabeee-intervals-20linear-orchestratorB orchB 20-linear.json 20-linear-in3node.hosting topo-cabeee-3node.txt"
 	"ndn-cabeee-intervals-20linear-nesco nesco 20-linear.json 20-linear-in3node.hosting topo-cabeee-3node.txt"
 	"ndn-cabeee-intervals-20linear-nescoSCOPT nescoSCOPT 20-linear.json 20-linear-in3node.hosting topo-cabeee-3node.txt"
-	# 20 Reuse (Abilene topology)
-	"ndn-cabeee-intervals-20reuse-orchestratorA orchA 20-reuse.json 20-reuse-inAbilene.hosting topo-cabeee-Abilene.txt"
-####"ndn-cabeee-intervals-20reuse-orchestratorB orchB 20-reuse.json 20-reuse-inAbilene.hosting topo-cabeee-Abilene.txt"
-	"ndn-cabeee-intervals-20reuse-nesco nesco 20-reuse.json 20-reuse-inAbilene.hosting topo-cabeee-Abilene.txt"
-	"ndn-cabeee-intervals-20reuse-nescoSCOPT nescoSCOPT 20-reuse.json 20-reuse-inAbilene.hosting topo-cabeee-Abilene.txt"
-
-
 	# 20 Scramble (using 3node topology)
-	#"ndn-cabeee-intervals-20scrambled-orchestratorA orchA 20-linear.json 20-scrambled-in3node.hosting topo-cabeee-3node.txt"
+	"ndn-cabeee-intervals-20scrambled-orchestratorA orchA 20-linear.json 20-scrambled-in3node.hosting topo-cabeee-3node.txt"
 ####"ndn-cabeee-intervals-20scrambled-orchestratorB orchB 20-linear.json 20-scrambled-in3node.hosting topo-cabeee-3node.txt"
-	#"ndn-cabeee-intervals-20scrambled-nesco nesco 20-linear.json 20-scrambled-in3node.hosting topo-cabeee-3node.txt"
-	#"ndn-cabeee-intervals-20scrambled-nescoSCOPT nescoSCOPT 20-linear.json 20-scrambled-in3node.hosting topo-cabeee-3node.txt"
+	"ndn-cabeee-intervals-20scrambled-nesco nesco 20-linear.json 20-scrambled-in3node.hosting topo-cabeee-3node.txt"
+	"ndn-cabeee-intervals-20scrambled-nescoSCOPT nescoSCOPT 20-linear.json 20-scrambled-in3node.hosting topo-cabeee-3node.txt"
 	)
 	
 scenario_log="$SCENARIO_DIR/scenario.log"
@@ -65,15 +58,17 @@ csv_out="$SCENARIO_DIR/perf-results-simulation-intervals.csv"
 
 
 
-header="Example, Interest Packets Generated, Data Packets Generated, Interest Packets Transmitted, Data Packets Transmitted, Critical-Path-Metric, CPM-t_exec(s), Min Service Latency(us), Low Quartile Service Latency(us), Mid Quartile Service Latency(us), High Quartile Service Latency(us), Max Service Latency(us), Total Service Latency(us), Avg Service Latency(us), Final Result, Time, ns-3 commit, pybindgen commit, scenario commit, ndnSIM commit"
+header="Example, Min Service Latency(us), Low Quartile Service Latency(us), Mid Quartile Service Latency(us), High Quartile Service Latency(us), Max Service Latency(us), Total Service Latency(us), Avg Service Latency(us), Final Result, Time, ns-3 commit, pybindgen commit, scenario commit, ndnSIM commit"
 
 if [ ! -f "$csv_out" ]; then
+	echo "Creating csv..."
 	echo "$header" > "$csv_out"
 elif ! grep -q -F "$header" "$csv_out"; then
-	mv "$csv_out" "$csv_out.bak"
 	echo "Overwriting csv..."
+	mv "$csv_out" "$csv_out.bak"
 	echo "$header" > "$csv_out"
 else
+	echo "Updating csv..."
 	cp "$csv_out" "$csv_out.bak"
 fi
 
@@ -100,24 +95,20 @@ do
 	ndnsim_hash="$(git -C "$NDNSIM_HOME/ns-3/src/ndnSIM" rev-parse HEAD)"
 
 	echo "Running..."
-	parse_out=$( \
-		"$SCENARIO_DIR/waf" --run="$scenario" |& tee "$scenario_log" | sed -n \
-		-e 's/^\s*The final answer is: \([0-9]*\)$/\1,/p' \
-		| tr -d '\n' \
-	)
-	result="$(echo "$parse_out" | cut -d',' -f1)"
+	"$SCENARIO_DIR/waf" --run="$scenario" |& tee "$scenario_log"
 
 	echo "Parsing logs..."
-
 	latencies=$( \
-		python process_nfd_logs_intervals.py | sed -n \
-		-e 's/^\s*min latency: \([0-9\.]*\) microseconds$/\1,/p' \
-		-e 's/^\s*low latency: \([0-9\.]*\) microseconds$/\1,/p' \
-		-e 's/^\s*mid latency: \([0-9\.]*\) microseconds$/\1,/p' \
-		-e 's/^\s*high latency: \([0-9\.]*\) microseconds$/\1,/p' \
-		-e 's/^\s*max latency: \([0-9\.]*\) microseconds$/\1,/p' \
-		-e 's/^\s*total latency: \([0-9\.]*\) microseconds$/\1,/p' \
-		-e 's/^\s*avg latency: \([0-9\.]*\) microseconds$/\1,/p' \
+		python process_nfd_logs_intervals.py "$scenario_log" | sed -n \
+		-e 's/^\s*consumer min latency: \([0-9\.]*\) microseconds$/\1,/p' \
+		-e 's/^\s*consumer low latency: \([0-9\.]*\) microseconds$/\1,/p' \
+		-e 's/^\s*consumer mid latency: \([0-9\.]*\) microseconds$/\1,/p' \
+		-e 's/^\s*consumer high latency: \([0-9\.]*\) microseconds$/\1,/p' \
+		-e 's/^\s*consumer max latency: \([0-9\.]*\) microseconds$/\1,/p' \
+		-e 's/^\s*consumer total latency: \([0-9\.]*\) microseconds$/\1,/p' \
+		-e 's/^\s*consumer avg latency: \([0-9\.]*\) microseconds$/\1,/p' \
+		-e 's/^\s*consumer requests fulfilled: \([0-9\.]*\) total requests$/\1,/p' \
+		-e 's/^\s*consumer Final answer: \([0-9\.]*\) numerical$/\1,/p' \
 		| tr -d '\n' \
 	)
 	min_latency="$(echo "$latencies" | cut -d',' -f1)"
@@ -127,33 +118,11 @@ do
 	max_latency="$(echo "$latencies" | cut -d',' -f5)"
 	total_latency="$(echo "$latencies" | cut -d',' -f6)"
 	avg_latency="$(echo "$latencies" | cut -d',' -f7)"
+	requests_fulfilled="$(echo "$latencies" | cut -d',' -f8)"
+	final_answer="$(echo "$latencies" | cut -d',' -f9)"
 
-	packets=$( \
-		python process_nfd_logs.py | sed -n \
-		-e 's/^Interest Packets Generated: \([0-9]*\) interests$/\1,/p' \
-		-e 's/^Data Packets Generated: \([0-9]*\) data$/\1,/p' \
-		-e 's/^Interest Packets Transmitted: \([0-9]*\) interests$/\1,/p' \
-		-e 's/^Data Packets Transmitted: \([0-9]*\) data/\1,/p' \
-		| tr -d '\n' \
-	)
 
-	interest_gen="$(echo "$packets" | cut -d',' -f1)"
-	data_gen="$(echo "$packets" | cut -d',' -f2)"
-	interest_trans="$(echo "$packets" | cut -d',' -f3)"
-	data_trans="$(echo "$packets" | cut -d',' -f4)"
-
-	cpm=$( \
-		python critical-path-metric.py -type ${type} -workflow ${wf} -hosting ${hosting} -topology ${topo} | sed -n \
-		-e 's/^metric is \([0-9]*\)/\1/p' \
-		| tr -d '\n' \
-	)
-	cpm_t=$( \
-		python critical-path-metric.py -type ${type} -workflow ${wf} -hosting ${hosting} -topology ${topo} | sed -n \
-		-e 's/^time is \([0-9]*\)/\1/p' \
-		| tr -d '\n' \
-	)
-
-	row="$scenario, $interest_gen, $data_gen, $interest_trans, $data_trans, $cpm, $cpm_t, $min_latency, $low_latency, $mid_latency, $high_latency, $max_latency, $total_latency, $avg_latency, $result, $now, $ns_3_hash, $pybindgen_hash, $scenario_hash, $ndnsim_hash"
+	row="$scenario, $min_latency, $low_latency, $mid_latency, $high_latency, $max_latency, $total_latency, $avg_latency, $final_answer, $now, $ns_3_hash, $pybindgen_hash, $scenario_hash, $ndnsim_hash"
 
 	echo "Dumping to csv..."
 	line_num="$(grep -n -F "$scenario," "$csv_out" | cut -d: -f1 | head -1)"

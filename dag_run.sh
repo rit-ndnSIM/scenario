@@ -106,12 +106,14 @@ csv_out="$SCENARIO_DIR/perf-results-simulation.csv"
 header="Example, Interest Packets Generated, Data Packets Generated, Interest Packets Transmitted, Data Packets Transmitted, Critical-Path-Metric, CPM-t_exec(ns), Service Latency(us), Final Result, Time, ns-3 commit, pybindgen commit, scenario commit, ndnSIM commit"
 
 if [ ! -f "$csv_out" ]; then
+	echo "Creating csv..."
 	echo "$header" > "$csv_out"
 elif ! grep -q -F "$header" "$csv_out"; then
-	mv "$csv_out" "$csv_out.bak"
 	echo "Overwriting csv..."
+	mv "$csv_out" "$csv_out.bak"
 	echo "$header" > "$csv_out"
 else
+	echo "Updating csv..."
 	cp "$csv_out" "$csv_out.bak"
 fi
 

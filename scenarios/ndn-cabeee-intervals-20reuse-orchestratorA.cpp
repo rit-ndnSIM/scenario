@@ -403,16 +403,7 @@ main(int argc, char* argv[])
   ndn::AppHelper orchestratorApp("DagOrchestratorA_App");
   orchestratorApp.SetPrefix(Prefix);
   orchestratorApp.SetAttribute("Service", StringValue("serviceOrchestration"));
-  orchestratorApp.Install(rtrE1a).Start(Seconds(0));  //TODO: need to figure out how to separate packets that should go to each of the consumers!
-                                                        //TODO: just use 4 names (will need to update orchA extensions to check for all 4):
-                                                                  // 1) serviceOrchestration (to be backwards compatible)
-                                                                  // 2) serviceOrchestration20Sensor
-                                                                  // 3) serviceOrchestration20linear
-                                                                  // 4) serviceOrchestrationReuse
-
-                                                        //TODO: OR, just put all 3 consumers in the same node? (would have to separate data structures)
-                                                        //TODO: OR, just put all 3 orchestrators in the same node? (would have to separate data structures)
-                                                        //TODO: OR, do we just run orchestratorA scenarios on their own (no real reuse)?
+  orchestratorApp.Install(rtrE1a).Start(Seconds(0));
   orchestratorApp.Install(rtrH1a).Start(Seconds(0));
   orchestratorApp.Install(rtrF2a).Start(Seconds(0));
  
