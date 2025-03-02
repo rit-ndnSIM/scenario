@@ -58,7 +58,7 @@ csv_out="$SCENARIO_DIR/perf-results-simulation-intervals.csv"
 
 
 
-header="Example, Min Service Latency(us), Low Quartile Service Latency(us), Mid Quartile Service Latency(us), High Quartile Service Latency(us), Max Service Latency(us), Total Service Latency(us), Avg Service Latency(us), Final Result, Time, ns-3 commit, pybindgen commit, scenario commit, ndnSIM commit"
+header="Example, Min Service Latency(us), Low Quartile Service Latency(us), Mid Quartile Service Latency(us), High Quartile Service Latency(us), Max Service Latency(us), Total Service Latency(us), Avg Service Latency(us), Requests Fulfilled, Final Result, Time, ns-3 commit, pybindgen commit, scenario commit, ndnSIM commit"
 
 if [ ! -f "$csv_out" ]; then
 	echo "Creating csv..."
