@@ -409,21 +409,21 @@ main(int argc, char* argv[])
   userApp.SetAttribute("Orchestrate", UintegerValue(0));
   userApp.SetAttribute("Frequency", DoubleValue(10));       // 10 interests per second on average (Poisson process)
   userApp.SetAttribute("NumInterests", UintegerValue(100)); // 100 total interests will be generated
-  userApp.Install(rtrE1a).Start(Seconds(0));
+  userApp.Install(rtrE1a).Start(Seconds(2));
 
   userApp.SetAttribute("Service", StringValue("consumerL"));
   userApp.SetAttribute("Workflow", StringValue("workflows/20-linear.json"));
   userApp.SetAttribute("Orchestrate", UintegerValue(0));
   userApp.SetAttribute("Frequency", DoubleValue(10));       // 10 interests per second on average (Poisson process)
   userApp.SetAttribute("NumInterests", UintegerValue(100)); // 100 total interests will be generated
-  userApp.Install(rtrH1a).Start(Seconds(0));
+  userApp.Install(rtrH1a).Start(Seconds(2));
 
   userApp.SetAttribute("Service", StringValue("consumerR"));
   userApp.SetAttribute("Workflow", StringValue("workflows/20-reuse.json"));
   userApp.SetAttribute("Orchestrate", UintegerValue(0));
   userApp.SetAttribute("Frequency", DoubleValue(10));       // 10 interests per second on average (Poisson process)
   userApp.SetAttribute("NumInterests", UintegerValue(100)); // 100 total interests will be generated
-  userApp.Install(rtrF2a).Start(Seconds(0));
+  userApp.Install(rtrF2a).Start(Seconds(2));
 
 
 
@@ -452,7 +452,7 @@ main(int argc, char* argv[])
   Simulator::Stop(Seconds(120));
 
   //ndn::L3RateTracer::InstallAll("rate-trace_cabeee-20reuse.txt", Seconds(1.0));
-  //ndn::CsTracer::InstallAll("cs-trace_cabeee-20reuse.txt", Seconds(1.0));
+  ndn::CsTracer::InstallAll("cs-trace_cabeee-20reuse-nesco.txt", Seconds(1.0));
 
   Simulator::Run();
   Simulator::Destroy();
