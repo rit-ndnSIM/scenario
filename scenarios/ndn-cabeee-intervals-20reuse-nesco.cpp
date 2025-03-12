@@ -33,6 +33,57 @@ namespace ns3 {
 * 
 *     NS_LOG=CustomAppConsumer:CustomAppProducer:DagForwarderApp ./waf --run=ndn-cabeee-20reuse-nesco
 */
+
+
+
+void
+printCsHeader(std::ostream& os)
+{
+  os << "Time"
+     << "\t"
+     << "Node"
+     << "\t"
+     << "CS Usage"
+     << "\n";
+}
+
+void
+printCsUsage(std::ostream& os, Time nextPrintTime)
+{
+  Time simTime = Simulator::Now();
+
+
+  uint64_t csCount = 0;
+  for (NodeList::Iterator node = NodeList::Begin(); node != NodeList::End(); node++) {
+  
+
+    //if (true != true) {
+      //Ptr<ndn::ContentStore> cs = (*node)->GetObject<ndn::ContentStore>();
+      //if (cs != 0)
+        //csCount += cs->GetSize();
+    //}
+    //else {
+      auto csSize = (*node)->GetObject<ndn::L3Protocol>()->getForwarder()->getCs().size();
+      if (csSize != 0)
+        csCount += csSize;
+    //}
+
+    os << simTime.ToDouble(Time::S) << "\t";
+    os << Names::FindName(*node) << "\t";
+    os << csSize << "\n";
+  }
+
+  os << simTime.ToDouble(Time::S) << "\t";
+  os << "All Nodes\t";
+  os << csCount << "\n";
+
+
+  Simulator::Schedule(nextPrintTime, &printCsUsage, ref(os), nextPrintTime);
+
+}
+
+
+
 int
 main(int argc, char* argv[])
 {
@@ -454,11 +505,19 @@ main(int argc, char* argv[])
   //ndn::L3RateTracer::InstallAll("rate-trace_cabeee-20reuse.txt", Seconds(1.0));
   ndn::CsTracer::InstallAll("cs-trace_cabeee-20reuse-nesco.txt", Seconds(1.0));
 
+  std::ofstream fout("cs-usage-20reuse-nesco.txt");
+  Simulator::Schedule(Seconds(0), &printCsHeader, ref(fout));
+  Simulator::Schedule(Seconds(0), &printCsUsage, ref(fout), Seconds(0.5));
+  //Simulator::Schedule(Seconds(0), &printCsHeader, ref(std::cout));
+  //Simulator::Schedule(Seconds(0), &printCsUsage, ref(std::cout), Seconds(0.5)); // record CS usage every 0.5 seconds
+
   Simulator::Run();
   Simulator::Destroy();
 
   return 0;
 }
+
+
 
 } // namespace ns3
 
