@@ -24,6 +24,8 @@
 #include "ns3/ndnSIM-module.h"
 #include "ns3/string.h"
 
+#include "cabeee-cs-tools.h"
+
 #define PREFIX "/nescoSCOPT"
 
 namespace ns3 {
@@ -33,52 +35,6 @@ namespace ns3 {
 * 
 *     NS_LOG=CustomAppConsumer:CustomAppProducer:DagForwarderApp ./waf --run=ndn-cabeee-20reuse-nescoSCOPT
 */
-
-void
-printCsHeader(std::ostream& os)
-{
-  os << "Time"
-     << "\t"
-     << "Node"
-     << "\t"
-     << "CS Usage"
-     << "\n";
-}
-
-void
-printCsUsage(std::ostream& os, Time nextPrintTime)
-{
-  Time simTime = Simulator::Now();
-
-
-  uint64_t csCount = 0;
-  for (NodeList::Iterator node = NodeList::Begin(); node != NodeList::End(); node++) {
-  
-
-    //if (true != true) {
-      //Ptr<ndn::ContentStore> cs = (*node)->GetObject<ndn::ContentStore>();
-      //if (cs != 0)
-        //csCount += cs->GetSize();
-    //}
-    //else {
-      auto csSize = (*node)->GetObject<ndn::L3Protocol>()->getForwarder()->getCs().size();
-      if (csSize != 0)
-        csCount += csSize;
-    //}
-
-    os << simTime.ToDouble(Time::S) << "\t";
-    os << Names::FindName(*node) << "\t";
-    os << csSize << "\n";
-  }
-
-  os << simTime.ToDouble(Time::S) << "\t";
-  os << "All Nodes\t";
-  os << csCount << "\n";
-
-
-  Simulator::Schedule(nextPrintTime, &printCsUsage, ref(os), nextPrintTime);
-
-}
 
 
 int
@@ -502,10 +458,10 @@ main(int argc, char* argv[])
   ndn::CsTracer::InstallAll("cs-trace_cabeee-20reuse-nescoSCOPT.txt", Seconds(1.0));
 
   std::ofstream fout("cs-usage-20reuse-nescoSCOPT.txt");
-  Simulator::Schedule(Seconds(0), &printCsHeader, ref(fout));
-  Simulator::Schedule(Seconds(0), &printCsUsage, ref(fout), Seconds(0.5));
-  //Simulator::Schedule(Seconds(0), &printCsHeader, ref(std::cout));
-  //Simulator::Schedule(Seconds(0), &printCsUsage, ref(std::cout), Seconds(0.5)); // record CS usage every 0.5 seconds
+  Simulator::Schedule(Seconds(0), &ns3::printCsHeader, ref(fout));
+  Simulator::Schedule(Seconds(0), &ns3::printCsUsage, ref(fout), Seconds(0.5), PREFIX);
+  //Simulator::Schedule(Seconds(0), &ns3::printCsHeader, ref(std::cout));
+  //Simulator::Schedule(Seconds(0), &ns3::printCsUsage, ref(std::cout), Seconds(0.5), PREFIX); // record CS usage every 0.5 seconds
 
   Simulator::Run();
   Simulator::Destroy();

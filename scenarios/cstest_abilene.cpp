@@ -37,6 +37,7 @@ namespace ns3 {
 */
 
 
+
 int
 main(int argc, char* argv[])
 {
@@ -236,69 +237,69 @@ main(int argc, char* argv[])
   //sensorApp.SetAttribute("UniformFreshness", UintegerValue(2));   // this will override the FreshnessPeriod_ms setting below, and use Uniform Distribution to pick new value EVERY TIME!
   //sensorApp.SetAttribute("minFreshness_ms", UintegerValue(100));
   //sensorApp.SetAttribute("maxFreshness_ms", UintegerValue(1000));
-  sensorApp.SetAttribute("FreshnessPeriod_ms", UintegerValue(1000));
+  sensorApp.SetAttribute("FreshnessPeriod_ms", UintegerValue(1));
   sensorApp.Install(rtrA1a).Start(Seconds(0));
   sensorApp.SetAttribute("Service", StringValue("sensor2"));
-  sensorApp.SetAttribute("FreshnessPeriod_ms", UintegerValue(750));
+  sensorApp.SetAttribute("FreshnessPeriod_ms", UintegerValue(1));
   sensorApp.Install(rtrA1a).Start(Seconds(0));
   sensorApp.SetAttribute("Service", StringValue("sensor3"));
-  sensorApp.SetAttribute("FreshnessPeriod_ms", UintegerValue(500));
+  sensorApp.SetAttribute("FreshnessPeriod_ms", UintegerValue(1));
   sensorApp.Install(rtrA1a).Start(Seconds(0));
   sensorApp.SetAttribute("Service", StringValue("sensor4"));
-  sensorApp.SetAttribute("FreshnessPeriod_ms", UintegerValue(2500));
+  sensorApp.SetAttribute("FreshnessPeriod_ms", UintegerValue(1));
   sensorApp.Install(rtrA2a).Start(Seconds(0));
   sensorApp.SetAttribute("Service", StringValue("sensor5"));
-  sensorApp.SetAttribute("FreshnessPeriod_ms", UintegerValue(1500));
+  sensorApp.SetAttribute("FreshnessPeriod_ms", UintegerValue(1));
   sensorApp.Install(rtrA2a).Start(Seconds(0));
   sensorApp.SetAttribute("Service", StringValue("sensor6"));
-  sensorApp.SetAttribute("FreshnessPeriod_ms", UintegerValue(1500));
+  sensorApp.SetAttribute("FreshnessPeriod_ms", UintegerValue(1));
   sensorApp.Install(rtrA2a).Start(Seconds(0));
   sensorApp.SetAttribute("Service", StringValue("sensor7"));
-  sensorApp.SetAttribute("FreshnessPeriod_ms", UintegerValue(2500));
+  sensorApp.SetAttribute("FreshnessPeriod_ms", UintegerValue(1));
   sensorApp.Install(rtrC1b).Start(Seconds(0));
   sensorApp.SetAttribute("Service", StringValue("sensor8"));
-  sensorApp.SetAttribute("FreshnessPeriod_ms", UintegerValue(2400));
+  sensorApp.SetAttribute("FreshnessPeriod_ms", UintegerValue(1));
   sensorApp.Install(rtrC1b).Start(Seconds(0));
   sensorApp.SetAttribute("Service", StringValue("sensor9"));
-  sensorApp.SetAttribute("FreshnessPeriod_ms", UintegerValue(2300));
+  sensorApp.SetAttribute("FreshnessPeriod_ms", UintegerValue(1));
   sensorApp.Install(rtrC1b).Start(Seconds(0));
   sensorApp.SetAttribute("Service", StringValue("sensor10"));
-  sensorApp.SetAttribute("FreshnessPeriod_ms", UintegerValue(2200));
+  sensorApp.SetAttribute("FreshnessPeriod_ms", UintegerValue(1));
   sensorApp.Install(rtrC1b).Start(Seconds(0));
   sensorApp.SetAttribute("Service", StringValue("sensor11"));
-  sensorApp.SetAttribute("FreshnessPeriod_ms", UintegerValue(2100));
+  sensorApp.SetAttribute("FreshnessPeriod_ms", UintegerValue(1));
   sensorApp.Install(rtrC1b).Start(Seconds(0));
   sensorApp.SetAttribute("Service", StringValue("sensor12"));
-  sensorApp.SetAttribute("FreshnessPeriod_ms", UintegerValue(2000));
+  sensorApp.SetAttribute("FreshnessPeriod_ms", UintegerValue(1));
   sensorApp.Install(rtrC1b).Start(Seconds(0));
   sensorApp.SetAttribute("Service", StringValue("sensor13"));
-  sensorApp.SetAttribute("FreshnessPeriod_ms", UintegerValue(1800));
+  sensorApp.SetAttribute("FreshnessPeriod_ms", UintegerValue(1));
   sensorApp.Install(rtrC1b).Start(Seconds(0));
   sensorApp.SetAttribute("Service", StringValue("sensor14"));
-  sensorApp.SetAttribute("FreshnessPeriod_ms", UintegerValue(1500));
+  sensorApp.SetAttribute("FreshnessPeriod_ms", UintegerValue(1));
   sensorApp.Install(rtrB1a).Start(Seconds(0));
   sensorApp.SetAttribute("Service", StringValue("sensor15"));
-  sensorApp.SetAttribute("FreshnessPeriod_ms", UintegerValue(1000));
+  sensorApp.SetAttribute("FreshnessPeriod_ms", UintegerValue(1));
   sensorApp.Install(rtrB1a).Start(Seconds(0));
   sensorApp.SetAttribute("Service", StringValue("sensor16"));
-  sensorApp.SetAttribute("FreshnessPeriod_ms", UintegerValue(1000));
+  sensorApp.SetAttribute("FreshnessPeriod_ms", UintegerValue(1));
   sensorApp.Install(rtrB1a).Start(Seconds(0));
   sensorApp.SetAttribute("Service", StringValue("sensor17"));
-  sensorApp.SetAttribute("FreshnessPeriod_ms", UintegerValue(1000));
+  sensorApp.SetAttribute("FreshnessPeriod_ms", UintegerValue(1));
   sensorApp.Install(rtrB1a).Start(Seconds(0));
   sensorApp.SetAttribute("Service", StringValue("sensor18"));
-  sensorApp.SetAttribute("FreshnessPeriod_ms", UintegerValue(1000));
+  sensorApp.SetAttribute("FreshnessPeriod_ms", UintegerValue(1));
   sensorApp.Install(rtrB1a).Start(Seconds(0));
   sensorApp.SetAttribute("Service", StringValue("sensor19"));
-  sensorApp.SetAttribute("FreshnessPeriod_ms", UintegerValue(1000));
+  sensorApp.SetAttribute("FreshnessPeriod_ms", UintegerValue(1));
   sensorApp.Install(rtrB1a).Start(Seconds(0));
   sensorApp.SetAttribute("Service", StringValue("sensor20"));
-  sensorApp.SetAttribute("FreshnessPeriod_ms", UintegerValue(1000));
+  sensorApp.SetAttribute("FreshnessPeriod_ms", UintegerValue(1));
   sensorApp.Install(rtrB1a).Start(Seconds(0));
 
 
   sensorApp.SetAttribute("Service", StringValue("sensorL"));
-  sensorApp.SetAttribute("FreshnessPeriod_ms", UintegerValue(2000));
+  sensorApp.SetAttribute("FreshnessPeriod_ms", UintegerValue(1));
   sensorApp.Install(rtrC1a).Start(Seconds(0));
 
 
@@ -455,14 +456,13 @@ main(int argc, char* argv[])
 
   Simulator::Stop(Seconds(120));
 
-  //ndn::L3RateTracer::InstallAll("rate-trace_cabeee-20reuse.txt", Seconds(1.0));
-  ndn::CsTracer::InstallAll("cs-trace_cabeee-20reuse-nesco.txt", Seconds(1.0));
+  ndn::CsTracer::InstallAll("cs-trace_cabeee-cstest_abilene.txt", Seconds(1.0));
 
   std::ofstream fout("cs-usage-20reuse-nesco.txt");
   Simulator::Schedule(Seconds(0), &ns3::printCsHeader, ref(fout));
   Simulator::Schedule(Seconds(0), &ns3::printCsUsage, ref(fout), Seconds(0.5), PREFIX);
-  //Simulator::Schedule(Seconds(0), &ns3::printCsHeader, ref(std::cout));
-  //Simulator::Schedule(Seconds(0), &ns3::printCsUsage, ref(std::cout), Seconds(0.5), PREFIX); // record CS usage every 0.5 seconds
+  Simulator::Schedule(Seconds(0), &ns3::printCsHeader, ref(std::cout));
+  Simulator::Schedule(Seconds(0), &ns3::printCsUsage, ref(std::cout), Seconds(0.5), PREFIX); // record CS usage every 0.5 seconds
 
   Simulator::Run();
   Simulator::Destroy();
