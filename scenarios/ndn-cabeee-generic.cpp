@@ -71,6 +71,7 @@ main(int argc, char* argv[])
         if (rtr.contains("cs-size")) {
             cs_size = rtr["cs-size"];
         }
+        std::cout << "Now setting the CS in router " << (name) << " to this many packets: " << (cs_size) << std::endl;
         ndnHelper.setCsSize(cs_size);
         ndnHelper.Install(node);
     }
@@ -78,12 +79,13 @@ main(int argc, char* argv[])
     std::string Prefix{ scenario_json.at("prefix") };
 
     for (const auto& srv : scenario_json.at("services")) {
-        std::string strategy{ "/localhost/nfd/strategy/mulicast" };
+        std::string strategy{ "/localhost/nfd/strategy/multicast" };
         std::string name = srv.at("name");
         srv_map[name] = &srv;
         if (srv.contains("strategy")) {
             strategy = srv["strategy"];
         }
+        std::cout << "Now setting routing strategy for " << (name) << " to " << (strategy) << std::endl;
         ndn::StrategyChoiceHelper::InstallAll(Prefix + name, strategy);
     }
 
@@ -112,6 +114,9 @@ main(int argc, char* argv[])
         //    end = hosting["end"];
         //}
 
+
+        std::cout << "Now installing " << (srv_name) << " in router " << (rtr_name) << ", starting at time: " << start << std::endl;
+
         if (type == "producer") {
             ndn::AppHelper appHelper("CustomAppProducer");
             appHelper.SetPrefix(Prefix);
@@ -134,7 +139,7 @@ main(int argc, char* argv[])
         } 
     }
 
-    Simulator::Stop(Seconds(2.0));
+    Simulator::Stop(Seconds(3.0));
 
     Simulator::Run();
     Simulator::Destroy();

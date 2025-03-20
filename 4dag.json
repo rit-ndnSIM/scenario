@@ -105,27 +105,33 @@
   "routerHosting": [
     {
       "router": "sensor",
-      "service": "/sensor"
+      "service": "/sensor",
+      "start": 0
     },
     {
       "router": "rtr-1",
-      "service": "/service2"
+      "service": "/service2",
+      "start": 0
     },
     {
       "router": "rtr-2",
-      "service": "/service3"
+      "service": "/service3",
+      "start": 0
     },
     {
       "router": "rtr-2",
-      "service": "/service4"
+      "service": "/service4",
+      "start": 0
     },
     {
       "router": "rtr-3",
-      "service": "/service1"
+      "service": "/service1",
+      "start": 0
     },
     {
       "router": "user",
-      "service": "/consumer"
+      "service": "/consumer",
+      "start": 1
     }
   ],
   "dag": {
