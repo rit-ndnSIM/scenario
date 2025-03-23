@@ -1,0 +1,52 @@
+# topo-cabeee-3node-fwdOpt.txt
+# manually modified by cabeee
+# March 2025
+#
+#                  /------\
+#                  |sensor|
+#                  \------/
+#                   ^    ^
+#                   |	 |
+#     	           /	  \
+#                 /		   \
+#                /	        \
+#               |            |
+#     	        v			 v
+#	      /-------\        /-------\
+#	      | rtr-1 |        | rtr-2 |
+#         \-------/        \-------/
+#               ^            ^                      
+#		        |            |
+#		         \          /
+#		          \        /
+#                  \      / 
+#			        |    |      
+#                   v    v
+#			      /--------\
+#			      |  rtr-3 |
+#                 \--------/
+#                      ^
+#                      |
+#                      v
+#			      /--------\
+#			      |  user  |
+#                 \--------/
+#
+
+router
+
+#node	city	y	x	mpi-partition
+sensor	NA	80	0	1
+rtr-1	NA	60	20	1
+rtr-2	NA	60	-20	2
+rtr-3	NA	40	0	3
+user	NA	10	0	0
+
+link
+
+# from	    to		capacity	metric	delay	queue
+sensor	    rtr-1	100Mbps		1	2ms	100
+sensor	    rtr-2	100Mbps		1	1ms	100
+rtr-1	    rtr-3	100Mbps		1	1ms	100
+rtr-2	    rtr-3	100Mbps		1	3ms	100
+rtr-3	    user	100Mbps		1	1ms	100
