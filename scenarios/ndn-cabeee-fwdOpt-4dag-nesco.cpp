@@ -87,9 +87,9 @@ main(int argc, char* argv[])
   ndnHelper.setCsSize(0); // disable content store
   ndnHelper.Install(producer);
 
-  //ndnHelper.setCsSize(0); // enable/disable content store
   ndnHelper.setCsSize(100); // enable/disable content store
   ndnHelper.Install(router1);
+  ndnHelper.setCsSize(0); // enable/disable content store
   ndnHelper.Install(router2);
   ndnHelper.Install(router3);
 
@@ -140,7 +140,7 @@ main(int argc, char* argv[])
   sensorApp.SetAttribute("Service", StringValue("sensor"));
   sensorApp.Install(producer).Start(Seconds(0));
 
-  // Custom App for routers
+  // Custom App for Services and Forwarding
   ndn::AppHelper routerApp("DagForwarderApp");
   routerApp.SetPrefix(Prefix);
 
@@ -158,8 +158,18 @@ main(int argc, char* argv[])
   routerApp.SetAttribute("Service", StringValue("service4"));
   routerApp.Install(router2).Start(Seconds(0));
 
+  // Custom App for ServiceDiscovery
+  ndn::AppHelper routerApp("DagServiceDiscoveryApp");
+  routerApp.SetPrefix(Prefix);
+
+  routerApp.SetAttribute("Service", StringValue("serviceDiscovery"));
+  routerApp.Install(producer).Start(Seconds(0));
+  routerApp.Install(router1).Start(Seconds(0));
+  routerApp.Install(router2).Start(Seconds(0));
+  routerApp.Install(router3).Start(Seconds(0));
+
   // Custom App for User(Consumer)
-  ndn::AppHelper userApp("CustomAppConsumer");
+  ndn::AppHelper userApp("CustomAppConsumerServiceDiscovery");
   userApp.SetPrefix(Prefix);
 
   userApp.SetAttribute("Service", StringValue("consumer"));
@@ -170,8 +180,10 @@ main(int argc, char* argv[])
 
   // Register all service prefix names to their locations
   ndnGlobalRoutingHelper.AddOrigins(Prefix + "/sensor", producer);
+  ndnGlobalRoutingHelper.AddOrigins(Prefix + "/service1", producer);
   ndnGlobalRoutingHelper.AddOrigins(Prefix + "/service1", router3);
   ndnGlobalRoutingHelper.AddOrigins(Prefix + "/service2", router1);
+  ndnGlobalRoutingHelper.AddOrigins(Prefix + "/service3", router1);
   ndnGlobalRoutingHelper.AddOrigins(Prefix + "/service3", router2);
   ndnGlobalRoutingHelper.AddOrigins(Prefix + "/service4", router2);
 
