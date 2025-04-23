@@ -298,7 +298,13 @@ DagForwarderApp::OnInterest(std::shared_ptr<const ndn::Interest> interest)
   NS_LOG_DEBUG("Received Interest packet for " << interest->getName());
   //NS_LOG_DEBUG("Received on node hosting service " << m_service);
 
-  
+
+  // ignore interests that are meant for csUpdate 
+  if (interest->getName().getPrefix(2).toUri() == "/nesco/csUpdate")
+  {
+    NS_LOG_DEBUG("  This is a forwarding app, ignoring interest meant for csUpdater app.\n");
+    return;
+  } 
 
 
   // decode the DAG string contained in the application parameters, so we can generate the new interest(s)

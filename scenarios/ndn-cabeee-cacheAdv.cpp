@@ -30,27 +30,11 @@
 
 namespace ns3 {
 
+/*
+* 
+*     NS_LOG=CustomAppConsumer:CustomAppProducer:DagForwarderApp ./waf --run=ndn-cabeee-cacheAdv
+*/
 
-class PcapWriter {
-public:
-  PcapWriter(const std::string& file)
-  {
-    PcapHelper helper;
-    m_pcap = helper.CreateFile(file, std::ios::out, PcapHelper::DLT_PPP);
-  }
-
-  void
-  TracePacket(Ptr<const Packet> packet)
-  {
-    static PppHeader pppHeader;
-    pppHeader.SetProtocol(0x0077);
-
-    m_pcap->Write(Simulator::Now(), pppHeader, packet);
-  }
-
-private:
-  Ptr<PcapFileWrapper> m_pcap;
-};
 
 int
 main(int argc, char* argv[])
@@ -61,7 +45,7 @@ main(int argc, char* argv[])
 
   // Creating nodes
   AnnotatedTopologyReader topologyReader("", 1);
-  topologyReader.SetFileName("topologies/topo-cabeee-3node-fwdOpt.txt");
+  topologyReader.SetFileName("topologies/topo-cabeee-3node-cacheAdv.txt");
   topologyReader.Read();
 
 
@@ -86,10 +70,11 @@ main(int argc, char* argv[])
   ndnHelper.setCsSize(0); // disable content store
   ndnHelper.Install(producer);
 
-  ndnHelper.setCsSize(100); // enable/disable content store
-  ndnHelper.Install(router1);
   ndnHelper.setCsSize(0); // enable/disable content store
+  ndnHelper.Install(router1);
+  ndnHelper.setCsSize(1000); // enable/disable content store
   ndnHelper.Install(router2);
+  ndnHelper.setCsSize(0); // enable/disable content store
   ndnHelper.Install(router3);
 
 
@@ -101,30 +86,23 @@ main(int argc, char* argv[])
   std::string Prefix(PREFIX);
 
   // Choosing forwarding strategy
-  //ndn::StrategyChoiceHelper::InstallAll("/prefix", "/localhost/nfd/strategy/best-route");
-  //ndn::StrategyChoiceHelper::InstallAll("/prefix", "/localhost/nfd/strategy/multicast");
-
-  ndn::StrategyChoiceHelper::InstallAll(Prefix + "/service4", "/localhost/nfd/strategy/best-route");
-  ndn::StrategyChoiceHelper::InstallAll(Prefix + "/service3", "/localhost/nfd/strategy/best-route");
-  ndn::StrategyChoiceHelper::InstallAll(Prefix + "/service2", "/localhost/nfd/strategy/best-route");
+  ndn::StrategyChoiceHelper::InstallAll(PREFIX, "/localhost/nfd/strategy/best-route");
+  //ndn::StrategyChoiceHelper::InstallAll(PREFIX, "/localhost/nfd/strategy/multicast");
   ndn::StrategyChoiceHelper::InstallAll(Prefix + "/service1", "/localhost/nfd/strategy/best-route");
   ndn::StrategyChoiceHelper::InstallAll(Prefix + "/sensor", "/localhost/nfd/strategy/best-route");
-
-  ndn::StrategyChoiceHelper::InstallAll(Prefix + "/serviceDiscovery", "/localhost/nfd/strategy/multicast");
-
-  //ndn::StrategyChoiceHelper::InstallAll(Prefix + "/service4", "/localhost/nfd/strategy/multicast");
-  //ndn::StrategyChoiceHelper::InstallAll(Prefix + "/service3", "/localhost/nfd/strategy/multicast");
-  //ndn::StrategyChoiceHelper::InstallAll(Prefix + "/service2", "/localhost/nfd/strategy/multicast");
+  //ndn::StrategyChoiceHelper::InstallAll(Prefix + "/csUpdate", "/localhost/nfd/strategy/best-route");
   //ndn::StrategyChoiceHelper::InstallAll(Prefix + "/service1", "/localhost/nfd/strategy/multicast");
   //ndn::StrategyChoiceHelper::InstallAll(Prefix + "/sensor", "/localhost/nfd/strategy/multicast");
-
-
-
+  //ndn::StrategyChoiceHelper::InstallAll(Prefix + "/shortcutOPT", "/localhost/nfd/strategy/multicast");
 
   // Installing global routing interface on all nodes
   ndn::GlobalRoutingHelper ndnGlobalRoutingHelper;
   ndnGlobalRoutingHelper.InstallAll();
 
+  // Getting containers for the consumer/producer
+  //Ptr<Node> consumer = Names::Find<Node>("user");
+  //Ptr<Node> producer = Names::Find<Node>("sensor");
+  //Ptr<Node> producer = Names::Find<Node>("rtr-1");
 
  
 
@@ -137,57 +115,51 @@ main(int argc, char* argv[])
   sensorApp.SetAttribute("Service", StringValue("sensor"));
   sensorApp.Install(producer).Start(Seconds(0));
 
-  // Custom App for Services and Forwarding
+  // Custom App for routers
   ndn::AppHelper routerApp("DagForwarderApp");
   routerApp.SetPrefix(Prefix);
-
   routerApp.SetAttribute("Service", StringValue("service1"));
-  routerApp.Install(producer).Start(Seconds(0));
-  routerApp.Install(router3).Start(Seconds(0));
-
-  routerApp.SetAttribute("Service", StringValue("service2"));
   routerApp.Install(router1).Start(Seconds(0));
 
-  routerApp.SetAttribute("Service", StringValue("service3"));
-  routerApp.Install(router1).Start(Seconds(0));
-  routerApp.Install(router2).Start(Seconds(0));
-
-  routerApp.SetAttribute("Service", StringValue("service4"));
-  routerApp.Install(router2).Start(Seconds(0));
-
-  // Custom App for ServiceDiscovery
-  ndn::AppHelper serviceDiscoveryApp("DagServiceDiscoveryApp");
-  serviceDiscoveryApp.SetPrefix(Prefix);
-
-  serviceDiscoveryApp.SetAttribute("Service", StringValue("serviceDiscovery"));
-  serviceDiscoveryApp.Install(producer).Start(Seconds(0));
-  serviceDiscoveryApp.Install(router1).Start(Seconds(0));
-  serviceDiscoveryApp.Install(router2).Start(Seconds(0));
-  serviceDiscoveryApp.Install(router3).Start(Seconds(0));
+  // Custom App for Content Store updaters
+  ndn::AppHelper csUpdaterApp("CustomAppCsUpdater");
+  csUpdaterApp.SetPrefix(Prefix);
+  csUpdaterApp.SetAttribute("Service", StringValue("csUpdate"));
+  csUpdaterApp.Install(router2).Start(Seconds(0));
 
   // Custom App for User(Consumer)
-  ndn::AppHelper userApp("CustomAppConsumerServiceDiscovery");
+  ndn::AppHelper userApp("CustomAppConsumer");
   userApp.SetPrefix(Prefix);
-
-  userApp.SetAttribute("Service", StringValue("consumer"));
-  userApp.SetAttribute("Workflow", StringValue("workflows/4dag.json"));
+  userApp.SetAttribute("Service", StringValue("consumer1"));
+  userApp.SetAttribute("Workflow", StringValue("workflows/1dag.json"));
   userApp.SetAttribute("Orchestrate", UintegerValue(0));
-  userApp.Install(consumer).Start(Seconds(0));
+  userApp.Install(router3).Start(Seconds(0));
 
 
-  // Register all service prefix names to their locations
+  // Custom App for User2(Consumer2)
+  ndn::AppHelper userApp2("CustomAppConsumer");
+  userApp2.SetPrefix(Prefix);
+  userApp2.SetAttribute("Service", StringValue("consumer2"));
+  userApp2.SetAttribute("Workflow", StringValue("workflows/1dag.json"));
+  userApp2.SetAttribute("Orchestrate", UintegerValue(0));
+  userApp2.Install(consumer).Start(Seconds(3));
+
+
   ndnGlobalRoutingHelper.AddOrigins(Prefix + "/sensor", producer);
-  ndnGlobalRoutingHelper.AddOrigins(Prefix + "/service1", producer);
-  ndnGlobalRoutingHelper.AddOrigins(Prefix + "/service1", router3);
-  ndnGlobalRoutingHelper.AddOrigins(Prefix + "/service2", router1);
-  ndnGlobalRoutingHelper.AddOrigins(Prefix + "/service3", router1);
-  ndnGlobalRoutingHelper.AddOrigins(Prefix + "/service3", router2);
-  ndnGlobalRoutingHelper.AddOrigins(Prefix + "/service4", router2);
-
+  ndnGlobalRoutingHelper.AddOrigins(Prefix + "/service1", router1);
 
 
   // Calculate and install FIBs
   ndn::GlobalRoutingHelper::CalculateRoutes();
+
+
+  // Schedule the addition of cached item into RIB and recalculate routes
+  //std::string originPrefix = (Prefix + "/service1/params-sha256=b11a48b8384e652ea726efb193902553c97041a52670bb25b5f2c19bb15a8af3");
+  //Simulator::Schedule(Seconds(1.0), &(ndnGlobalRoutingHelper.AddOrigins), originPrefix, router2);
+  //ndn::GlobalRoutingHelper * grhPtr = &ndnGlobalRoutingHelper;
+  //Simulator::Schedule(Seconds(1.0), grhPtr->AddOrigins, originPrefix, router2);
+  //Simulator::Schedule(Seconds(2.0), ndn::GlobalRoutingHelper::CalculateRoutes);
+
 
   // Manually configure FIB routes
   //ndn::FibHelper::AddRoute(consumer, "/service4", router3, 1);
@@ -202,19 +174,14 @@ main(int argc, char* argv[])
   // set the routes, OR set the forwarding strategy to multi-cast with the appropriate prefixes
 
 
-  PcapWriter trace("ndn-cabeee-4dag-nesco-trace.pcap");
-  Config::ConnectWithoutContext("/NodeList/*/DeviceList/*/$ns3::PointToPointNetDevice/MacTx",
-                                MakeCallback(&PcapWriter::TracePacket, &trace));
 
-  Simulator::Stop(Seconds(1.1));
+  Simulator::Stop(Seconds(5.0));
 
-  ndn::L3RateTracer::InstallAll("rate-trace_cabeee-4dag.txt", Seconds(0.0005));
-  ndn::CsTracer::InstallAll("cs-trace_cabeee-4dag.txt", Seconds(0.0005));
+  ndn::L3RateTracer::InstallAll("rate-trace_cabeee-cacheAdv.txt", Seconds(0.0005));
+  ndn::CsTracer::InstallAll("cs-trace_cabeee-cacheAdv.txt", Seconds(0.0005));
 
   Simulator::Run();
   Simulator::Destroy();
-
-  //tshark -r ndn-cabeee-4dag-nesco-trace.pcap -z io,stat,0,"SUM(frame.len)frame.len" // this prints out total number of bytes in the pcap file
 
 
   return 0;
