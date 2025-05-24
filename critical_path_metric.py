@@ -390,6 +390,15 @@ class Workflow(Graph):
     def prune_split(self, service):
         return (self.clone().prune_downstream(service), self.clone().prune_upstream(service))
 
+    def get_producers(self):
+        return self.get_roots()
+
+    def get_consumers(self):
+        return self.get_sinks()
+
+    def get_services(self):
+        return self.get_incoming() & self.get_outgoing()
+
 
 class Topology(Graph):
     """ Topology data structure, undirected graph """

@@ -28,25 +28,33 @@
 
 using json = nlohmann::json;
 
-#define SCENARIO_FILE "4dag.json"
-
 namespace ns3 {
 
 int
 main(int argc, char* argv[])
 {
-    // Read optional command-line parameters (e.g., enable visualizer with ./waf --run=<> --visualize
+    std::string scenario_file = "";
+    bool verbose = false;
+
     CommandLine cmd;
+    cmd.AddValue("scenario", "json scenario file to use", scenario_file);
+    cmd.AddValue("verbose", "increase verbosity", verbose);
     cmd.Parse(argc, argv);
 
-    // eventually get SCENARIO_FILE from args
-    std::ifstream f{ SCENARIO_FILE };
-    const json scenario_json = json::parse(f);
+    if (scenario_file == "") {
+        std::cerr << "No scenario file specified (use '--scenario FILE')\n";
+        std::exit(1);
+    }
 
-    // for now, read topofile from scenario json
-    // eventually, build topology manually from json
-    // or maybe just generate topo file from json
+    const json scenario_json = json::parse(std::ifstream(scenario_file));
+
     std::string topofile = scenario_json.at("topofile");
+    std::string workflow_file = "";
+    if (scenario_json.contains("workflowFile")) {
+        workflow_file = scenario_json.at("workflowFile");
+    } else {
+        workflow_file = scenario_file;
+    }
 
     // Creating nodes
     AnnotatedTopologyReader topologyReader("", 1);
@@ -54,6 +62,7 @@ main(int argc, char* argv[])
     topologyReader.Read();
 
     // Install NDN stack on all nodes
+    // TODO: customize policy per router?
     ndn::StackHelper ndnHelper;
     ndnHelper.setPolicy("nfd::cs::lru");
     ndnHelper.SetDefaultRoutes(true);
@@ -71,12 +80,13 @@ main(int argc, char* argv[])
         if (rtr.contains("cs-size")) {
             cs_size = rtr["cs-size"];
         }
-        std::cout << "Now setting the CS in router " << (name) << " to this many packets: " << (cs_size) << std::endl;
+        if (verbose)
+            std::cout << "Now setting the CS in router " << (name) << " to this many packets: " << (cs_size) << std::endl;
         ndnHelper.setCsSize(cs_size);
         ndnHelper.Install(node);
     }
 
-    std::string Prefix{ scenario_json.at("prefix") };
+    std::string Prefix = scenario_json.at("prefix");
 
     for (const auto& srv : scenario_json.at("services")) {
         std::string strategy{ "/localhost/nfd/strategy/multicast" };
@@ -85,7 +95,8 @@ main(int argc, char* argv[])
         if (srv.contains("strategy")) {
             strategy = srv["strategy"];
         }
-        std::cout << "Now setting routing strategy for " << (name) << " to " << (strategy) << std::endl;
+        if (verbose)
+            std::cout << "Now setting routing strategy for " << (name) << " to " << (strategy) << std::endl;
         ndn::StrategyChoiceHelper::InstallAll(Prefix + name, strategy);
     }
 
@@ -101,42 +112,50 @@ main(int argc, char* argv[])
         Ptr<Node> rtr_node = Names::Find<Node>(rtr_name);
         hosting_map[rtr_name + srv_name] = &hosting;
 
-        std::string type = srv_map.at(srv_name)->at("type");
+        std::string type{};
+        if (srv_map.count(srv_name)) {
+            type = srv_map.at(srv_name)->at("type");
+        } else {
+            std::cerr << "Service " << srv_name << " not found\n";
+            std::exit(EXIT_FAILURE);
+        }
 
-        int start = 0;
-        //int end = 0;
+        double start = 0;
+        double end = -1;
 
         if (hosting.contains("start")) {
             start = hosting["start"];
         }
         
-        //if (hosting.contains("end")) {
-        //    end = hosting["end"];
-        //}
+        if (hosting.contains("end")) {
+            end = hosting["end"];
+        }
 
+        if (verbose)
+            std::cout << "Now installing " << (srv_name) << " in router " << (rtr_name) << ", starting at time: " << start << std::endl;
 
-        std::cout << "Now installing " << (srv_name) << " in router " << (rtr_name) << ", starting at time: " << start << std::endl;
+        ndn::AppHelper appHelper("DagForwarderApp");
 
         if (type == "producer") {
-            ndn::AppHelper appHelper("CustomAppProducer");
-            appHelper.SetPrefix(Prefix);
-            appHelper.SetAttribute("Service", StringValue(srv_name));
-            appHelper.Install(rtr_node).Start(Seconds(start));
-            //app.Start(Seconds(start));
-            //app.Stop(Seconds(end));
+            appHelper = ndn::AppHelper("CustomAppProducer");
         } else if (type == "service") {
-            ndn::AppHelper appHelper("DagForwarderApp");
-            appHelper.SetPrefix(Prefix);
-            appHelper.SetAttribute("Service", StringValue(srv_name));
-            appHelper.Install(rtr_node).Start(Seconds(start));
+            appHelper = ndn::AppHelper("DagForwarderApp");
         } else if (type == "consumer") {
-            ndn::AppHelper appHelper("CustomAppConsumer");
-            appHelper.SetPrefix(Prefix);
-            appHelper.SetAttribute("Service", StringValue(srv_name));
-            appHelper.SetAttribute("Workflow", StringValue(SCENARIO_FILE));
+            appHelper = ndn::AppHelper("CustomAppConsumer");
+            appHelper.SetAttribute("Workflow", StringValue(workflow_file));
             appHelper.SetAttribute("Orchestrate", UintegerValue(0));
-            appHelper.Install(rtr_node).Start(Seconds(start));
-        } 
+        } else {
+            std::cerr << "Unknown service type '" << type << "'\n";
+            std::exit(EXIT_FAILURE);
+        }
+
+        appHelper.SetAttribute("Service", StringValue(srv_name));
+        appHelper.SetPrefix(Prefix);
+        auto app = appHelper.Install(rtr_node);
+
+        app.Start(Seconds(start));
+        if (end > 0)
+            app.Stop(Seconds(end));
     }
 
     Simulator::Stop(Seconds(3.0));

@@ -166,12 +166,12 @@ do
 	data_trans="$(echo "$packets" | cut -d',' -f4)"
 
 #	cpm=$( \
-#		python critical-path-metric.py -type ${type} -workflow ${wf} -hosting ${hosting} -topology ${topo} | sed -n \
+#		python critical_path_metric.py -type ${type} -workflow ${wf} -hosting ${hosting} -topology ${topo} | sed -n \
 #		-e 's/^metric is \([0-9]*\)/\1/p' \
 #		| tr -d '\n' \
 #	)
 #	cpm_t=$( \
-#		python critical-path-metric.py -type ${type} -workflow ${wf} -hosting ${hosting} -topology ${topo} | sed -n \
+#		python critical_path_metric.py -type ${type} -workflow ${wf} -hosting ${hosting} -topology ${topo} | sed -n \
 #		-e 's/^time is \([0-9]*\)/\1/p' \
 #		| tr -d '\n' \
 #	)
