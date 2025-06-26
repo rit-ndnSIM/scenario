@@ -24,7 +24,7 @@ LOGS=CustomAppConsumer
 #LOGS=$LOGS:DagServiceA_App
 #LOGS=$LOGS:DagOrchestratorB_App
 #LOGS=$LOGS:DagServiceB_App
-#LOGS=$LOGS:ndn-cxx.nfd.Forwarder
+LOGS=$LOGS:ndn-cxx.nfd.Forwarder
 
 export NS_LOG="$LOGS"
 
@@ -88,9 +88,25 @@ do
 	ndnsim_hash="$(git -C "$NDNSIM_HOME/ns-3/src/ndnSIM" rev-parse HEAD)"
 
 	echo "Running..."
-	"$SCENARIO_DIR/waf" --run="$scenario" |& tee "$scenario_log"
+	#"$SCENARIO_DIR/waf" --run="$scenario" |& tee "$scenario_log"
+	"$SCENARIO_DIR/waf" --run="$scenario" &> "$scenario_log"
 
 	echo "Parsing logs..."
+
+	packets=$( \
+		python process_nfd_logs.py | sed -n \
+		-e 's/^Interest Packets Generated: \([0-9]*\) interests$/\1,/p' \
+		-e 's/^Data Packets Generated: \([0-9]*\) data$/\1,/p' \
+		-e 's/^Interest Packets Transmitted: \([0-9]*\) interests$/\1,/p' \
+		-e 's/^Data Packets Transmitted: \([0-9]*\) data/\1,/p' \
+		| tr -d '\n' \
+	)
+	interest_gen="$(echo "$packets" | cut -d',' -f1)"
+	data_gen="$(echo "$packets" | cut -d',' -f2)"
+	interest_trans="$(echo "$packets" | cut -d',' -f3)"
+	data_trans="$(echo "$packets" | cut -d',' -f4)"
+
+
 	latencies=$( \
 		python process_nfd_logs_intervals.py "$scenario_log" | sed -n \
 		-e 's/^\s*consumerR min latency: \([0-9\.]*\) microseconds$/\1,/p' \
