@@ -86,11 +86,12 @@ main(int argc, char* argv[])
   std::string Prefix(PREFIX);
 
   // Choosing forwarding strategy
-  ndn::StrategyChoiceHelper::InstallAll(PREFIX, "/localhost/nfd/strategy/best-route");
-  //ndn::StrategyChoiceHelper::InstallAll(PREFIX, "/localhost/nfd/strategy/multicast");
+  //ndn::StrategyChoiceHelper::InstallAll(PREFIX, "/localhost/nfd/strategy/best-route");
+  ndn::StrategyChoiceHelper::InstallAll(PREFIX, "/localhost/nfd/strategy/multicast");
   ndn::StrategyChoiceHelper::InstallAll(Prefix + "/service1", "/localhost/nfd/strategy/best-route");
   ndn::StrategyChoiceHelper::InstallAll(Prefix + "/sensor", "/localhost/nfd/strategy/best-route");
   //ndn::StrategyChoiceHelper::InstallAll(Prefix + "/csUpdate", "/localhost/nfd/strategy/best-route");
+  ndn::StrategyChoiceHelper::InstallAll(Prefix + "/csUpdate", "/localhost/nfd/strategy/multicast");
   //ndn::StrategyChoiceHelper::InstallAll(Prefix + "/service1", "/localhost/nfd/strategy/multicast");
   //ndn::StrategyChoiceHelper::InstallAll(Prefix + "/sensor", "/localhost/nfd/strategy/multicast");
   //ndn::StrategyChoiceHelper::InstallAll(Prefix + "/shortcutOPT", "/localhost/nfd/strategy/multicast");
@@ -153,10 +154,14 @@ main(int argc, char* argv[])
   ndn::GlobalRoutingHelper::CalculateRoutes();
 
 
+  //ndnGlobalRoutingHelper.AddOrigins(Prefix + "/service1/params-sha256=b11a48b8384e652ea726efb193902553c97041a52670bb25b5f2c19bb15a8af3", router2);
+  //ndn::GlobalRoutingHelper::CalculateRoutes();
+
   // Schedule the addition of cached item into RIB and recalculate routes
   //std::string originPrefix = (Prefix + "/service1/params-sha256=b11a48b8384e652ea726efb193902553c97041a52670bb25b5f2c19bb15a8af3");
   //Simulator::Schedule(Seconds(1.0), &(ndnGlobalRoutingHelper.AddOrigins), originPrefix, router2);
   //ndn::GlobalRoutingHelper * grhPtr = &ndnGlobalRoutingHelper;
+  //Simulator::Schedule(Seconds(1.0), grhPtr->AddOrigins(originPrefix, router2));
   //Simulator::Schedule(Seconds(1.0), grhPtr->AddOrigins, originPrefix, router2);
   //Simulator::Schedule(Seconds(2.0), ndn::GlobalRoutingHelper::CalculateRoutes);
 
