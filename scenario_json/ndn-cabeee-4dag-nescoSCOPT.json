@@ -1,0 +1,146 @@
+{
+  "prefix": "nescoSCOPT",
+  "topofile": "/home/cabeee/ndnSIM/scenario/topologies/topo-cabeee-3node.txt",
+  "workflowFile": "/home/cabeee/ndnSIM/scenario/workflows/4dag.json",
+  "router": [
+    {
+      "node": "sensor",
+      "comment": "NA",
+      "y": "80",
+      "x": "0",
+      "mpi-partition": "1"
+    },
+    {
+      "node": "rtr-1",
+      "comment": "NA",
+      "y": "60",
+      "x": "20",
+      "mpi-partition": "1"
+    },
+    {
+      "node": "rtr-2",
+      "comment": "NA",
+      "y": "60",
+      "x": "-20",
+      "mpi-partition": "2"
+    },
+    {
+      "node": "rtr-3",
+      "comment": "NA",
+      "y": "40",
+      "x": "0",
+      "mpi-partition": "3"
+    },
+    {
+      "node": "user",
+      "comment": "NA",
+      "y": "10",
+      "x": "0",
+      "mpi-partition": "0"
+    }
+  ],
+  "link": [
+    {
+      "from": "sensor",
+      "to": "rtr-1",
+      "capacity": "100Mbps",
+      "metric": "1",
+      "delay": "1ms",
+      "queue": "100"
+    },
+    {
+      "from": "rtr-1",
+      "to": "rtr-2",
+      "capacity": "100Mbps",
+      "metric": "1",
+      "delay": "1ms",
+      "queue": "100"
+    },
+    {
+      "from": "rtr-2",
+      "to": "rtr-3",
+      "capacity": "100Mbps",
+      "metric": "1",
+      "delay": "1ms",
+      "queue": "100"
+    },
+    {
+      "from": "rtr-3",
+      "to": "user",
+      "capacity": "100Mbps",
+      "metric": "1",
+      "delay": "1ms",
+      "queue": "100"
+    }
+  ],
+  "services": [
+    {
+      "name": "/service4",
+      "type": "service"
+    },
+    {
+      "name": "/service1",
+      "type": "service"
+    },
+    {
+      "name": "/service2",
+      "type": "service"
+    },
+    {
+      "name": "/service3",
+      "type": "service"
+    },
+    {
+      "name": "/sensor",
+      "type": "producer"
+    },
+    {
+      "name": "/consumer",
+      "type": "consumer"
+    }
+  ],
+  "routerHosting": [
+    {
+      "router": "sensor",
+      "service": "/sensor"
+    },
+    {
+      "router": "rtr-3",
+      "service": "/service1"
+    },
+    {
+      "router": "rtr-1",
+      "service": "/service2"
+    },
+    {
+      "router": "rtr-2",
+      "service": "/service3"
+    },
+    {
+      "router": "rtr-2",
+      "service": "/service4"
+    },
+    {
+      "router": "user",
+      "service": "/consumer"
+    }
+  ],
+  "dag": {
+    "/sensor": {
+      "/service1": 0
+    },
+    "/service1": {
+      "/service2": 0,
+      "/service3": 0
+    },
+    "/service2": {
+      "/service4": 0
+    },
+    "/service3": {
+      "/service4": 1
+    },
+    "/service4": {
+      "/consumer": 0
+    }
+  }
+}
