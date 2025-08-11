@@ -36,33 +36,33 @@ declare -a scenarios=(
 	# 4 DAG
 	#"ndn-cabeee-4dag-orchestratorA orchA 4dag.json 4dag.hosting topo-cabeee-3node"
 	#"ndn-cabeee-4dag-orchestratorB orchB 4dag.json 4dag.hosting topo-cabeee-3node"
-	"ndn-cabeee-4dag-nesco nesco 4dag.json 4dag.hosting topo-cabeee-3node"
-	"ndn-cabeee-4dag-nescoSCOPT nescoSCOPT 4dag.json 4dag.hosting topo-cabeee-3node"
+	#"ndn-cabeee-4dag-nesco nesco 4dag.json 4dag.hosting topo-cabeee-3node"
+	#"ndn-cabeee-4dag-nescoSCOPT nescoSCOPT 4dag.json 4dag.hosting topo-cabeee-3node"
 	# 8 DAG
 	#"ndn-cabeee-8dag-orchestratorA orchA 8dag.json 8dag.hosting topo-cabeee-3node"
 	#"ndn-cabeee-8dag-orchestratorB orchB 8dag.json 8dag.hosting topo-cabeee-3node"
 	"ndn-cabeee-8dag-nesco nesco 8dag.json 8dag.hosting topo-cabeee-3node"
-	"ndn-cabeee-8dag-nescoSCOPT nescoSCOPT 8dag.json 8dag.hosting topo-cabeee-3node"
+	#"ndn-cabeee-8dag-nescoSCOPT nescoSCOPT 8dag.json 8dag.hosting topo-cabeee-3node"
 	# 8 DAG w/ caching
 	#"ndn-cabeee-8dag-caching-orchestratorA orchA 8dag.json 8dag.hosting topo-cabeee-3node"
 	#"ndn-cabeee-8dag-caching-orchestratorB orchB 8dag.json 8dag.hosting topo-cabeee-3node"
 	"ndn-cabeee-8dag-caching-nesco nesco 8dag.json 8dag.hosting topo-cabeee-3node"
-	"ndn-cabeee-8dag-caching-nescoSCOPT nescoSCOPT 8dag.json 8dag.hosting topo-cabeee-3node"
+	#"ndn-cabeee-8dag-caching-nescoSCOPT nescoSCOPT 8dag.json 8dag.hosting topo-cabeee-3node"
 	# 20 Sensor (new hosting using 3node topology)
 	#"ndn-cabeee-20sensor-orchestratorA orchA 20-sensor.json 20-sensor-in3node.hosting topo-cabeee-3node"
 	#"ndn-cabeee-20sensor-orchestratorB orchB 20-sensor.json 20-sensor-in3node.hosting topo-cabeee-3node"
-	"ndn-cabeee-20sensor-nesco nesco 20-sensor.json 20-sensor-in3node.hosting topo-cabeee-3node"
-	"ndn-cabeee-20sensor-nescoSCOPT nescoSCOPT 20-sensor.json 20-sensor-in3node.hosting topo-cabeee-3node"
+	#"ndn-cabeee-20sensor-nesco nesco 20-sensor.json 20-sensor-in3node.hosting topo-cabeee-3node"
+	#"ndn-cabeee-20sensor-nescoSCOPT nescoSCOPT 20-sensor.json 20-sensor-in3node.hosting topo-cabeee-3node"
 	# 20 Linear (new hosting using 3node topology)
 	#"ndn-cabeee-20linear-orchestratorA orchA 20-linear.json 20-linear-in3node.hosting topo-cabeee-3node"
 	#"ndn-cabeee-20linear-orchestratorB orchB 20-linear.json 20-linear-in3node.hosting topo-cabeee-3node"
-	"ndn-cabeee-20linear-nesco nesco 20-linear.json 20-linear-in3node.hosting topo-cabeee-3node"
-	"ndn-cabeee-20linear-nescoSCOPT nescoSCOPT 20-linear.json 20-linear-in3node.hosting topo-cabeee-3node"
+	#"ndn-cabeee-20linear-nesco nesco 20-linear.json 20-linear-in3node.hosting topo-cabeee-3node"
+	#"ndn-cabeee-20linear-nescoSCOPT nescoSCOPT 20-linear.json 20-linear-in3node.hosting topo-cabeee-3node"
 	# 20 Reuse (new hosting using 3node topology)
 	#"ndn-cabeee-20reuse-orchestratorA orchA 20-reuse.json 20-reuse-in3node.hosting topo-cabeee-3node"
 	#"ndn-cabeee-20reuse-orchestratorB orchB 20-reuse.json 20-reuse-in3node.hosting topo-cabeee-3node"
-	"ndn-cabeee-20reuse-nesco nesco 20-reuse.json 20-reuse-in3node.hosting topo-cabeee-3node"
-	"ndn-cabeee-20reuse-nescoSCOPT nescoSCOPT 20-reuse.json 20-reuse-in3node.hosting topo-cabeee-3node"
+	#"ndn-cabeee-20reuse-nesco nesco 20-reuse.json 20-reuse-in3node.hosting topo-cabeee-3node"
+	#"ndn-cabeee-20reuse-nescoSCOPT nescoSCOPT 20-reuse.json 20-reuse-in3node.hosting topo-cabeee-3node"
 
 	# 20 Scramble (new hosting using 3node topology)
 	#"ndn-cabeee-20scrambled-orchestratorA orchA 20-linear.json 20-scrambled-in3node.hosting topo-cabeee-3node"
@@ -130,9 +130,9 @@ do
 
 	scenario_json="$SCENARIO_JSON_DIR/$scenario.json"
 
-	"$SCENARIO_DIR/build_scenario.py" \
-		--topo "$topo.txt" --topo-out "$topo.json" \
-		--dag "$wf" --hosting "$hosting" --prefix "$type" | jq > "$scenario_json"
+	#"$SCENARIO_DIR/build_scenario.py" \
+		#--topo "$topo.txt" --topo-out "$topo.json" \
+		#--dag "$wf" --hosting "$hosting" --prefix "$type" | jq > "$scenario_json"
 
 	now="$(date -Iseconds)"
 

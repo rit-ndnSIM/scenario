@@ -181,52 +181,48 @@
       "end": -1
     }
   ],
-  "dag": [
-    {
-      "dag1": {
-        "/sensor": {
-          "/service1": 0
-        },
-        "/service1": {
-          "/service2": 0,
-          "/service3": 0
-        },
-        "/service2": {
-          "/service4": 0
-        },
-        "/service3": {
-          "/service4": 1
-        },
-        "/service4": {
-          "/consumer2": 0
-        }
+  "dag": {
+    "dag1": {
+      "/sensor": {
+        "/service1": 0
       },
+      "/service1": {
+        "/service2": 0,
+        "/service3": 0
+      },
+      "/service2": {
+        "/service4": 0
+      },
+      "/service3": {
+        "/service4": 1
+      },
+      "/service4": {
+        "/consumer2": 0
+      }
     },
-    {
-      "dag2": {
-        "/sensor": {
-          "/service1": 0
-        },
-        "/service1": {
-          "/service3": 0,
-          "/service5": 0
-        },
-        "/service3": {
-          "/service6": 0
-        },
-        "/service5": {
-          "/service7": 0
-        },
-        "/service6": {
-          "/service8": 0
-        },
-        "/service7": {
-          "/service8": 1
-        },
-        "/service8": {
-          "/consumer": 0
-        }
+    "dag2": {
+      "/sensor": {
+        "/service1": 0
+      },
+      "/service1": {
+        "/service3": 0,
+        "/service5": 0
+      },
+      "/service3": {
+        "/service6": 0
+      },
+      "/service5": {
+        "/service7": 0
+      },
+      "/service6": {
+        "/service8": 0
+      },
+      "/service7": {
+        "/service8": 1
+      },
+      "/service8": {
+        "/consumer": 0
       }
     }
-  ]
+  }
 }

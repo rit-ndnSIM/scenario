@@ -48,13 +48,8 @@ main(int argc, char* argv[])
 
     const json scenario_json = json::parse(std::ifstream(scenario_file));
 
+    //TODO: do we want to support having the topology described in the scenario_file? Right now we just support it being in a separate file (topofile)
     std::string topofile = scenario_json.at("topofile");
-    std::string workflow_file = "";
-    if (scenario_json.contains("workflowFile")) {
-        workflow_file = scenario_json.at("workflowFile");
-    } else {
-        workflow_file = scenario_file;
-    }
 
     // Creating nodes
     AnnotatedTopologyReader topologyReader("", 1);
@@ -141,6 +136,14 @@ main(int argc, char* argv[])
         } else if (type == "service") {
             appHelper = ndn::AppHelper("DagForwarderApp");
         } else if (type == "consumer") {
+            //TODO: do we want to support having the DAG workflow in the scenario_file? Right now we just support it being in a separate file (workflowFile)
+            std::string workflow_file = "";
+            if (hosting.contains("workflowFile")) {
+                workflow_file = hosting.at("workflowFile");
+            } else {
+                std::cerr << "No scenario file specified (use '--scenario FILE')\n";
+                std::exit(1);
+            }
             appHelper = ndn::AppHelper("CustomAppConsumer");
             appHelper.SetAttribute("Workflow", StringValue(workflow_file));
             appHelper.SetAttribute("Orchestrate", UintegerValue(0));
