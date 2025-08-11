@@ -95,7 +95,7 @@
     },
     {
       "name": "/consumer2",
-      "type": "consumer"
+      "type": "consumer2"
     },
     {
       "name": "/service8",

@@ -126,8 +126,12 @@ main(int argc, char* argv[])
             end = hosting["end"];
         }
 
-        if (verbose)
+        if (verbose) {
             std::cout << "Now installing " << (srv_name) << " in router " << (rtr_name) << ", starting at time: " << start << std::endl;
+            if (hosting.contains("workflowFile")) {
+                std::cout << "workflowFile is: " << (hosting["workflowFile"]) << std::endl;
+            }
+        }
 
         ndn::AppHelper appHelper("DagForwarderApp");
 
@@ -139,14 +143,26 @@ main(int argc, char* argv[])
             //TODO: do we want to support having the DAG workflow in the scenario_file? Right now we just support it being in a separate file (workflowFile)
             std::string workflow_file = "";
             if (hosting.contains("workflowFile")) {
-                workflow_file = hosting.at("workflowFile");
+                workflow_file = hosting["workflowFile"];
             } else {
-                std::cerr << "No scenario file specified (use '--scenario FILE')\n";
+                std::cerr << "No workflow file specified for consumer " << (srv_name) << ". (make sure you use '--scenario FILE' and this file has workflowFile specified)\n";
                 std::exit(1);
             }
             appHelper = ndn::AppHelper("CustomAppConsumer");
             appHelper.SetAttribute("Workflow", StringValue(workflow_file));
-            appHelper.SetAttribute("Orchestrate", UintegerValue(0));
+            appHelper.SetAttribute("Orchestrate", UintegerValue(0)); //TODO: if we want to support orchestrator A or B, we must pass in the appropriate value - 1 for orchA or 2 for orchB.
+        } else if (type == "consumer2") {
+            //TODO: do we want to support having the DAG workflow in the scenario_file? Right now we just support it being in a separate file (workflowFile)
+            std::string workflow_file = "";
+            if (hosting.contains("workflowFile")) {
+                workflow_file = hosting["workflowFile"];
+            } else {
+                std::cerr << "No workflow file specified for consumer " << (srv_name) << ". (make sure you use '--scenario FILE' and this file has workflowFile specified)\n";
+                std::exit(1);
+            }
+            appHelper = ndn::AppHelper("CustomAppConsumer2");
+            appHelper.SetAttribute("Workflow", StringValue(workflow_file));
+            appHelper.SetAttribute("Orchestrate", UintegerValue(0)); //TODO: if we want to support orchestrator A or B, we must pass in the appropriate value - 1 for orchA or 2 for orchB.
         } else {
             std::cerr << "Unknown service type '" << type << "'\n";
             std::exit(EXIT_FAILURE);
@@ -161,7 +177,7 @@ main(int argc, char* argv[])
             app.Stop(Seconds(end));
     }
 
-    Simulator::Stop(Seconds(3.0));
+    Simulator::Stop(Seconds(10.0)); //TODO: stop time should be set in json file, since some simulations can take much longer than others.
 
     Simulator::Run();
     Simulator::Destroy();

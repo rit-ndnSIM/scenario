@@ -224,6 +224,7 @@ def main():
         **dag,
     }
 
+    # TODO: don't overwrite file if it exists (in case it has been manually altered for some reason)
     print(json.dumps(scenario), file=args.output)
 
 

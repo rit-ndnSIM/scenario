@@ -1,7 +1,6 @@
 {
   "prefix": "nesco",
   "topofile": "/home/cabeee/ndnSIM/scenario/topologies/topo-cabeee-3node.txt",
-  "workflowFile": "/home/cabeee/ndnSIM/scenario/workflows/4dag.json",
   "router": [
     {
       "node": "sensor",
@@ -122,7 +121,10 @@
     },
     {
       "router": "user",
-      "service": "/consumer"
+      "service": "/consumer",
+      "workflowFile": "/home/cabeee/ndnSIM/scenario/workflows/4dag.json",
+      "start": 0,
+      "end": -1
     }
   ],
   "dag": {
