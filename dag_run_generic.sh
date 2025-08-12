@@ -112,25 +112,41 @@ else
 fi
 
 
-for iterator in "${scenarios[@]}"
+#for iterator in "${scenarios[@]}"
+#do
+	#read -a itrArray <<< "$iterator" #default whitespace IFS
+	#scenario=${itrArray[0]}
+	#type=${itrArray[1]}
+	#wf=${WORKFLOW_DIR}/${itrArray[2]}
+	#hosting=${WORKFLOW_DIR}/${itrArray[3]}
+	#topo=${TOPOLOGY_DIR}/${itrArray[4]}
+	#echo "Scenario: $scenario"
+	#echo "type: $type"
+	#echo "Workflow: $wf"
+	#echo "Hosting: $hosting"
+	#echo "Topology: $topo"
+
+# Run a scenario for every file found in the directory
+for filepath in "$SCENARIO_JSON_DIR"/*
 do
-	read -a itrArray <<< "$iterator" #default whitespace IFS
-	scenario=${itrArray[0]}
-	type=${itrArray[1]}
-	wf=${WORKFLOW_DIR}/${itrArray[2]}
-	hosting=${WORKFLOW_DIR}/${itrArray[3]}
-	topo=${TOPOLOGY_DIR}/${itrArray[4]}
+	filename=$(basename "$filepath ") 	# remove path
+	scenario="${filename%.*}"			# remove file extension
+    # TODO: determine type, wf, hosting, and topo information from the full json, and somehow pass it into the cpm program below
+    #type=
+    #wf=
+    #hosting=
+    #topo=
 	echo "Scenario: $scenario"
-	echo "type: $type"
-	echo "Workflow: $wf"
-	echo "Hosting: $hosting"
-	echo "Topology: $topo"
+    #echo "type: $type"
+    #echo "Workflow: $wf"
+    #echo "Hosting: $hosting"
+    #echo "Topology: $topo"
 
 	scenario_log="$SCENARIO_DIR/scenario.log"
 
 	scenario_json="$SCENARIO_JSON_DIR/$scenario.json"
 
-    # TODO: keep this commented out for now, since I don't want the json files overwritten.
+	# TODO: keep this commented out for now, since I don't want the json files overwritten.
 	#"$SCENARIO_DIR/build_scenario.py" \
 		#--topo "$topo.txt" --topo-out "$topo.json" \
 		#--dag "$wf" --hosting "$hosting" --prefix "$type" | jq > "$scenario_json"
@@ -178,16 +194,19 @@ do
 #		-e 's/^time is \([0-9]*\)/\1/p' \
 #		| tr -d '\n' \
 #	)
-	cpm=$( \
-		../CPM/cpm --scheme ${type} --workflow ${wf} --hosting ${hosting} --topology ${topo}.json | sed -n \
-		-e 's/^metric: \([0-9]*\)/\1/p' \
-		| tr -d '\n' \
-	)
-	cpm_t=$( \
-		../CPM/cpm --scheme ${type} --workflow ${wf} --hosting ${hosting} --topology ${topo}.json | sed -n \
-		-e 's/^time: \([0-9]*\) ns/\1/p' \
-		| tr -d '\n' \
-	)
+# TODO: determine type, wf, hosting, and topo information from the full json, and somehow pass it into the cpm program cleanly
+#	cpm=$( \
+#		../CPM/cpm --scheme ${type} --workflow ${wf} --hosting ${hosting} --topology ${topo}.json | sed -n \
+#		-e 's/^metric: \([0-9]*\)/\1/p' \
+#		| tr -d '\n' \
+#	)
+#	cpm_t=$( \
+#		../CPM/cpm --scheme ${type} --workflow ${wf} --hosting ${hosting} --topology ${topo}.json | sed -n \
+#		-e 's/^time: \([0-9]*\) ns/\1/p' \
+#		| tr -d '\n' \
+#	)
+	cpm=-1
+	cpm_t=-1
 
 	row="$scenario, $interest_gen, $data_gen, $interest_trans, $data_trans, $cpm, $cpm_t, $latency, $result, $now, $ns_3_hash, $pybindgen_hash, $scenario_hash, $ndnsim_hash"
 
