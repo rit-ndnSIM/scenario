@@ -123,26 +123,29 @@
       "router": "user",
       "service": "/consumer",
       "workflowFile": "/home/cabeee/ndnSIM/scenario/workflows/4dag.json",
+      "dag": "dag1",
       "start": 0,
       "end": -1
     }
   ],
   "dag": {
-    "/sensor": {
-      "/service1": 0
-    },
-    "/service1": {
-      "/service2": 0,
-      "/service3": 0
-    },
-    "/service2": {
-      "/service4": 0
-    },
-    "/service3": {
-      "/service4": 1
-    },
-    "/service4": {
-      "/consumer": 0
+    "dag1": {
+      "/sensor": {
+        "/service1": 0
+      },
+      "/service1": {
+        "/service2": 0,
+        "/service3": 0
+      },
+      "/service2": {
+        "/service4": 0
+      },
+      "/service3": {
+        "/service4": 1
+      },
+      "/service4": {
+        "/consumer": 0
+      }
     }
   }
 }
