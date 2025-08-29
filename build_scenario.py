@@ -164,7 +164,7 @@ def generate_hosting(
     return {"routerHosting": hosting}
 
 
-def get_hosting(hosting_file):
+def get_hosting(hosting_file, workflow_file):
     hosting = dict()
     hosting["routerHosting"] = []
 
@@ -173,7 +173,10 @@ def get_hosting(hosting_file):
 
     for router, services in dag_hosting["routerHosting"].items():
         for service in services:
-            hosting["routerHosting"].append({ "router": router, "service": service })
+            if service == '/consumer':
+                hosting["routerHosting"].append({ "router": router, "service": service, "workflowFile": str(workflow_file), "dag": "dag1", "start": 0, "end": -1})
+            else:
+                hosting["routerHosting"].append({ "router": router, "service": service })
 
     return hosting
 
@@ -199,7 +202,7 @@ def main():
     hosting = None
 
     if args.hosting:
-        hosting = get_hosting(args.hosting)
+        hosting = get_hosting(args.hosting, args.dag)
     else:
         hosting = None
 
@@ -213,11 +216,12 @@ def main():
 
     with open(args.dag, "r") as f:
         dag = json.load(f)
+        dag["dag"] = {"dag1": dag["dag"]} # insert the new level "dag1". This is targeting scenarios that only have one consumer (thus only dag1).
 
     scenario = {
         'prefix': prefix,
         'topofile': topofile,
-        'workflowFile': str(args.dag),
+        #'workflowFile': str(args.dag),
         **topo,
         **services,
         **hosting,

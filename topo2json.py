@@ -50,7 +50,15 @@ def parse_topo(f):
             raise ValueError(f"line {line_num}: not enough fields, minimum {num_req_fields}, got {len(values)}")
 
         # TODO: validate contents of fields againt field-specific grammar
+
         topo[section].append({field: value for field, value in zip(fields, values)})
+
+        '''
+        # do this instead if we want cs-size to be included and overwritten to some value (in this case zero)
+        entry = {field: value for field, value in zip(fields, values)}
+        entry["cs-size"] = 0
+        topo[section].append(entry)
+        '''
 
     return topo
 

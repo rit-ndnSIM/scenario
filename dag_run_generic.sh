@@ -97,11 +97,20 @@ do
     	interest_trans="$(echo "$packets" | cut -d',' -f3)"
     	data_trans="$(echo "$packets" | cut -d',' -f4)"
 
+        set +e
         # cpm now determines type, wf, hosting, and topo information from the full json, and somehow pass it into the cpm program cleanly
-        cpm_output=$(../CPM/cpm --scenarioJSON "${scenario_json}")
+        cpm_output=$(../CPM/cpm --scenarioJSON "${scenario_json}" 2>&1)
+        cpm_status=$?
+        set -e
 
-        cpm=$(echo "$cpm_output" | sed -n 's/^metric: \([0-9]*\)/\1/p' | tr -d '\n')
-        cpm_t=$(echo "$cpm_output" | sed -n 's/^time: \([0-9]*\) ns/\1/p' | tr -d '\n')
+        if  [ $cpm_status -ne 0 ]; then
+            echo "Warning: cpm failed with exit code $cpm_status"
+            cpm=-1
+            cpm_t=-1
+        else
+            cpm=$(echo "$cpm_output" | sed -n 's/^metric: \([0-9]*\)/\1/p' | tr -d '\n')
+            cpm_t=$(echo "$cpm_output" | sed -n 's/^time: \([0-9]*\) ns/\1/p' | tr -d '\n')
+        fi
 
     	row="$scenario, $interest_gen, $data_gen, $interest_trans, $data_trans, $cpm, $cpm_t, $latency, $result, $now, $ns_3_hash, $pybindgen_hash, $scenario_hash, $ndnsim_hash"
 
