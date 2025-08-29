@@ -164,7 +164,7 @@ main(int argc, char* argv[])
                 orchestratorAppA.SetPrefix(Prefix);
                 orchestratorAppA.SetAttribute("Service", StringValue("serviceOrchestration"));
                 orchestratorAppA.Install(rtr_node).Start(Seconds(0));
-            if (Prefix == "orchA")
+            if (Prefix == "orchB")
                 appHelper.SetAttribute("Orchestrate", UintegerValue(2));
                 // now install the orchestrator
                 ndn::AppHelper orchestratorAppB("DagOrchestratorB_App");
