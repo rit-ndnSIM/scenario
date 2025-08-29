@@ -1,0 +1,1464 @@
+{
+  "prefix": "nesco",
+  "topofile": "/home/cabeee/ndnSIM/scenario/topologies/topo-cabeee-cpm-x_50.txt",
+  "router": [
+    {
+      "node": "sensor",
+      "comment": "NA",
+      "y": "0",
+      "x": "0",
+      "mpi-partition": "0",
+      "cs-size": 0
+    },
+    {
+      "node": "user",
+      "comment": "NA",
+      "y": "1",
+      "x": "1",
+      "mpi-partition": "1",
+      "cs-size": 0
+    },
+    {
+      "node": "rtr-001",
+      "comment": "NA",
+      "y": "2",
+      "x": "2",
+      "mpi-partition": "2",
+      "cs-size": 0
+    },
+    {
+      "node": "rtr-002",
+      "comment": "NA",
+      "y": "3",
+      "x": "3",
+      "mpi-partition": "2",
+      "cs-size": 0
+    },
+    {
+      "node": "rtr-003",
+      "comment": "NA",
+      "y": "4",
+      "x": "4",
+      "mpi-partition": "2",
+      "cs-size": 0
+    },
+    {
+      "node": "rtr-004",
+      "comment": "NA",
+      "y": "5",
+      "x": "5",
+      "mpi-partition": "2",
+      "cs-size": 0
+    },
+    {
+      "node": "rtr-005",
+      "comment": "NA",
+      "y": "6",
+      "x": "6",
+      "mpi-partition": "2",
+      "cs-size": 0
+    },
+    {
+      "node": "rtr-006",
+      "comment": "NA",
+      "y": "7",
+      "x": "7",
+      "mpi-partition": "2",
+      "cs-size": 0
+    },
+    {
+      "node": "rtr-007",
+      "comment": "NA",
+      "y": "8",
+      "x": "8",
+      "mpi-partition": "2",
+      "cs-size": 0
+    },
+    {
+      "node": "rtr-008",
+      "comment": "NA",
+      "y": "9",
+      "x": "9",
+      "mpi-partition": "2",
+      "cs-size": 0
+    },
+    {
+      "node": "rtr-009",
+      "comment": "NA",
+      "y": "10",
+      "x": "10",
+      "mpi-partition": "2",
+      "cs-size": 0
+    },
+    {
+      "node": "rtr-010",
+      "comment": "NA",
+      "y": "11",
+      "x": "11",
+      "mpi-partition": "2",
+      "cs-size": 0
+    },
+    {
+      "node": "rtr-011",
+      "comment": "NA",
+      "y": "12",
+      "x": "12",
+      "mpi-partition": "2",
+      "cs-size": 0
+    },
+    {
+      "node": "rtr-012",
+      "comment": "NA",
+      "y": "13",
+      "x": "13",
+      "mpi-partition": "2",
+      "cs-size": 0
+    },
+    {
+      "node": "rtr-013",
+      "comment": "NA",
+      "y": "14",
+      "x": "14",
+      "mpi-partition": "2",
+      "cs-size": 0
+    },
+    {
+      "node": "rtr-014",
+      "comment": "NA",
+      "y": "15",
+      "x": "15",
+      "mpi-partition": "2",
+      "cs-size": 0
+    },
+    {
+      "node": "rtr-015",
+      "comment": "NA",
+      "y": "16",
+      "x": "16",
+      "mpi-partition": "2",
+      "cs-size": 0
+    },
+    {
+      "node": "rtr-016",
+      "comment": "NA",
+      "y": "17",
+      "x": "17",
+      "mpi-partition": "2",
+      "cs-size": 0
+    },
+    {
+      "node": "rtr-017",
+      "comment": "NA",
+      "y": "18",
+      "x": "18",
+      "mpi-partition": "2",
+      "cs-size": 0
+    },
+    {
+      "node": "rtr-018",
+      "comment": "NA",
+      "y": "19",
+      "x": "19",
+      "mpi-partition": "2",
+      "cs-size": 0
+    },
+    {
+      "node": "rtr-019",
+      "comment": "NA",
+      "y": "20",
+      "x": "20",
+      "mpi-partition": "2",
+      "cs-size": 0
+    },
+    {
+      "node": "rtr-020",
+      "comment": "NA",
+      "y": "21",
+      "x": "21",
+      "mpi-partition": "2",
+      "cs-size": 0
+    },
+    {
+      "node": "rtr-021",
+      "comment": "NA",
+      "y": "22",
+      "x": "22",
+      "mpi-partition": "2",
+      "cs-size": 0
+    },
+    {
+      "node": "rtr-022",
+      "comment": "NA",
+      "y": "23",
+      "x": "23",
+      "mpi-partition": "2",
+      "cs-size": 0
+    },
+    {
+      "node": "rtr-023",
+      "comment": "NA",
+      "y": "24",
+      "x": "24",
+      "mpi-partition": "2",
+      "cs-size": 0
+    },
+    {
+      "node": "rtr-024",
+      "comment": "NA",
+      "y": "25",
+      "x": "25",
+      "mpi-partition": "2",
+      "cs-size": 0
+    },
+    {
+      "node": "rtr-025",
+      "comment": "NA",
+      "y": "26",
+      "x": "26",
+      "mpi-partition": "2",
+      "cs-size": 0
+    },
+    {
+      "node": "rtr-026",
+      "comment": "NA",
+      "y": "27",
+      "x": "27",
+      "mpi-partition": "2",
+      "cs-size": 0
+    },
+    {
+      "node": "rtr-027",
+      "comment": "NA",
+      "y": "28",
+      "x": "28",
+      "mpi-partition": "2",
+      "cs-size": 0
+    },
+    {
+      "node": "rtr-028",
+      "comment": "NA",
+      "y": "29",
+      "x": "29",
+      "mpi-partition": "2",
+      "cs-size": 0
+    },
+    {
+      "node": "rtr-029",
+      "comment": "NA",
+      "y": "30",
+      "x": "30",
+      "mpi-partition": "2",
+      "cs-size": 0
+    },
+    {
+      "node": "rtr-030",
+      "comment": "NA",
+      "y": "31",
+      "x": "31",
+      "mpi-partition": "2",
+      "cs-size": 0
+    },
+    {
+      "node": "rtr-031",
+      "comment": "NA",
+      "y": "32",
+      "x": "32",
+      "mpi-partition": "2",
+      "cs-size": 0
+    },
+    {
+      "node": "rtr-032",
+      "comment": "NA",
+      "y": "33",
+      "x": "33",
+      "mpi-partition": "2",
+      "cs-size": 0
+    },
+    {
+      "node": "rtr-033",
+      "comment": "NA",
+      "y": "34",
+      "x": "34",
+      "mpi-partition": "2",
+      "cs-size": 0
+    },
+    {
+      "node": "rtr-034",
+      "comment": "NA",
+      "y": "35",
+      "x": "35",
+      "mpi-partition": "2",
+      "cs-size": 0
+    },
+    {
+      "node": "rtr-035",
+      "comment": "NA",
+      "y": "36",
+      "x": "36",
+      "mpi-partition": "2",
+      "cs-size": 0
+    },
+    {
+      "node": "rtr-036",
+      "comment": "NA",
+      "y": "37",
+      "x": "37",
+      "mpi-partition": "2",
+      "cs-size": 0
+    },
+    {
+      "node": "rtr-037",
+      "comment": "NA",
+      "y": "38",
+      "x": "38",
+      "mpi-partition": "2",
+      "cs-size": 0
+    },
+    {
+      "node": "rtr-038",
+      "comment": "NA",
+      "y": "39",
+      "x": "39",
+      "mpi-partition": "2",
+      "cs-size": 0
+    },
+    {
+      "node": "rtr-039",
+      "comment": "NA",
+      "y": "40",
+      "x": "40",
+      "mpi-partition": "2",
+      "cs-size": 0
+    },
+    {
+      "node": "rtr-040",
+      "comment": "NA",
+      "y": "41",
+      "x": "41",
+      "mpi-partition": "2",
+      "cs-size": 0
+    },
+    {
+      "node": "rtr-041",
+      "comment": "NA",
+      "y": "42",
+      "x": "42",
+      "mpi-partition": "2",
+      "cs-size": 0
+    },
+    {
+      "node": "rtr-042",
+      "comment": "NA",
+      "y": "43",
+      "x": "43",
+      "mpi-partition": "2",
+      "cs-size": 0
+    },
+    {
+      "node": "rtr-043",
+      "comment": "NA",
+      "y": "44",
+      "x": "44",
+      "mpi-partition": "2",
+      "cs-size": 0
+    },
+    {
+      "node": "rtr-044",
+      "comment": "NA",
+      "y": "45",
+      "x": "45",
+      "mpi-partition": "2",
+      "cs-size": 0
+    },
+    {
+      "node": "rtr-045",
+      "comment": "NA",
+      "y": "46",
+      "x": "46",
+      "mpi-partition": "2",
+      "cs-size": 0
+    },
+    {
+      "node": "rtr-046",
+      "comment": "NA",
+      "y": "47",
+      "x": "47",
+      "mpi-partition": "2",
+      "cs-size": 0
+    },
+    {
+      "node": "rtr-047",
+      "comment": "NA",
+      "y": "48",
+      "x": "48",
+      "mpi-partition": "2",
+      "cs-size": 0
+    },
+    {
+      "node": "rtr-048",
+      "comment": "NA",
+      "y": "49",
+      "x": "49",
+      "mpi-partition": "2",
+      "cs-size": 0
+    },
+    {
+      "node": "rtr-049",
+      "comment": "NA",
+      "y": "50",
+      "x": "50",
+      "mpi-partition": "2",
+      "cs-size": 0
+    },
+    {
+      "node": "rtr-050",
+      "comment": "NA",
+      "y": "51",
+      "x": "51",
+      "mpi-partition": "2",
+      "cs-size": 0
+    }
+  ],
+  "link": [
+    {
+      "from": "sensor",
+      "to": "rtr-001",
+      "capacity": "10Mbps",
+      "metric": "1",
+      "delay": "1ms",
+      "queue": "100",
+      "cs-size": 0
+    },
+    {
+      "from": "rtr-001",
+      "to": "rtr-002",
+      "capacity": "10Mbps",
+      "metric": "1",
+      "delay": "1ms",
+      "queue": "100",
+      "cs-size": 0
+    },
+    {
+      "from": "rtr-002",
+      "to": "rtr-003",
+      "capacity": "10Mbps",
+      "metric": "1",
+      "delay": "1ms",
+      "queue": "100",
+      "cs-size": 0
+    },
+    {
+      "from": "rtr-003",
+      "to": "rtr-004",
+      "capacity": "10Mbps",
+      "metric": "1",
+      "delay": "1ms",
+      "queue": "100",
+      "cs-size": 0
+    },
+    {
+      "from": "rtr-004",
+      "to": "rtr-005",
+      "capacity": "10Mbps",
+      "metric": "1",
+      "delay": "1ms",
+      "queue": "100",
+      "cs-size": 0
+    },
+    {
+      "from": "rtr-005",
+      "to": "rtr-006",
+      "capacity": "10Mbps",
+      "metric": "1",
+      "delay": "1ms",
+      "queue": "100",
+      "cs-size": 0
+    },
+    {
+      "from": "rtr-006",
+      "to": "rtr-007",
+      "capacity": "10Mbps",
+      "metric": "1",
+      "delay": "1ms",
+      "queue": "100",
+      "cs-size": 0
+    },
+    {
+      "from": "rtr-007",
+      "to": "rtr-008",
+      "capacity": "10Mbps",
+      "metric": "1",
+      "delay": "1ms",
+      "queue": "100",
+      "cs-size": 0
+    },
+    {
+      "from": "rtr-008",
+      "to": "rtr-009",
+      "capacity": "10Mbps",
+      "metric": "1",
+      "delay": "1ms",
+      "queue": "100",
+      "cs-size": 0
+    },
+    {
+      "from": "rtr-009",
+      "to": "rtr-010",
+      "capacity": "10Mbps",
+      "metric": "1",
+      "delay": "1ms",
+      "queue": "100",
+      "cs-size": 0
+    },
+    {
+      "from": "rtr-010",
+      "to": "rtr-011",
+      "capacity": "10Mbps",
+      "metric": "1",
+      "delay": "1ms",
+      "queue": "100",
+      "cs-size": 0
+    },
+    {
+      "from": "rtr-011",
+      "to": "rtr-012",
+      "capacity": "10Mbps",
+      "metric": "1",
+      "delay": "1ms",
+      "queue": "100",
+      "cs-size": 0
+    },
+    {
+      "from": "rtr-012",
+      "to": "rtr-013",
+      "capacity": "10Mbps",
+      "metric": "1",
+      "delay": "1ms",
+      "queue": "100",
+      "cs-size": 0
+    },
+    {
+      "from": "rtr-013",
+      "to": "rtr-014",
+      "capacity": "10Mbps",
+      "metric": "1",
+      "delay": "1ms",
+      "queue": "100",
+      "cs-size": 0
+    },
+    {
+      "from": "rtr-014",
+      "to": "rtr-015",
+      "capacity": "10Mbps",
+      "metric": "1",
+      "delay": "1ms",
+      "queue": "100",
+      "cs-size": 0
+    },
+    {
+      "from": "rtr-015",
+      "to": "rtr-016",
+      "capacity": "10Mbps",
+      "metric": "1",
+      "delay": "1ms",
+      "queue": "100",
+      "cs-size": 0
+    },
+    {
+      "from": "rtr-016",
+      "to": "rtr-017",
+      "capacity": "10Mbps",
+      "metric": "1",
+      "delay": "1ms",
+      "queue": "100",
+      "cs-size": 0
+    },
+    {
+      "from": "rtr-017",
+      "to": "rtr-018",
+      "capacity": "10Mbps",
+      "metric": "1",
+      "delay": "1ms",
+      "queue": "100",
+      "cs-size": 0
+    },
+    {
+      "from": "rtr-018",
+      "to": "rtr-019",
+      "capacity": "10Mbps",
+      "metric": "1",
+      "delay": "1ms",
+      "queue": "100",
+      "cs-size": 0
+    },
+    {
+      "from": "rtr-019",
+      "to": "rtr-020",
+      "capacity": "10Mbps",
+      "metric": "1",
+      "delay": "1ms",
+      "queue": "100",
+      "cs-size": 0
+    },
+    {
+      "from": "rtr-020",
+      "to": "rtr-021",
+      "capacity": "10Mbps",
+      "metric": "1",
+      "delay": "1ms",
+      "queue": "100",
+      "cs-size": 0
+    },
+    {
+      "from": "rtr-021",
+      "to": "rtr-022",
+      "capacity": "10Mbps",
+      "metric": "1",
+      "delay": "1ms",
+      "queue": "100",
+      "cs-size": 0
+    },
+    {
+      "from": "rtr-022",
+      "to": "rtr-023",
+      "capacity": "10Mbps",
+      "metric": "1",
+      "delay": "1ms",
+      "queue": "100",
+      "cs-size": 0
+    },
+    {
+      "from": "rtr-023",
+      "to": "rtr-024",
+      "capacity": "10Mbps",
+      "metric": "1",
+      "delay": "1ms",
+      "queue": "100",
+      "cs-size": 0
+    },
+    {
+      "from": "rtr-024",
+      "to": "rtr-025",
+      "capacity": "10Mbps",
+      "metric": "1",
+      "delay": "1ms",
+      "queue": "100",
+      "cs-size": 0
+    },
+    {
+      "from": "rtr-025",
+      "to": "rtr-026",
+      "capacity": "10Mbps",
+      "metric": "1",
+      "delay": "1ms",
+      "queue": "100",
+      "cs-size": 0
+    },
+    {
+      "from": "rtr-026",
+      "to": "rtr-027",
+      "capacity": "10Mbps",
+      "metric": "1",
+      "delay": "1ms",
+      "queue": "100",
+      "cs-size": 0
+    },
+    {
+      "from": "rtr-027",
+      "to": "rtr-028",
+      "capacity": "10Mbps",
+      "metric": "1",
+      "delay": "1ms",
+      "queue": "100",
+      "cs-size": 0
+    },
+    {
+      "from": "rtr-028",
+      "to": "rtr-029",
+      "capacity": "10Mbps",
+      "metric": "1",
+      "delay": "1ms",
+      "queue": "100",
+      "cs-size": 0
+    },
+    {
+      "from": "rtr-029",
+      "to": "rtr-030",
+      "capacity": "10Mbps",
+      "metric": "1",
+      "delay": "1ms",
+      "queue": "100",
+      "cs-size": 0
+    },
+    {
+      "from": "rtr-030",
+      "to": "rtr-031",
+      "capacity": "10Mbps",
+      "metric": "1",
+      "delay": "1ms",
+      "queue": "100",
+      "cs-size": 0
+    },
+    {
+      "from": "rtr-031",
+      "to": "rtr-032",
+      "capacity": "10Mbps",
+      "metric": "1",
+      "delay": "1ms",
+      "queue": "100",
+      "cs-size": 0
+    },
+    {
+      "from": "rtr-032",
+      "to": "rtr-033",
+      "capacity": "10Mbps",
+      "metric": "1",
+      "delay": "1ms",
+      "queue": "100",
+      "cs-size": 0
+    },
+    {
+      "from": "rtr-033",
+      "to": "rtr-034",
+      "capacity": "10Mbps",
+      "metric": "1",
+      "delay": "1ms",
+      "queue": "100",
+      "cs-size": 0
+    },
+    {
+      "from": "rtr-034",
+      "to": "rtr-035",
+      "capacity": "10Mbps",
+      "metric": "1",
+      "delay": "1ms",
+      "queue": "100",
+      "cs-size": 0
+    },
+    {
+      "from": "rtr-035",
+      "to": "rtr-036",
+      "capacity": "10Mbps",
+      "metric": "1",
+      "delay": "1ms",
+      "queue": "100",
+      "cs-size": 0
+    },
+    {
+      "from": "rtr-036",
+      "to": "rtr-037",
+      "capacity": "10Mbps",
+      "metric": "1",
+      "delay": "1ms",
+      "queue": "100",
+      "cs-size": 0
+    },
+    {
+      "from": "rtr-037",
+      "to": "rtr-038",
+      "capacity": "10Mbps",
+      "metric": "1",
+      "delay": "1ms",
+      "queue": "100",
+      "cs-size": 0
+    },
+    {
+      "from": "rtr-038",
+      "to": "rtr-039",
+      "capacity": "10Mbps",
+      "metric": "1",
+      "delay": "1ms",
+      "queue": "100",
+      "cs-size": 0
+    },
+    {
+      "from": "rtr-039",
+      "to": "rtr-040",
+      "capacity": "10Mbps",
+      "metric": "1",
+      "delay": "1ms",
+      "queue": "100",
+      "cs-size": 0
+    },
+    {
+      "from": "rtr-040",
+      "to": "rtr-041",
+      "capacity": "10Mbps",
+      "metric": "1",
+      "delay": "1ms",
+      "queue": "100",
+      "cs-size": 0
+    },
+    {
+      "from": "rtr-041",
+      "to": "rtr-042",
+      "capacity": "10Mbps",
+      "metric": "1",
+      "delay": "1ms",
+      "queue": "100",
+      "cs-size": 0
+    },
+    {
+      "from": "rtr-042",
+      "to": "rtr-043",
+      "capacity": "10Mbps",
+      "metric": "1",
+      "delay": "1ms",
+      "queue": "100",
+      "cs-size": 0
+    },
+    {
+      "from": "rtr-043",
+      "to": "rtr-044",
+      "capacity": "10Mbps",
+      "metric": "1",
+      "delay": "1ms",
+      "queue": "100",
+      "cs-size": 0
+    },
+    {
+      "from": "rtr-044",
+      "to": "rtr-045",
+      "capacity": "10Mbps",
+      "metric": "1",
+      "delay": "1ms",
+      "queue": "100",
+      "cs-size": 0
+    },
+    {
+      "from": "rtr-045",
+      "to": "rtr-046",
+      "capacity": "10Mbps",
+      "metric": "1",
+      "delay": "1ms",
+      "queue": "100",
+      "cs-size": 0
+    },
+    {
+      "from": "rtr-046",
+      "to": "rtr-047",
+      "capacity": "10Mbps",
+      "metric": "1",
+      "delay": "1ms",
+      "queue": "100",
+      "cs-size": 0
+    },
+    {
+      "from": "rtr-047",
+      "to": "rtr-048",
+      "capacity": "10Mbps",
+      "metric": "1",
+      "delay": "1ms",
+      "queue": "100",
+      "cs-size": 0
+    },
+    {
+      "from": "rtr-048",
+      "to": "rtr-049",
+      "capacity": "10Mbps",
+      "metric": "1",
+      "delay": "1ms",
+      "queue": "100",
+      "cs-size": 0
+    },
+    {
+      "from": "rtr-049",
+      "to": "rtr-050",
+      "capacity": "10Mbps",
+      "metric": "1",
+      "delay": "1ms",
+      "queue": "100",
+      "cs-size": 0
+    },
+    {
+      "from": "rtr-050",
+      "to": "user",
+      "capacity": "10Mbps",
+      "metric": "1",
+      "delay": "1ms",
+      "queue": "100",
+      "cs-size": 0
+    }
+  ],
+  "services": [
+    {
+      "name": "/serviceCPM-020",
+      "type": "service"
+    },
+    {
+      "name": "/serviceCPM-036",
+      "type": "service"
+    },
+    {
+      "name": "/serviceCPM-011",
+      "type": "service"
+    },
+    {
+      "name": "/serviceCPM-033",
+      "type": "service"
+    },
+    {
+      "name": "/serviceCPM-031",
+      "type": "service"
+    },
+    {
+      "name": "/serviceCPM-019",
+      "type": "service"
+    },
+    {
+      "name": "/serviceCPM-007",
+      "type": "service"
+    },
+    {
+      "name": "/serviceCPM-013",
+      "type": "service"
+    },
+    {
+      "name": "/serviceCPM-035",
+      "type": "service"
+    },
+    {
+      "name": "/serviceCPM-048",
+      "type": "service"
+    },
+    {
+      "name": "/serviceCPM-012",
+      "type": "service"
+    },
+    {
+      "name": "/serviceCPM-016",
+      "type": "service"
+    },
+    {
+      "name": "/serviceCPM-029",
+      "type": "service"
+    },
+    {
+      "name": "/serviceCPM-008",
+      "type": "service"
+    },
+    {
+      "name": "/serviceCPM-027",
+      "type": "service"
+    },
+    {
+      "name": "/serviceCPM-023",
+      "type": "service"
+    },
+    {
+      "name": "/serviceCPM-004",
+      "type": "service"
+    },
+    {
+      "name": "/serviceCPM-001",
+      "type": "service"
+    },
+    {
+      "name": "/serviceCPM-002",
+      "type": "service"
+    },
+    {
+      "name": "/serviceCPM-041",
+      "type": "service"
+    },
+    {
+      "name": "/serviceCPM-049",
+      "type": "service"
+    },
+    {
+      "name": "/serviceCPM-044",
+      "type": "service"
+    },
+    {
+      "name": "/serviceCPM-043",
+      "type": "service"
+    },
+    {
+      "name": "/serviceCPM-018",
+      "type": "service"
+    },
+    {
+      "name": "/serviceCPM-040",
+      "type": "service"
+    },
+    {
+      "name": "/serviceCPM-047",
+      "type": "service"
+    },
+    {
+      "name": "/serviceCPM-014",
+      "type": "service"
+    },
+    {
+      "name": "/serviceCPM-006",
+      "type": "service"
+    },
+    {
+      "name": "/serviceCPM-046",
+      "type": "service"
+    },
+    {
+      "name": "/serviceCPM-024",
+      "type": "service"
+    },
+    {
+      "name": "/serviceCPM-025",
+      "type": "service"
+    },
+    {
+      "name": "/serviceCPM-034",
+      "type": "service"
+    },
+    {
+      "name": "/serviceCPM-032",
+      "type": "service"
+    },
+    {
+      "name": "/serviceCPM-037",
+      "type": "service"
+    },
+    {
+      "name": "/serviceCPM-009",
+      "type": "service"
+    },
+    {
+      "name": "/serviceCPM-038",
+      "type": "service"
+    },
+    {
+      "name": "/serviceCPM-039",
+      "type": "service"
+    },
+    {
+      "name": "/serviceCPM-022",
+      "type": "service"
+    },
+    {
+      "name": "/consumer",
+      "type": "consumer"
+    },
+    {
+      "name": "/serviceCPM-021",
+      "type": "service"
+    },
+    {
+      "name": "/serviceCPM-028",
+      "type": "service"
+    },
+    {
+      "name": "/serviceCPM-015",
+      "type": "service"
+    },
+    {
+      "name": "/serviceCPM-030",
+      "type": "service"
+    },
+    {
+      "name": "/serviceCPM-045",
+      "type": "service"
+    },
+    {
+      "name": "/serviceCPM-050",
+      "type": "service"
+    },
+    {
+      "name": "/serviceCPM-005",
+      "type": "service"
+    },
+    {
+      "name": "/sensor",
+      "type": "producer"
+    },
+    {
+      "name": "/serviceCPM-026",
+      "type": "service"
+    },
+    {
+      "name": "/serviceCPM-003",
+      "type": "service"
+    },
+    {
+      "name": "/serviceCPM-042",
+      "type": "service"
+    },
+    {
+      "name": "/serviceCPM-010",
+      "type": "service"
+    },
+    {
+      "name": "/serviceCPM-017",
+      "type": "service"
+    }
+  ],
+  "routerHosting": [
+    {
+      "router": "sensor",
+      "service": "/sensor"
+    },
+    {
+      "router": "rtr-001",
+      "service": "/serviceCPM-001"
+    },
+    {
+      "router": "rtr-002",
+      "service": "/serviceCPM-002"
+    },
+    {
+      "router": "rtr-003",
+      "service": "/serviceCPM-003"
+    },
+    {
+      "router": "rtr-004",
+      "service": "/serviceCPM-004"
+    },
+    {
+      "router": "rtr-005",
+      "service": "/serviceCPM-005"
+    },
+    {
+      "router": "rtr-006",
+      "service": "/serviceCPM-006"
+    },
+    {
+      "router": "rtr-007",
+      "service": "/serviceCPM-007"
+    },
+    {
+      "router": "rtr-008",
+      "service": "/serviceCPM-008"
+    },
+    {
+      "router": "rtr-009",
+      "service": "/serviceCPM-009"
+    },
+    {
+      "router": "rtr-010",
+      "service": "/serviceCPM-010"
+    },
+    {
+      "router": "rtr-011",
+      "service": "/serviceCPM-011"
+    },
+    {
+      "router": "rtr-012",
+      "service": "/serviceCPM-012"
+    },
+    {
+      "router": "rtr-013",
+      "service": "/serviceCPM-013"
+    },
+    {
+      "router": "rtr-014",
+      "service": "/serviceCPM-014"
+    },
+    {
+      "router": "rtr-015",
+      "service": "/serviceCPM-015"
+    },
+    {
+      "router": "rtr-016",
+      "service": "/serviceCPM-016"
+    },
+    {
+      "router": "rtr-017",
+      "service": "/serviceCPM-017"
+    },
+    {
+      "router": "rtr-018",
+      "service": "/serviceCPM-018"
+    },
+    {
+      "router": "rtr-019",
+      "service": "/serviceCPM-019"
+    },
+    {
+      "router": "rtr-020",
+      "service": "/serviceCPM-020"
+    },
+    {
+      "router": "rtr-021",
+      "service": "/serviceCPM-021"
+    },
+    {
+      "router": "rtr-022",
+      "service": "/serviceCPM-022"
+    },
+    {
+      "router": "rtr-023",
+      "service": "/serviceCPM-023"
+    },
+    {
+      "router": "rtr-024",
+      "service": "/serviceCPM-024"
+    },
+    {
+      "router": "rtr-025",
+      "service": "/serviceCPM-025"
+    },
+    {
+      "router": "rtr-026",
+      "service": "/serviceCPM-026"
+    },
+    {
+      "router": "rtr-027",
+      "service": "/serviceCPM-027"
+    },
+    {
+      "router": "rtr-028",
+      "service": "/serviceCPM-028"
+    },
+    {
+      "router": "rtr-029",
+      "service": "/serviceCPM-029"
+    },
+    {
+      "router": "rtr-030",
+      "service": "/serviceCPM-030"
+    },
+    {
+      "router": "rtr-031",
+      "service": "/serviceCPM-031"
+    },
+    {
+      "router": "rtr-032",
+      "service": "/serviceCPM-032"
+    },
+    {
+      "router": "rtr-033",
+      "service": "/serviceCPM-033"
+    },
+    {
+      "router": "rtr-034",
+      "service": "/serviceCPM-034"
+    },
+    {
+      "router": "rtr-035",
+      "service": "/serviceCPM-035"
+    },
+    {
+      "router": "rtr-036",
+      "service": "/serviceCPM-036"
+    },
+    {
+      "router": "rtr-037",
+      "service": "/serviceCPM-037"
+    },
+    {
+      "router": "rtr-038",
+      "service": "/serviceCPM-038"
+    },
+    {
+      "router": "rtr-039",
+      "service": "/serviceCPM-039"
+    },
+    {
+      "router": "rtr-040",
+      "service": "/serviceCPM-040"
+    },
+    {
+      "router": "rtr-041",
+      "service": "/serviceCPM-041"
+    },
+    {
+      "router": "rtr-042",
+      "service": "/serviceCPM-042"
+    },
+    {
+      "router": "rtr-043",
+      "service": "/serviceCPM-043"
+    },
+    {
+      "router": "rtr-044",
+      "service": "/serviceCPM-044"
+    },
+    {
+      "router": "rtr-045",
+      "service": "/serviceCPM-045"
+    },
+    {
+      "router": "rtr-046",
+      "service": "/serviceCPM-046"
+    },
+    {
+      "router": "rtr-047",
+      "service": "/serviceCPM-047"
+    },
+    {
+      "router": "rtr-048",
+      "service": "/serviceCPM-048"
+    },
+    {
+      "router": "rtr-049",
+      "service": "/serviceCPM-049"
+    },
+    {
+      "router": "rtr-050",
+      "service": "/serviceCPM-050"
+    },
+    {
+      "router": "user",
+      "service": "/consumer",
+      "workflowFile": "/home/cabeee/ndnSIM/scenario/workflows/cpm-50_x.json",
+      "dag": "dag1",
+      "start": 0,
+      "end": -1
+    }
+  ],
+  "dag": {
+    "dag1": {
+      "/sensor": {
+        "/serviceCPM-001": 0
+      },
+      "/serviceCPM-001": {
+        "/serviceCPM-002": 0
+      },
+      "/serviceCPM-002": {
+        "/serviceCPM-003": 0
+      },
+      "/serviceCPM-003": {
+        "/serviceCPM-004": 0
+      },
+      "/serviceCPM-004": {
+        "/serviceCPM-005": 0
+      },
+      "/serviceCPM-005": {
+        "/serviceCPM-006": 0
+      },
+      "/serviceCPM-006": {
+        "/serviceCPM-007": 0
+      },
+      "/serviceCPM-007": {
+        "/serviceCPM-008": 0
+      },
+      "/serviceCPM-008": {
+        "/serviceCPM-009": 0
+      },
+      "/serviceCPM-009": {
+        "/serviceCPM-010": 0
+      },
+      "/serviceCPM-010": {
+        "/serviceCPM-011": 0
+      },
+      "/serviceCPM-011": {
+        "/serviceCPM-012": 0
+      },
+      "/serviceCPM-012": {
+        "/serviceCPM-013": 0
+      },
+      "/serviceCPM-013": {
+        "/serviceCPM-014": 0
+      },
+      "/serviceCPM-014": {
+        "/serviceCPM-015": 0
+      },
+      "/serviceCPM-015": {
+        "/serviceCPM-016": 0
+      },
+      "/serviceCPM-016": {
+        "/serviceCPM-017": 0
+      },
+      "/serviceCPM-017": {
+        "/serviceCPM-018": 0
+      },
+      "/serviceCPM-018": {
+        "/serviceCPM-019": 0
+      },
+      "/serviceCPM-019": {
+        "/serviceCPM-020": 0
+      },
+      "/serviceCPM-020": {
+        "/serviceCPM-021": 0
+      },
+      "/serviceCPM-021": {
+        "/serviceCPM-022": 0
+      },
+      "/serviceCPM-022": {
+        "/serviceCPM-023": 0
+      },
+      "/serviceCPM-023": {
+        "/serviceCPM-024": 0
+      },
+      "/serviceCPM-024": {
+        "/serviceCPM-025": 0
+      },
+      "/serviceCPM-025": {
+        "/serviceCPM-026": 0
+      },
+      "/serviceCPM-026": {
+        "/serviceCPM-027": 0
+      },
+      "/serviceCPM-027": {
+        "/serviceCPM-028": 0
+      },
+      "/serviceCPM-028": {
+        "/serviceCPM-029": 0
+      },
+      "/serviceCPM-029": {
+        "/serviceCPM-030": 0
+      },
+      "/serviceCPM-030": {
+        "/serviceCPM-031": 0
+      },
+      "/serviceCPM-031": {
+        "/serviceCPM-032": 0
+      },
+      "/serviceCPM-032": {
+        "/serviceCPM-033": 0
+      },
+      "/serviceCPM-033": {
+        "/serviceCPM-034": 0
+      },
+      "/serviceCPM-034": {
+        "/serviceCPM-035": 0
+      },
+      "/serviceCPM-035": {
+        "/serviceCPM-036": 0
+      },
+      "/serviceCPM-036": {
+        "/serviceCPM-037": 0
+      },
+      "/serviceCPM-037": {
+        "/serviceCPM-038": 0
+      },
+      "/serviceCPM-038": {
+        "/serviceCPM-039": 0
+      },
+      "/serviceCPM-039": {
+        "/serviceCPM-040": 0
+      },
+      "/serviceCPM-040": {
+        "/serviceCPM-041": 0
+      },
+      "/serviceCPM-041": {
+        "/serviceCPM-042": 0
+      },
+      "/serviceCPM-042": {
+        "/serviceCPM-043": 0
+      },
+      "/serviceCPM-043": {
+        "/serviceCPM-044": 0
+      },
+      "/serviceCPM-044": {
+        "/serviceCPM-045": 0
+      },
+      "/serviceCPM-045": {
+        "/serviceCPM-046": 0
+      },
+      "/serviceCPM-046": {
+        "/serviceCPM-047": 0
+      },
+      "/serviceCPM-047": {
+        "/serviceCPM-048": 0
+      },
+      "/serviceCPM-048": {
+        "/serviceCPM-049": 0
+      },
+      "/serviceCPM-049": {
+        "/serviceCPM-050": 0
+      },
+      "/serviceCPM-050": {
+        "/consumer": 0
+      }
+    }
+  }
+}

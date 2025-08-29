@@ -1,0 +1,546 @@
+{
+  "prefix": "nescoSCOPT",
+  "topofile": "/home/cabeee/ndnSIM/scenario/topologies/topo-cabeee-3node.txt",
+  "router": [
+    {
+      "node": "sensor",
+      "comment": "NA",
+      "y": "80",
+      "x": "0",
+      "mpi-partition": "1"
+    },
+    {
+      "node": "rtr-1",
+      "comment": "NA",
+      "y": "60",
+      "x": "20",
+      "mpi-partition": "1"
+    },
+    {
+      "node": "rtr-2",
+      "comment": "NA",
+      "y": "60",
+      "x": "-20",
+      "mpi-partition": "2"
+    },
+    {
+      "node": "rtr-3",
+      "comment": "NA",
+      "y": "40",
+      "x": "0",
+      "mpi-partition": "3"
+    },
+    {
+      "node": "user",
+      "comment": "NA",
+      "y": "10",
+      "x": "0",
+      "mpi-partition": "0"
+    }
+  ],
+  "link": [
+    {
+      "from": "sensor",
+      "to": "rtr-1",
+      "capacity": "100Mbps",
+      "metric": "1",
+      "delay": "1ms",
+      "queue": "100"
+    },
+    {
+      "from": "rtr-1",
+      "to": "rtr-2",
+      "capacity": "100Mbps",
+      "metric": "1",
+      "delay": "1ms",
+      "queue": "100"
+    },
+    {
+      "from": "rtr-2",
+      "to": "rtr-3",
+      "capacity": "100Mbps",
+      "metric": "1",
+      "delay": "1ms",
+      "queue": "100"
+    },
+    {
+      "from": "rtr-3",
+      "to": "user",
+      "capacity": "100Mbps",
+      "metric": "1",
+      "delay": "1ms",
+      "queue": "100"
+    }
+  ],
+  "services": [
+    {
+      "name": "/serviceP12",
+      "type": "service"
+    },
+    {
+      "name": "/serviceP11",
+      "type": "service"
+    },
+    {
+      "name": "/serviceP14",
+      "type": "service"
+    },
+    {
+      "name": "/sensor4",
+      "type": "producer"
+    },
+    {
+      "name": "/sensor15",
+      "type": "producer"
+    },
+    {
+      "name": "/sensor13",
+      "type": "producer"
+    },
+    {
+      "name": "/sensor2",
+      "type": "producer"
+    },
+    {
+      "name": "/sensor16",
+      "type": "producer"
+    },
+    {
+      "name": "/serviceP7",
+      "type": "service"
+    },
+    {
+      "name": "/sensor20",
+      "type": "producer"
+    },
+    {
+      "name": "/sensor3",
+      "type": "producer"
+    },
+    {
+      "name": "/serviceP6",
+      "type": "service"
+    },
+    {
+      "name": "/serviceP13",
+      "type": "service"
+    },
+    {
+      "name": "/serviceP18",
+      "type": "service"
+    },
+    {
+      "name": "/serviceP16",
+      "type": "service"
+    },
+    {
+      "name": "/serviceP21",
+      "type": "service"
+    },
+    {
+      "name": "/sensor17",
+      "type": "producer"
+    },
+    {
+      "name": "/sensor5",
+      "type": "producer"
+    },
+    {
+      "name": "/serviceP20",
+      "type": "service"
+    },
+    {
+      "name": "/serviceP3",
+      "type": "service"
+    },
+    {
+      "name": "/consumer",
+      "type": "consumer"
+    },
+    {
+      "name": "/sensor11",
+      "type": "producer"
+    },
+    {
+      "name": "/serviceP8",
+      "type": "service"
+    },
+    {
+      "name": "/serviceP1",
+      "type": "service"
+    },
+    {
+      "name": "/serviceP5",
+      "type": "service"
+    },
+    {
+      "name": "/sensor18",
+      "type": "producer"
+    },
+    {
+      "name": "/serviceP10",
+      "type": "service"
+    },
+    {
+      "name": "/serviceP9",
+      "type": "service"
+    },
+    {
+      "name": "/sensor12",
+      "type": "producer"
+    },
+    {
+      "name": "/sensor10",
+      "type": "producer"
+    },
+    {
+      "name": "/serviceP2",
+      "type": "service"
+    },
+    {
+      "name": "/sensor19",
+      "type": "producer"
+    },
+    {
+      "name": "/sensor14",
+      "type": "producer"
+    },
+    {
+      "name": "/sensor9",
+      "type": "producer"
+    },
+    {
+      "name": "/serviceP4",
+      "type": "service"
+    },
+    {
+      "name": "/sensor6",
+      "type": "producer"
+    },
+    {
+      "name": "/sensor8",
+      "type": "producer"
+    },
+    {
+      "name": "/serviceP19",
+      "type": "service"
+    },
+    {
+      "name": "/serviceP15",
+      "type": "service"
+    },
+    {
+      "name": "/sensor1",
+      "type": "producer"
+    },
+    {
+      "name": "/sensor7",
+      "type": "producer"
+    },
+    {
+      "name": "/serviceP17",
+      "type": "service"
+    }
+  ],
+  "routerHosting": [
+    {
+      "router": "sensor",
+      "service": "/sensor1"
+    },
+    {
+      "router": "sensor",
+      "service": "/sensor2"
+    },
+    {
+      "router": "sensor",
+      "service": "/sensor3"
+    },
+    {
+      "router": "sensor",
+      "service": "/sensor4"
+    },
+    {
+      "router": "sensor",
+      "service": "/sensor5"
+    },
+    {
+      "router": "sensor",
+      "service": "/sensor6"
+    },
+    {
+      "router": "sensor",
+      "service": "/sensor7"
+    },
+    {
+      "router": "sensor",
+      "service": "/sensor8"
+    },
+    {
+      "router": "sensor",
+      "service": "/sensor9"
+    },
+    {
+      "router": "sensor",
+      "service": "/sensor10"
+    },
+    {
+      "router": "sensor",
+      "service": "/sensor11"
+    },
+    {
+      "router": "sensor",
+      "service": "/sensor12"
+    },
+    {
+      "router": "sensor",
+      "service": "/sensor13"
+    },
+    {
+      "router": "sensor",
+      "service": "/sensor14"
+    },
+    {
+      "router": "sensor",
+      "service": "/sensor15"
+    },
+    {
+      "router": "sensor",
+      "service": "/sensor16"
+    },
+    {
+      "router": "sensor",
+      "service": "/sensor17"
+    },
+    {
+      "router": "sensor",
+      "service": "/sensor18"
+    },
+    {
+      "router": "sensor",
+      "service": "/sensor19"
+    },
+    {
+      "router": "sensor",
+      "service": "/sensor20"
+    },
+    {
+      "router": "rtr-2",
+      "service": "/serviceP1"
+    },
+    {
+      "router": "rtr-2",
+      "service": "/serviceP2"
+    },
+    {
+      "router": "rtr-2",
+      "service": "/serviceP3"
+    },
+    {
+      "router": "rtr-2",
+      "service": "/serviceP4"
+    },
+    {
+      "router": "rtr-2",
+      "service": "/serviceP5"
+    },
+    {
+      "router": "rtr-2",
+      "service": "/serviceP6"
+    },
+    {
+      "router": "rtr-2",
+      "service": "/serviceP7"
+    },
+    {
+      "router": "rtr-2",
+      "service": "/serviceP8"
+    },
+    {
+      "router": "rtr-2",
+      "service": "/serviceP9"
+    },
+    {
+      "router": "rtr-2",
+      "service": "/serviceP10"
+    },
+    {
+      "router": "rtr-2",
+      "service": "/serviceP11"
+    },
+    {
+      "router": "rtr-2",
+      "service": "/serviceP12"
+    },
+    {
+      "router": "rtr-2",
+      "service": "/serviceP13"
+    },
+    {
+      "router": "rtr-2",
+      "service": "/serviceP14"
+    },
+    {
+      "router": "rtr-2",
+      "service": "/serviceP15"
+    },
+    {
+      "router": "rtr-2",
+      "service": "/serviceP16"
+    },
+    {
+      "router": "rtr-2",
+      "service": "/serviceP17"
+    },
+    {
+      "router": "rtr-2",
+      "service": "/serviceP18"
+    },
+    {
+      "router": "rtr-2",
+      "service": "/serviceP19"
+    },
+    {
+      "router": "rtr-2",
+      "service": "/serviceP20"
+    },
+    {
+      "router": "rtr-3",
+      "service": "/serviceP21"
+    },
+    {
+      "router": "user",
+      "service": "/consumer",
+      "workflowFile": "/home/cabeee/ndnSIM/scenario/workflows/20-sensor.json",
+      "dag": "dag1",
+      "start": 0,
+      "end": -1
+    }
+  ],
+  "dag": {
+    "dag1": {
+      "/sensor1": {
+        "/serviceP1": 0
+      },
+      "/sensor2": {
+        "/serviceP2": 0
+      },
+      "/sensor3": {
+        "/serviceP3": 0
+      },
+      "/sensor4": {
+        "/serviceP4": 0
+      },
+      "/sensor5": {
+        "/serviceP5": 0
+      },
+      "/sensor6": {
+        "/serviceP6": 0
+      },
+      "/sensor7": {
+        "/serviceP7": 0
+      },
+      "/sensor8": {
+        "/serviceP8": 0
+      },
+      "/sensor9": {
+        "/serviceP9": 0
+      },
+      "/sensor10": {
+        "/serviceP10": 0
+      },
+      "/sensor11": {
+        "/serviceP11": 0
+      },
+      "/sensor12": {
+        "/serviceP12": 0
+      },
+      "/sensor13": {
+        "/serviceP13": 0
+      },
+      "/sensor14": {
+        "/serviceP14": 0
+      },
+      "/sensor15": {
+        "/serviceP15": 0
+      },
+      "/sensor16": {
+        "/serviceP16": 0
+      },
+      "/sensor17": {
+        "/serviceP17": 0
+      },
+      "/sensor18": {
+        "/serviceP18": 0
+      },
+      "/sensor19": {
+        "/serviceP19": 0
+      },
+      "/sensor20": {
+        "/serviceP20": 0
+      },
+      "/serviceP1": {
+        "/serviceP21": 0
+      },
+      "/serviceP2": {
+        "/serviceP21": 1
+      },
+      "/serviceP3": {
+        "/serviceP21": 2
+      },
+      "/serviceP4": {
+        "/serviceP21": 3
+      },
+      "/serviceP5": {
+        "/serviceP21": 4
+      },
+      "/serviceP6": {
+        "/serviceP21": 5
+      },
+      "/serviceP7": {
+        "/serviceP21": 6
+      },
+      "/serviceP8": {
+        "/serviceP21": 7
+      },
+      "/serviceP9": {
+        "/serviceP21": 8
+      },
+      "/serviceP10": {
+        "/serviceP21": 9
+      },
+      "/serviceP11": {
+        "/serviceP21": 10
+      },
+      "/serviceP12": {
+        "/serviceP21": 11
+      },
+      "/serviceP13": {
+        "/serviceP21": 12
+      },
+      "/serviceP14": {
+        "/serviceP21": 13
+      },
+      "/serviceP15": {
+        "/serviceP21": 14
+      },
+      "/serviceP16": {
+        "/serviceP21": 15
+      },
+      "/serviceP17": {
+        "/serviceP21": 16
+      },
+      "/serviceP18": {
+        "/serviceP21": 17
+      },
+      "/serviceP19": {
+        "/serviceP21": 18
+      },
+      "/serviceP20": {
+        "/serviceP21": 19
+      },
+      "/serviceP21": {
+        "/consumer": 0
+      }
+    }
+  }
+}
