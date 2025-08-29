@@ -138,12 +138,15 @@ main(int argc, char* argv[])
         if (type == "producer") {
             appHelper = ndn::AppHelper("CustomAppProducer");
         } else if (type == "service") {
-            if (Prefix == "nesco" || Prefix == "nescoSCOPT")
+            if (Prefix == "nesco" || Prefix == "nescoSCOPT"){
                 appHelper = ndn::AppHelper("DagForwarderApp");
-            if (Prefix == "orchA")
+            }
+            if (Prefix == "orchA") {
                 appHelper = ndn::AppHelper("DagServiceA_App");
-            if (Prefix == "orchB")
+            }
+            if (Prefix == "orchB") {
                 appHelper = ndn::AppHelper("DagServiceB_App");
+            }
         } else if (type == "consumer") {
             //TODO: do we want to support having the DAG workflow in the scenario_file? Right now we just support it being in a separate file (workflowFile)
             std::string workflow_file = "";
@@ -155,22 +158,31 @@ main(int argc, char* argv[])
             }
             appHelper = ndn::AppHelper("CustomAppConsumer");
             appHelper.SetAttribute("Workflow", StringValue(workflow_file));
-            if (Prefix == "nesco" || Prefix == "nescoSCOPT")
-                    appHelper.SetAttribute("Orchestrate", UintegerValue(0));
-            if (Prefix == "orchA")
+            if (Prefix == "nesco" || Prefix == "nescoSCOPT") {
+                appHelper.SetAttribute("Orchestrate", UintegerValue(0));
+            }
+            if (Prefix == "orchA") {
                 appHelper.SetAttribute("Orchestrate", UintegerValue(1));
                 // now install the orchestrator
+                if (verbose) {
+                    std::cout << "Now installing orchestratorA in router " << (rtr_name) << ", starting at time: 0" << std::endl;
+                }
                 ndn::AppHelper orchestratorAppA("DagOrchestratorA_App");
                 orchestratorAppA.SetPrefix(Prefix);
                 orchestratorAppA.SetAttribute("Service", StringValue("serviceOrchestration"));
                 orchestratorAppA.Install(rtr_node).Start(Seconds(0));
-            if (Prefix == "orchB")
+            }
+            if (Prefix == "orchB") {
                 appHelper.SetAttribute("Orchestrate", UintegerValue(2));
                 // now install the orchestrator
+                if (verbose) {
+                    std::cout << "Now installing orchestratorB in router " << (rtr_name) << ", starting at time: 0" << std::endl;
+                }
                 ndn::AppHelper orchestratorAppB("DagOrchestratorB_App");
                 orchestratorAppB.SetPrefix(Prefix);
                 orchestratorAppB.SetAttribute("Service", StringValue("serviceOrchestration"));
                 orchestratorAppB.Install(rtr_node).Start(Seconds(0));
+            }
         } else if (type == "consumer2") {
             //TODO: do we want to support having the DAG workflow in the scenario_file? Right now we just support it being in a separate file (workflowFile)
             std::string workflow_file = "";
@@ -182,7 +194,31 @@ main(int argc, char* argv[])
             }
             appHelper = ndn::AppHelper("CustomAppConsumer2");
             appHelper.SetAttribute("Workflow", StringValue(workflow_file));
-            appHelper.SetAttribute("Orchestrate", UintegerValue(0)); //TODO: if we want to support orchestrator A or B, we must pass in the appropriate value - 1 for orchA or 2 for orchB.
+            if (Prefix == "nesco" || Prefix == "nescoSCOPT") {
+                appHelper.SetAttribute("Orchestrate", UintegerValue(0));
+            }
+            if (Prefix == "orchA") {
+                appHelper.SetAttribute("Orchestrate", UintegerValue(1));
+                // now install the orchestrator
+                if (verbose) {
+                    std::cout << "Now installing orchestratorA in router " << (rtr_name) << ", starting at time: 0" << std::endl;
+                }
+                ndn::AppHelper orchestratorAppA("DagOrchestratorA_App");
+                orchestratorAppA.SetPrefix(Prefix);
+                orchestratorAppA.SetAttribute("Service", StringValue("serviceOrchestration"));
+                orchestratorAppA.Install(rtr_node).Start(Seconds(0));
+            }
+            if (Prefix == "orchB") {
+                appHelper.SetAttribute("Orchestrate", UintegerValue(2));
+                // now install the orchestrator
+                if (verbose) {
+                    std::cout << "Now installing orchestratorB in router " << (rtr_name) << ", starting at time: 0" << std::endl;
+                }
+                ndn::AppHelper orchestratorAppB("DagOrchestratorB_App");
+                orchestratorAppB.SetPrefix(Prefix);
+                orchestratorAppB.SetAttribute("Service", StringValue("serviceOrchestration"));
+                orchestratorAppB.Install(rtr_node).Start(Seconds(0));
+            }
         } else {
             std::cerr << "Unknown service type '" << type << "'\n";
             std::exit(EXIT_FAILURE);
