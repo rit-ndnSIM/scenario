@@ -92,7 +92,7 @@ CustomAppConsumerServiceDiscovery::StartApplication()
 
 
   // Schedule send of first interest
-  Simulator::Schedule(Seconds(1.0), &CustomAppConsumerServiceDiscovery::SendInterest, this);
+  Simulator::Schedule(Seconds(1.0), &CustomAppConsumerServiceDiscovery::SendSDInterest, this);
   //Simulator::Schedule(Seconds(2.0), &CustomAppConsumerServiceDiscovery::SendInterest, this);
   //Simulator::Schedule(Seconds(3.0), &CustomAppConsumerServiceDiscovery::SendInterest, this);
   //Simulator::Schedule(Seconds(4.0), &CustomAppConsumerServiceDiscovery::SendInterest, this);
@@ -100,6 +100,7 @@ CustomAppConsumerServiceDiscovery::StartApplication()
   //Simulator::Schedule(Seconds(6.0), &CustomAppConsumerServiceDiscovery::SendInterest, this);
   //Simulator::Schedule(Seconds(7.0), &CustomAppConsumerServiceDiscovery::SendInterest, this);
   //Simulator::Schedule(Seconds(8.0), &CustomAppConsumerServiceDiscovery::SendInterest, this);
+  Simulator::Schedule(Seconds(5.0), &CustomAppConsumerServiceDiscovery::SendInterest, this); //TODO: this is just for testing, remove eventually. Replace with calling it from "onData"
 }
 
 // Processing when application is stopped
@@ -109,6 +110,173 @@ CustomAppConsumerServiceDiscovery::StopApplication()
   m_isRunning = false;
   // cleanup ndn::App
   ndn::App::StopApplication();
+}
+
+void
+CustomAppConsumerServiceDiscovery::SendSDInterest()
+{
+  if (!m_isRunning)
+  {
+    NS_LOG_DEBUG("Warning: trying to send Service Discovery interest while application is stopped!");
+    return;
+  }
+
+
+  /////////////////////////////////////
+  // Sending one Interest packet out //
+  /////////////////////////////////////
+
+  // Create and configure ndn::Interest
+  //auto interest = std::make_shared<ndn::Interest>("/prefix/sub");
+  auto interest = std::make_shared<ndn::Interest>(m_prefix); // this name is just a placeholder
+  Ptr<UniformRandomVariable> rand = CreateObject<UniformRandomVariable>();
+  interest->setNonce(rand->GetValue(0, std::numeric_limits<uint32_t>::max()));
+  interest->setInterestLifetime(ndn::time::seconds(540));
+  //interest->setMustBeFresh(true);
+
+  
+
+  std::ifstream f(m_dagPath);
+  json dagObject = json::parse(f);
+
+  // here we generate just the first interest(s) according to the workflow
+  // to do this, we must discover which services in the DAG are "sink" services (services which feed the end consumer)
+
+  std::string sinkService;
+  for (auto& x : dagObject["dag"].items())
+  {
+    for (auto& y : dagObject["dag"][x.key()].items())
+    {
+      if (y.key() == "/consumer")
+      {
+        sinkService = x.key();
+      }
+    }
+  }
+
+  m_SDstartTime = Simulator::Now();
+  // Convert to integer in milliseconds and then to string
+  int64_t SDstartTimeMS = m_SDstartTime.ToInteger(ns3::Time::MS);
+  std::stringstream ss_ms;
+  //ss_ms << SDstartTimeMS << " ms";
+  ss_ms << SDstartTimeMS;
+  std::string timeStringMS = ss_ms.str();
+  //std::cout << "SD Start Time in milliseconds: " << timeStringMS << std::endl;
+  dagObject["SDstartTimeMS"] = timeStringMS;
+
+
+  //std::cout << "Consumer: Full DAG as read: " << std::setw(2) << dagObject << '\n';
+  //std::cout << "Consumer: setting head to sinkService: " << sinkService << '\n';
+
+  if (m_orchestrate == 0) {
+    dagObject["head"] = sinkService;
+    //interest->setName(m_prefix.ndn::Name::toUri() + sinkService);
+    interest->setName(m_prefix.ndn::Name::toUri() + "/serviceDiscovery" + sinkService);
+
+    bool consumerFound = false;
+    // now we remove the entry that has the sinkService feeding the consumer. It is not needed, and can't be in the dag if we want caching of intermediate results to work.
+    for (auto& x : dagObject["dag"].items())
+    {
+      //std::cout << "Checking x.key: " << (std::string)x.key() << '\n';
+      for (auto& y : dagObject["dag"][x.key()].items())
+      {
+        //std::cout << "Checking y.key: " << (std::string)y.key() << '\n';
+        //if (y.key() == m_service.ndn::Name::toUri())
+        if (y.key() == "/consumer")
+        {
+          dagObject["dag"].erase(x.key());
+          consumerFound = true;
+          break;
+        }
+      }
+      if (consumerFound == true)
+        break;
+    }
+  }
+  else if (m_orchestrate == 1){ // orchestration method A
+    dagObject["head"] = "/serviceOrchestration";
+    interest->setName(m_prefix.ndn::Name::toUri() + "/serviceOrchestration");
+  }
+  else if (m_orchestrate == 2){ // orchestration method B
+    dagObject["head"] = "/serviceOrchestration/dag";
+    interest->setName(m_prefix.ndn::Name::toUri() + "/serviceOrchestration/dag");
+  }
+  else
+  {
+    NS_LOG_DEBUG("ERROR, this should not happen. m_orchestrate value set out of bounds!" << '\n');
+    return;
+  }
+
+
+  //std::cout << "Consumer: DAG as trimmed for first interest: " << std::setw(2) << dagObject << '\n';
+
+  std::string dagString = dagObject.dump();
+  // in order to convert from std::string to a char[] datatype we do the following (https://stackoverflow.com/questions/7352099/stdstring-to-char):
+  char *dagStringParameter = new char[dagString.length() + 1];
+  strcpy(dagStringParameter, dagString.c_str());
+
+  //std::string dagStringParameter = "head:service4,dagWorkflow:sensor>service1#service1>service2,service3#service2>service4#service3>service4,hash:0123456789ABCDEF";
+  //char dagStringParameter[] = "head:service4,dagWorkflow:sensor>service1#service1>service2,service3#service2>service4#service3>service4,hash:0123456789ABCDEF";
+  //std::string dagStringParameter = "abcdef";
+  //const uint8_t * buffer = (const uint8_t*)dagStringParameter;
+
+  //add dagStringParameter as custom parameter to interest packet
+  //const uint8_t * buffer = (const uint8_t*)&dagStringParameter;
+  //const uint8_t * buffer = NULL;
+  //size_t length = dagParameter.length();
+  size_t length = strlen(dagStringParameter);
+
+
+  //uint32_t type = ndn::tlv::ApplicationParameters;
+  //uint32_t type = 36;
+  //ndn::ConstBufferPtr value = buffer;
+  //ndn::Block appParamBlock = new ndn::Block(type, buffer);
+  //ndn::Block appParamBlock = new ndn::Block(type, buffer);
+
+  //ndn::Block appParamBlock = ndn::Encoder::BlockHelper::makeEmptyBlock(ndn::tlv::ApplicationParameters)
+  //ndn::Block appParamBlock = ndn::encoding::makeEmptyBlock(ndn::tlv::ApplicationParameters)
+  //ndn::Block appParamBlock = ndn::encoding::makeEmptyBlock(36);
+  //ndn::Block appParamBlock = ndn::encoding::makeStringBlock(36, "fred");
+  //ndn::Block appParamBlock = ndn::encoding::makeStringBlock(36, buffer);
+  //ndn::Block appParamBlock;
+  //auto appParamBlock = std::make_shared<ndn::Block>();
+
+
+  // the parameters are encoded as a TLV-Value!!!
+  //interest->setApplicationParameters(buffer, length);
+  interest->setApplicationParameters((const uint8_t *)dagStringParameter, length);
+  //interest->setApplicationParameters(appParamBlock);
+  //extract custom parameter from interest packet
+  //auto dagStringParameterFromInterest = interest.getApplicationParameters();
+
+
+  /*
+  // These interests are NOT signed. The SHA256 digest added by the application parameters is separate from a signature!
+  auto sigPresent = interest->isSigned();
+  NS_LOG_DEBUG("Consumer: Interest is signed: " << sigPresent);
+  auto dagSignatureInfo = interest->getSignatureInfo();
+  //NS_LOG_DEBUG("Consumer: Interest signature info after adding appParams: " << dagSignatureInfo);
+  if (dagSignatureInfo) {
+    auto dagSignatureType2 = dagSignatureInfo->getSignatureType();
+    NS_LOG_DEBUG("Consumer: Interest signature type after adding appParams: " << dagSignatureType2);
+  }
+  auto dagSignatureValue = interest->getSignatureValue();
+  NS_LOG_DEBUG("Consumer: Interest signature value after adding appParams: " << dagSignatureValue);
+  */
+
+
+  //NS_LOG_DEBUG("Consumer: Interest parameters being sent: " << dagStringParameter);
+  //auto dagParameterFromInterest = interest->getApplicationParameters();
+  //NS_LOG_DEBUG("Consumer: Interest parameters being sent: " << dagParameterFromInterest);
+
+
+  NS_LOG_DEBUG("Sending Interest packet for " << *interest);
+
+  // Call trace (for logging purposes)
+  m_transmittedInterests(interest, this, m_face);
+
+  m_appLink->onReceiveInterest(*interest);
+
 }
 
 void
@@ -393,22 +561,33 @@ CustomAppConsumerServiceDiscovery::OnData(std::shared_ptr<const ndn::Data> data)
 {
   NS_LOG_DEBUG("Receiving Data packet for " << data->getName());
 
-  std::cout << "\n\n      CONSUMER: DATA received for name " << data->getName() << std::endl << "\n\n";
 
-  ndn::Block myRxedBlock = data->getContent();
-  //std::cout << "\nCONSUMER: result = " << myRxedBlock << std::endl << "\n\n";
+  if (data->getName().ndn::Name::getPrefix(2).ndn::Name::toUri() == "/serviceDiscovery")
+  {
+    std::cout << "\n\n      CONSUMER: Service Discovery DATA received for name " << data->getName() << std::endl << "\n\n";
+  //TODO: IF this is an SD data packet, then begin the normal consumer workflow request (call CustomAppConsumerServiceDiscovery::SendInterest())
+  }
+  else
+  {
+  // else, it's the final workflow data packet, so just report the result and stop the simulation timer
 
-  uint8_t *pContent = (uint8_t *)(myRxedBlock.data()); // this points to the first byte, which is the TLV-TYPE (21 for data packet contet)
-  pContent++;  // now this points to the second byte, containing 253 (0xFD), meaning size (1024) is expressed with 2 octets
-  pContent++;  // now this points to the first size octet
-  pContent++;  // now this points to the second size octet
-  pContent++;  // now we are pointing at the first byte of the true content
-  std::cout << "\n  The final answer is: " <<  (int)(*pContent) << std::endl << "\n\n";
+    std::cout << "\n\n      CONSUMER: DATA received for name " << data->getName() << std::endl << "\n\n";
 
-  m_endTime = Simulator::Now();
-  Time serviceLatency = m_endTime - m_startTime;
-  std::cout << "\n  Service Latency: " <<  serviceLatency.GetMilliSeconds() << " milliseconds." << std::endl;
-  std::cout << "\n  Service Latency: " <<  serviceLatency.GetMicroSeconds() << " microseconds." << std::endl;
+    ndn::Block myRxedBlock = data->getContent();
+    //std::cout << "\nCONSUMER: result = " << myRxedBlock << std::endl << "\n\n";
+
+    uint8_t *pContent = (uint8_t *)(myRxedBlock.data()); // this points to the first byte, which is the TLV-TYPE (21 for data packet contet)
+    pContent++;  // now this points to the second byte, containing 253 (0xFD), meaning size (1024) is expressed with 2 octets
+    pContent++;  // now this points to the first size octet
+    pContent++;  // now this points to the second size octet
+    pContent++;  // now we are pointing at the first byte of the true content
+    std::cout << "\n  The final answer is: " <<  (int)(*pContent) << std::endl << "\n\n";
+
+    m_endTime = Simulator::Now();
+    Time serviceLatency = m_endTime - m_startTime;
+    std::cout << "\n  Service Latency: " <<  serviceLatency.GetMilliSeconds() << " milliseconds." << std::endl;
+    std::cout << "\n  Service Latency: " <<  serviceLatency.GetMicroSeconds() << " microseconds." << std::endl;
+  }
 
 }
 

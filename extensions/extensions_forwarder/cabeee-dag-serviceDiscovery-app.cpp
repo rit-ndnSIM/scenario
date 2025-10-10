@@ -76,8 +76,10 @@ DagServiceDiscoveryApp::StartApplication()
   ndn::App::StartApplication();
   m_isRunning = true;
 
-  m_name = m_prefix.ndn::Name::toUri() + m_service.ndn::Name::toUri();
+  m_name = m_prefix.ndn::Name::toUri() + "/serviceDiscovery" + m_service.ndn::Name::toUri();
   
+  NS_LOG_DEBUG("serviceDiscovery APP is performing AddRoute on name: " << m_name);
+
   // Add entry to FIB for `/prefix/sub`
   //ndn::FibHelper::AddRoute(GetNode(), "/prefix/sub", m_face, 0); //cabeee took this out, let the global router figure it out.
   ndn::FibHelper::AddRoute(GetNode(), m_name, m_face, 0);
@@ -126,7 +128,7 @@ DagServiceDiscoveryApp::SendInterest(const std::string& interestName, std::strin
   // Create and configure ndn::Interest
   //auto interest = std::make_shared<ndn::Interest>("/prefix/sub");
   //auto interest = std::make_shared<ndn::Interest>(m_name); // must take it in as an argument, not just use m_name!!
-  auto interest = std::make_shared<ndn::Interest>(m_prefix.ndn::Name::toUri() + interestName);
+  auto interest = std::make_shared<ndn::Interest>(m_prefix.ndn::Name::toUri() + "/serviceDiscovery" + interestName);
   Ptr<UniformRandomVariable> rand = CreateObject<UniformRandomVariable>();
   interest->setNonce(rand->GetValue(0, std::numeric_limits<uint32_t>::max()));
   interest->setInterestLifetime(ndn::time::seconds(10));
@@ -341,10 +343,11 @@ DagServiceDiscoveryApp::OnInterest(std::shared_ptr<const ndn::Interest> interest
   // create the tracking data structure using JSON
   json nullJson;
   ndn::Name simpleName;
-  simpleName = (interest->getName()).getPrefix(-1); // remove the last component of the name (the parameter digest) so we have just the raw name, and convert to Uri string
-  simpleName = simpleName.getSubName(1,1); // remove the zeroeth component of the name (/nesco). starting at component 1, keep 1 component
+  simpleName = (interest->getName()).getPrefix(-1); // remove the last component of the name (the parameter digest) so we have just the raw name
+  simpleName = simpleName.getSubName(2,1); // remove the zeroeth component of the name (/nesco), and the first component of the name (/serviceDiscovery). starting at component 2, keep 1 component
   //std::string rxedInterestName = (interest->getName()).getPrefix(-1).toUri(); // remove the last component of the name (the parameter digest) so we have just the raw name, and convert to Uri string
   std::string rxedInterestName = simpleName.toUri();
+  NS_LOG_DEBUG("ServiceDiscovery rxedInterestName -> simpleName: " << rxedInterestName << '\n');
   //std::cout << "ServiceDiscovery rxedInterestName: " << rxedInterestName << '\n';
   //m_dagServTracker[m_nameUri].push_back( json::object_t::value_type("inputsRxed", nullJson ) );
   //m_dagServTracker[rxedInterestName].push_back( json::object_t::value_type("inputsRxed", nullJson ) );
@@ -423,51 +426,96 @@ DagServiceDiscoveryApp::OnInterest(std::shared_ptr<const ndn::Interest> interest
   else // not dealing with a shortcut optimization interest
   {
 
-
-    for (auto& x : m_dagObject["dag"].items())
+    // TODO: don't hard-code this to just be /sensor. It needs to do this for ANY ROOT NODE!
+    // TODO: if there are no inputs (root service), or if we are hosting results for this pDAG, then generate data packet containing calculated EFT and current (tx) timestamp.
+    if (rxedInterestName == "/sensor")
     {
-      //std::cout << "Checking x.key: " << (std::string)x.key() << '\n';
-      for (auto& y : m_dagObject["dag"][x.key()].items())
+      m_nameAndDigest = interest->getName();   // store the name with digest so that we can later generate the data packet with the same name/digest!
+      auto new_data = std::make_shared<ndn::Data>(m_nameAndDigest);
+      new_data->setFreshnessPeriod(ndn::time::milliseconds(m_lowestFreshness));
+
+      //new_data->setContent(std::make_shared< ::ndn::Buffer>(1024));
+      unsigned char myBuffer[1024];
+
+      // TODO: instead of just writing a single value to the buffer, write the JSON data structure containing EFT and tx timestamp
+      // write to the buffer
+      myBuffer[0] = 5;
+      new_data->setContent(myBuffer, 1024);
+
+      ndn::StackHelper::getKeyChain().sign(*new_data);
+      NS_LOG_DEBUG("Sending Data packet for " << new_data->getName());
+      // Call trace (for logging purposes)
+      m_transmittedDatas(new_data, this, m_face);
+      m_appLink->onReceiveData(*new_data);
+    }
+    else
+    {
+
+
+      if (m_service.toUri() != dagObject["head"])
       {
-        //std::cout << "Checking y.key: " << (std::string)y.key() << '\n';
-        //if (y.key() == m_nameUri)
-        if (y.key() == rxedInterestName)
+        // Here we would determine which interfaces can be used to reach the named service, and generate a new interest for the name service out of each of the faces.
+        // we would also keep track of which ones have left, so that when data packets arrive, I can evaluate their EFTs. Once all have returned, generate data packet with lowest EFT.
+        // BUT ACTUALLY, WE CAN'T DO THIS HERE. WE NEED TO DO THIS IN THE NFD FORWARDER! This app will not be receiving these interests.
+        // THIS SHOULD NOT HAPPEN, REPORT AN ERROR. This APP should not receive an interest for a service that it's not hosting.
+        NS_LOG_DEBUG("SD APP ERROR!! This APP should not receive an interest for a service that it's not hosting. Interest name: " << interest->getName());
+      }
+      else
+      {
+        // TODO: we are hosting this service, so look at required inputs, and generate those interests using the pDAG but keep the original interest absolute start time.
+
+        // create data structure to keep track of which inputs have arrived. For now, we just create it. We mark them as received in "onData".
+        for (auto& x : m_dagObject["dag"].items())
         {
-          m_dagServTracker[(std::string)y.key()]["inputsRxed"][(std::string)x.key()] = 0;
-          //std::cout << "x.key is " << x.key() << ", and y.key is " << y.key() << '\n';
+          //std::cout << "Checking x.key: " << (std::string)x.key() << '\n';
+          for (auto& y : m_dagObject["dag"][x.key()].items())
+          {
+            //std::cout << "Checking y.key: " << (std::string)y.key() << '\n';
+            //if (y.key() == m_nameUri)
+            if (y.key() == rxedInterestName)
+            {
+              m_dagServTracker[(std::string)y.key()]["inputsRxed"][(std::string)x.key()] = 0; // initialize to 0, meaning this input has not been received yet.
+              m_dagServTracker[(std::string)y.key()]["EFT"][(std::string)x.key()] = -1; // initialize to -1, meaning it is an invalid EFT value that hasn't been calculated yet.
+              //std::cout << "x.key is " << x.key() << ", and y.key is " << y.key() << '\n';
 
-          m_vectorOfServiceInputs.push_back(0);             // for now, just create vector entries for the inputs, so that if they arrive out of order, we can insert at any index location
+              m_vectorOfServiceInputs.push_back(0);             // for now, just create vector entries for the inputs, so that if they arrive out of order, we can insert at any index location
+            }
+          }
         }
+        //std::cout << "ServiceDiscovery dagServTracker data structure: " << std::setw(2) << m_dagServTracker << '\n';
+        NS_LOG_DEBUG("\n\nServiceDiscovery dagServTracker data structure: " << std::setw(2) << m_dagServTracker << '\n');
+
+
+
+        // generate all the interests for required inputs
+        //for (auto& serviceInput : m_dagServTracker[(std::string)m_nameUri]["inputsRxed"].items())
+        for (auto& serviceInput : m_dagServTracker[(std::string)rxedInterestName]["inputsRxed"].items())
+        {
+          if (serviceInput.value() == 0)
+          {
+            // generate the interest for this input
+            std::string dagString = m_dagObject.dump();
+            NS_LOG_DEBUG("ServiceDiscovery generating interest for " << serviceInput.key() << '\n');
+            DagServiceDiscoveryApp::SendInterest(serviceInput.key(), dagString);
+          }
+        }
+
+
+
+        m_nameAndDigest = interest->getName();  // store the name with digest so that we can later generate the data packet with the same name/digest!
+                                                // TODO6: this has issues - we cannot use the same service in more than one location in the DAG workflow!
+                                                // for this, we would need to be able to store and retrieve unique interests and their digest (perhaps using a fully hierarchical name?)
+                                        // right now, this application only has one m_nameAndDigest private variable, and thus can only "store" one service instance.
+                                        // we could turn that variable into a list of ndn::Name variables, and add to the list for each instance of the service?
+                                    // we also have only one m_vectorOfServiceInputs[], so we would need a list of them, one for each version of the service.
+                                    // once a service is fullfilled, we should remove the list items for it to clean up.
+
+        //TODO: for now, I just force the single m_nameUri to be the same as the received interest name.
+        m_nameUri = rxedInterestName;
+
       }
+
     }
-    //std::cout << "ServiceDiscovery dagServTracker data structure: " << std::setw(2) << m_dagServTracker << '\n';
-
-
-
-    // generate all the interests for required inputs
-    //for (auto& serviceInput : m_dagServTracker[(std::string)m_nameUri]["inputsRxed"].items())
-    for (auto& serviceInput : m_dagServTracker[(std::string)rxedInterestName]["inputsRxed"].items())
-    {
-      if (serviceInput.value() == 0)
-      {
-        // generate the interest for this input
-        std::string dagString = m_dagObject.dump();
-        DagServiceDiscoveryApp::SendInterest(serviceInput.key(), dagString);
-      }
-    }
-
-
-
-    m_nameAndDigest = interest->getName();  // store the name with digest so that we can later generate the data packet with the same name/digest!
-                                            // TODO6: this has issues - we cannot use the same service in more than one location in the DAG workflow!
-                                            // for this, we would need to be able to store and retrieve unique interests and their digest (perhaps using a fully hierarchical name?)
-                                    // right now, this application only has one m_nameAndDigest private variable, and thus can only "store" one service instance.
-                                    // we could turn that variable into a list of ndn::Name variables, and add to the list for each instance of the service?
-                                // we also have only one m_vectorOfServiceInputs[], so we would need a list of them, one for each version of the service.
-                                // once a service is fullfilled, we should remove the list items for it to clean up.
-
-    //TODO: for now, I just force the single m_nameUri to be the same as the received interest name.
-    m_nameUri = rxedInterestName;
 
 
   }
@@ -503,10 +551,38 @@ DagServiceDiscoveryApp::OnData(std::shared_ptr<const ndn::Data> data)
   //std::cout << "content = " << data->getContent() << std::endl;
 
   ndn::Name simpleName;
-  simpleName = (data->getName()).getPrefix(-1); // remove the last component of the name (the parameter digest) so we have just the raw name, and convert to Uri string
-  simpleName = simpleName.getSubName(1); // remove the first component of the name (/nesco)
+  simpleName = (data->getName()).getPrefix(-1); // remove the last component of the name (the parameter digest) so we have just the raw name
+  simpleName = simpleName.getSubName(2); // remove the zeroth component of the name (/nesco), and the first component of the name (/serviceDiscovery)
   //std::string rxedDataName = (data->getName()).getPrefix(-1).toUri(); // remove the last component of the name (the parameter digest) so we have just the raw name
   std::string rxedDataName = simpleName.toUri();
+
+
+  //NS_LOG_DEBUG("\n\nServiceDiscovery rxedDataName is " << rxedDataName);
+  //NS_LOG_DEBUG("\n\nServiceDiscovery m_nameUri is " << m_nameUri);
+
+
+  // TODO: read data packet and extract EFT and tx timestamp. Calculate link delay for this pDAG out of this face. Calculate new EFT.
+
+  // TODO: if we are hosting the service, 
+    // TODO: if the hosted service needs several inputs, use the maximum (latest) of all required inputs.
+    // TODO: if ALL SD inputs have been received, then 
+    // TODO: determine how long it will take this node to execute the service, and add to the EFT. Then
+    // TODO: generate new data packet downstream with the calculated EFT and TX timestamp
+
+  // TODO: else, we're not hosting a service, so we are just a node that reproduced an SD interest
+    // TODO: THIS SHOULD LIKELY BE IN THE NFD FORWARDER, not here. ALL INTERESTS NEED TO BE ANALYZED, not just the ones for the services we are hosting!
+    // TODO: In NFD, look at all outgoing faces, and keep track of which interests have left, and which data packets have arrived, and calculate EFT, similar to APP above.  
+    // TODO: Will need a data structure like in the forwarder APP
+
+
+
+    // TODO: store the calculated EFT.
+
+
+
+
+
+  // TODO: below is the old service functionality
 
 
   // TODO: this is a HACK. I need a better way to get to the first byte of the content. Right now, I'm just incrementing the pointer past the TLV type, and size.
@@ -536,6 +612,8 @@ DagServiceDiscoveryApp::OnData(std::shared_ptr<const ndn::Data> data)
   NS_LOG_DEBUG("Interest parameter head: " << dagObject["head"] << ", m_name attribute: " << m_name.ndn::Name::toUri());
   std::string head = dagObject["head"];
   */
+
+  //NS_LOG_DEBUG("\n\nServiceDiscovery storing received data in m_vectorOfServiceInputs....");
 
   ndn::time::milliseconds data_freshnessPeriod = data->getFreshnessPeriod();
   if (data_freshnessPeriod < m_lowestFreshness) {
@@ -571,6 +649,7 @@ DagServiceDiscoveryApp::OnData(std::shared_ptr<const ndn::Data> data)
   m_dagServTracker[m_nameUri]["inputsRxed"][rxedDataName] = 1;
   //m_dagServTracker[head]["inputsRxed"][rxedDataName] = 1;
   //std::cout << "ServiceDiscovery dagServTracker data structure: " << std::setw(2) << m_dagServTracker << '\n';
+  NS_LOG_DEBUG("\n\nServiceDiscovery dagServTracker data structure: " << std::setw(2) << m_dagServTracker << '\n');
 
   // we have to check if we have received all necessary inputs for this instance of the hosted service!
   //      if so, run the service below and generate new data packet to go downstream.

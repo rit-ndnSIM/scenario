@@ -15,9 +15,11 @@ clear
 set -e
 
 LOGS=CustomAppConsumer
+LOGS=$LOGS:CustomAppConsumerServiceDiscovery
 LOGS=$LOGS:CustomAppConsumer2
 LOGS=$LOGS:CustomAppProducer
 LOGS=$LOGS:DagForwarderApp
+LOGS=$LOGS:DagServiceDiscoveryApp
 LOGS=$LOGS:ndn.App
 LOGS=$LOGS:DagOrchestratorA_App
 LOGS=$LOGS:DagServiceA_App

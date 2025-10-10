@@ -65,6 +65,8 @@ public:
 private:
   void
   SendInterest();
+  void
+  SendSDInterest();
   
 private:
   bool m_isRunning;
@@ -72,6 +74,7 @@ private:
   ndn::Name m_service;
   uint16_t m_orchestrate;
   std::string m_dagPath;
+  Time m_SDstartTime;
   Time m_startTime;
   Time m_endTime;
 };

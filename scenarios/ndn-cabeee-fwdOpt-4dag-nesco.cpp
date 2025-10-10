@@ -83,17 +83,17 @@ main(int argc, char* argv[])
   Ptr<Node> router3 = Names::Find<Node>("rtr-3");
   Ptr<Node> consumer = Names::Find<Node>("user");
 
-  ndnHelper.setCsSize(0); // disable content store
+  ndnHelper.setCsSize(100); // content store size (0 disables it)
   ndnHelper.Install(producer);
 
-  ndnHelper.setCsSize(100); // enable/disable content store
+  ndnHelper.setCsSize(100); // content store size (0 disables it)
   ndnHelper.Install(router1);
-  ndnHelper.setCsSize(0); // enable/disable content store
+  ndnHelper.setCsSize(0); // content store size (0 disables it)
   ndnHelper.Install(router2);
   ndnHelper.Install(router3);
 
 
-  ndnHelper.setCsSize(0); // disable content store
+  ndnHelper.setCsSize(0); // content store size (0 disables it)
   ndnHelper.Install(consumer);
 
 
@@ -110,7 +110,14 @@ main(int argc, char* argv[])
   ndn::StrategyChoiceHelper::InstallAll(Prefix + "/service1", "/localhost/nfd/strategy/best-route");
   ndn::StrategyChoiceHelper::InstallAll(Prefix + "/sensor", "/localhost/nfd/strategy/best-route");
 
-  ndn::StrategyChoiceHelper::InstallAll(Prefix + "/serviceDiscovery", "/localhost/nfd/strategy/multicast");
+  //ndn::StrategyChoiceHelper::InstallAll(Prefix + "/serviceDiscovery", "/localhost/nfd/strategy/multicast");
+  ndn::StrategyChoiceHelper::InstallAll(Prefix + "/serviceDiscovery", "/localhost/nfd/strategy/best-route");
+
+  //ndn::StrategyChoiceHelper::InstallAll(Prefix + "/service4/serviceDiscovery", "/localhost/nfd/strategy/multicast"); these are no longer in this order. Now we do /serviceDiscovery/serviceX
+  //ndn::StrategyChoiceHelper::InstallAll(Prefix + "/service3/serviceDiscovery", "/localhost/nfd/strategy/multicast"); these are no longer in this order. Now we do /serviceDiscovery/serviceX
+  //ndn::StrategyChoiceHelper::InstallAll(Prefix + "/service2/serviceDiscovery", "/localhost/nfd/strategy/multicast"); these are no longer in this order. Now we do /serviceDiscovery/serviceX
+  //ndn::StrategyChoiceHelper::InstallAll(Prefix + "/service1/serviceDiscovery", "/localhost/nfd/strategy/multicast"); these are no longer in this order. Now we do /serviceDiscovery/serviceX
+  //ndn::StrategyChoiceHelper::InstallAll(Prefix + "/sensor/serviceDiscovery", "/localhost/nfd/strategy/multicast"); these are no longer in this order. Now we do /serviceDiscovery/serviceX
 
   //ndn::StrategyChoiceHelper::InstallAll(Prefix + "/service4", "/localhost/nfd/strategy/multicast");
   //ndn::StrategyChoiceHelper::InstallAll(Prefix + "/service3", "/localhost/nfd/strategy/multicast");
@@ -159,13 +166,21 @@ main(int argc, char* argv[])
   ndn::AppHelper serviceDiscoveryApp("DagServiceDiscoveryApp");
   serviceDiscoveryApp.SetPrefix(Prefix);
 
-  serviceDiscoveryApp.SetAttribute("Service", StringValue("serviceDiscovery"));
+  serviceDiscoveryApp.SetAttribute("Service", StringValue("sensor"));
   serviceDiscoveryApp.Install(producer).Start(Seconds(0));
+  serviceDiscoveryApp.SetAttribute("Service", StringValue("service1"));
+  serviceDiscoveryApp.Install(producer).Start(Seconds(0));
+  serviceDiscoveryApp.Install(router3).Start(Seconds(0));
+  serviceDiscoveryApp.SetAttribute("Service", StringValue("service2"));
+  serviceDiscoveryApp.Install(router1).Start(Seconds(0));
+  serviceDiscoveryApp.SetAttribute("Service", StringValue("service3"));
   serviceDiscoveryApp.Install(router1).Start(Seconds(0));
   serviceDiscoveryApp.Install(router2).Start(Seconds(0));
-  serviceDiscoveryApp.Install(router3).Start(Seconds(0));
+  serviceDiscoveryApp.SetAttribute("Service", StringValue("service4"));
+  serviceDiscoveryApp.Install(router2).Start(Seconds(0));
 
   // Custom App for User(Consumer)
+  //ndn::AppHelper userApp("CustomAppConsumer");
   ndn::AppHelper userApp("CustomAppConsumerServiceDiscovery");
   userApp.SetPrefix(Prefix);
 
@@ -183,6 +198,14 @@ main(int argc, char* argv[])
   ndnGlobalRoutingHelper.AddOrigins(Prefix + "/service3", router1);
   ndnGlobalRoutingHelper.AddOrigins(Prefix + "/service3", router2);
   ndnGlobalRoutingHelper.AddOrigins(Prefix + "/service4", router2);
+
+  ndnGlobalRoutingHelper.AddOrigins(Prefix + "/serviceDiscovery/sensor", producer);
+  ndnGlobalRoutingHelper.AddOrigins(Prefix + "/serviceDiscovery/service1", producer);
+  ndnGlobalRoutingHelper.AddOrigins(Prefix + "/serviceDiscovery/service1", router3);
+  ndnGlobalRoutingHelper.AddOrigins(Prefix + "/serviceDiscovery/service2", router1);
+  ndnGlobalRoutingHelper.AddOrigins(Prefix + "/serviceDiscovery/service3", router1);
+  ndnGlobalRoutingHelper.AddOrigins(Prefix + "/serviceDiscovery/service3", router2);
+  ndnGlobalRoutingHelper.AddOrigins(Prefix + "/serviceDiscovery/service4", router2);
 
 
 
@@ -206,10 +229,10 @@ main(int argc, char* argv[])
   Config::ConnectWithoutContext("/NodeList/*/DeviceList/*/$ns3::PointToPointNetDevice/MacTx",
                                 MakeCallback(&PcapWriter::TracePacket, &trace));
 
-  Simulator::Stop(Seconds(1.1));
+  Simulator::Stop(Seconds(6.1));
 
-  ndn::L3RateTracer::InstallAll("rate-trace_cabeee-4dag.txt", Seconds(0.0005));
-  ndn::CsTracer::InstallAll("cs-trace_cabeee-4dag.txt", Seconds(0.0005));
+  ndn::L3RateTracer::InstallAll("rate-trace_cabeee-fwdOpt-4dag.txt", Seconds(0.0005));
+  ndn::CsTracer::InstallAll("cs-trace_cabeee-fwdOpt-4dag.txt", Seconds(0.0005));
 
   Simulator::Run();
   Simulator::Destroy();
