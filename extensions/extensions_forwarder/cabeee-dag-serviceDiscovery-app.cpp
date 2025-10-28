@@ -78,7 +78,7 @@ DagServiceDiscoveryApp::StartApplication()
 
   m_name = m_prefix.ndn::Name::toUri() + "/serviceDiscovery" + m_service.ndn::Name::toUri();
   
-  NS_LOG_DEBUG("serviceDiscovery APP is performing AddRoute on name: " << m_name);
+  NS_LOG_DEBUG("serviceDiscoveryAPP is performing AddRoute on name: " << m_name);
 
   // Add entry to FIB for `/prefix/sub`
   //ndn::FibHelper::AddRoute(GetNode(), "/prefix/sub", m_face, 0); //cabeee took this out, let the global router figure it out.
@@ -91,8 +91,6 @@ DagServiceDiscoveryApp::StartApplication()
 
   m_nameUri = m_service.ndn::Name::toUri();
 
-  //m_inputTotal = 0;
-  //m_numRxedInputs = 0;
 
   m_lowestFreshness = ndn::time::milliseconds(100000); // set to a high value (I know no producer freshness value is higher than 100 seconds)
 
@@ -111,44 +109,13 @@ DagServiceDiscoveryApp::StopApplication()
 
 
 
-
-void
-DagServiceDiscoveryApp::SendInterest(const std::string& interestName, std::string dagString)
+std::string
+DagServiceDiscoveryApp::PruneDagWorkflow(const std::string& interestName, std::string dagString)
 {
-  if (!m_isRunning)
-  {
-    NS_LOG_DEBUG("Warning: trying to send interest while application is stopped!");
-    return;
-  }
 
-  /////////////////////////////////////
-  // Sending one Interest packet out //
-  /////////////////////////////////////
-
-  // Create and configure ndn::Interest
-  //auto interest = std::make_shared<ndn::Interest>("/prefix/sub");
-  //auto interest = std::make_shared<ndn::Interest>(m_name); // must take it in as an argument, not just use m_name!!
-  auto interest = std::make_shared<ndn::Interest>(m_prefix.ndn::Name::toUri() + "/serviceDiscovery" + interestName);
-  Ptr<UniformRandomVariable> rand = CreateObject<UniformRandomVariable>();
-  interest->setNonce(rand->GetValue(0, std::numeric_limits<uint32_t>::max()));
-  interest->setInterestLifetime(ndn::time::seconds(10));
-  interest->setMustBeFresh(true);
-
-
-
-  // overwrite the dag parameter "head" value and generate new application parameters (thus calculating new sha256 digest)
-  //std::string dagString = std::string(reinterpret_cast<const char*>(dagParameter.value()), dagParameter.value_size());
   auto dagObject = json::parse(dagString);
 
-
-
-  //std::cout << "\n\n\n\n\n\n\n\n\n\n\n\nStarting new SendInterest for " << interestName << '\n';
-  //std::cout << "Full DAG as received: " << std::setw(2) << dagObject << '\n';
-
-
-
-  // we PRUNE the DAG workflow to not include anything further downstream than this service,
-  // so that when caching is implemented, we can reuse intermediate results for other DAG workflows which use portions of the current DAG.
+  // we PRUNE the DAG workflow to not include anything further downstream than this service
 
   // start by removing the head service received from downstream
   //std::cout << "DAG before erasing head: " << std::setw(2) << dagObject << '\n';
@@ -260,23 +227,46 @@ DagServiceDiscoveryApp::SendInterest(const std::string& interestName, std::strin
   
 
   dagObject["head"] = interestName;
-  //std::cout << "Pruned DAG with new head name: " << std::setw(2) << dagObject << '\n';
+
   std::string updatedDagString = dagObject.dump();
+
+  return updatedDagString;
+
+
+}
+
+
+
+void
+DagServiceDiscoveryApp::SendInterest(const std::string& interestName, std::string dagString)
+{
+  if (!m_isRunning)
+  {
+    NS_LOG_DEBUG("Warning: trying to send interest while application is stopped!");
+    return;
+  }
+
+  /////////////////////////////////////
+  // Sending one Interest packet out //
+  /////////////////////////////////////
+
+  // Create and configure ndn::Interest
+  //auto interest = std::make_shared<ndn::Interest>("/prefix/sub");
+  //auto interest = std::make_shared<ndn::Interest>(m_name); // must take it in as an argument, not just use m_name!!
+  auto interest = std::make_shared<ndn::Interest>(m_prefix.ndn::Name::toUri() + "/serviceDiscovery" + interestName);
+  Ptr<UniformRandomVariable> rand = CreateObject<UniformRandomVariable>();
+  interest->setNonce(rand->GetValue(0, std::numeric_limits<uint32_t>::max()));
+  interest->setInterestLifetime(ndn::time::seconds(10));
+  interest->setMustBeFresh(true);
+
   // in order to convert from std::string to a char[] datatype we do the following (https://stackoverflow.com/questions/7352099/stdstring-to-char):
-  char *dagStringParameter = new char[updatedDagString.length() + 1];
-  strcpy(dagStringParameter, updatedDagString.c_str());
+  char *dagStringParameter = new char[dagString.length() + 1];
+  strcpy(dagStringParameter, dagString.c_str());
   size_t length = strlen(dagStringParameter);
-
-
-
-  //add DAG workflow as a parameter to the new interest
-  //interest->setApplicationParameters(dagParameter);
   //add modified DAG workflow as a parameter to the new interest
   interest->setApplicationParameters((const uint8_t *)dagStringParameter, length);
 
-
-
-  NS_LOG_DEBUG("ServiceDiscovery: Sending Interest packet for " << *interest);
+  NS_LOG_DEBUG("ServiceDiscoveryAPP: Sending Interest packet for " << *interest);
 
   // Call trace (for logging purposes)
   m_transmittedInterests(interest, this, m_face);
@@ -297,68 +287,46 @@ DagServiceDiscoveryApp::OnInterest(std::shared_ptr<const ndn::Interest> interest
   ndn::App::OnInterest(interest);
 
 
-  NS_LOG_DEBUG("Received Interest packet for " << interest->getName());
-  //NS_LOG_DEBUG("Received on node hosting service " << m_service);
-
-  
-
+  NS_LOG_DEBUG("ServiceDiscoveryAPP Received Interest packet for " << interest->getName());
 
   // decode the DAG string contained in the application parameters, so we can generate the new interest(s)
   //extract custom parameter from interest packet
   auto dagParameterFromInterest = interest->getApplicationParameters();
-  //std::string dagString = ndn::encoding::readString(dagParameterFromInterest);
   std::string dagString = std::string(reinterpret_cast<const char*>(dagParameterFromInterest.value()), dagParameterFromInterest.value_size());
-  //std::string dagString = ndn::lp::DecodeHelper();
-  //auto dagBuffer = dagParameterFromInterest.ndn::Block::getBuffer();
-  //auto dagValue = dagParameterFromInterest.ndn::Block::value();
-  ////NS_LOG_DEBUG("Interest parameters received: " << dagParameterFromInterest);
-  //NS_LOG_DEBUG("Interest parameters received as string: " << dagString);
-  ////NS_LOG_DEBUG("Interest parameters received as value: " << dagValue);
-
-
-
-  //bool dagParameterDigestValid = interest->isParametersDigestValid();
-  //NS_LOG_DEBUG("Fwd: Interest parameter digest is valid: " << dagParameterDigestValid);
-
-  //bool dagParameterPresent = interest->hasApplicationParameters();
-  //NS_LOG_DEBUG("Fwd: Interest parameters presesnt: " << dagParameterPresent);
 
 
   // read the dag parameters and figure out which interests to generate next. Change the dagParameters accordingly (head will be different)
   json dagObject = json::parse(dagString);
-  //NS_LOG_DEBUG("Interest parameter head: " << dagObject["head"] << ", m_name attribute: " << m_name.ndn::Name::toUri());
-  //if (dagObject["head"] != m_name.ndn::Name::toUri())
-  //{
-    //NS_LOG_DEBUG("ServiceDiscovery app ERROR: received interest with DAG head different than m_name attribute for this service.");
-    //NS_LOG_DEBUG("Interest parameter head: " << dagObject["head"] << ", m_name attribute: " << m_name.ndn::Name::toUri());
-  //}
-  //NS_LOG_DEBUG("Interest parameter number of services: " << dagObject["dag"].size());
-  //NS_LOG_DEBUG("Interest parameter sensor feeds " << (dagObject["dag"]["/sensor"].size()) << " services: " << dagObject["dag"]["/sensor"]);
-  //NS_LOG_DEBUG("Interest parameter s1 feeds " << (dagObject["dag"]["/S1"].size()) << " services: " << dagObject["dag"]["/S1"]);
 
-  //std::cout << "Full DAG as received: " << std::setw(2) << m_dagObject << '\n';
-  NS_LOG_DEBUG("\n\nFull DAG as received: " << std::setw(2) << dagObject << '\n');
+
+  //NS_LOG_DEBUG("\n\nServiceDiscoveryAPP - Full DAG as received: " << std::setw(2) << dagObject << '\n');
 
 
   // create the tracking data structure using JSON
-  json nullJson;
   ndn::Name simpleName;
-  simpleName = (interest->getName()).getPrefix(-1); // remove the last component of the name (the parameter digest) so we have just the raw name
-  simpleName = simpleName.getSubName(2,1); // remove the zeroeth component of the name (/nesco), and the first component of the name (/serviceDiscovery). starting at component 2, keep 1 component
-  //std::string rxedInterestName = (interest->getName()).getPrefix(-1).toUri(); // remove the last component of the name (the parameter digest) so we have just the raw name, and convert to Uri string
-  std::string rxedInterestName = simpleName.toUri();
-  NS_LOG_DEBUG("ServiceDiscovery rxedInterestName -> simpleName: " << rxedInterestName << '\n');
-  //std::cout << "ServiceDiscovery rxedInterestName: " << rxedInterestName << '\n';
-  //m_dagServTracker[m_nameUri].push_back( json::object_t::value_type("inputsRxed", nullJson ) );
-  //m_dagServTracker[rxedInterestName].push_back( json::object_t::value_type("inputsRxed", nullJson ) );
+  ndn::Name simpleNameAndHash;
+  ndn::Name fullNameAndHash;
+
+  simpleName        = (interest->getName()).getPrefix(-1); // remove the last component of the name (the parameter digest) so we have just the raw name
+  simpleNameAndHash = interest->getName();
+  fullNameAndHash   = interest->getName();
+
+  simpleName        = simpleName.getSubName(2,1); // remove the zeroeth component of the name (/nesco), and the first component of the name (/serviceDiscovery). starting at component 2, keep 1 component
+  simpleNameAndHash = simpleNameAndHash.getSubName(2,simpleNameAndHash.size()); // remove the zeroeth component of the name (/nesco), and the first component of the name (/serviceDiscovery). starting at component 2, keep the rest of the components, including the application parameter hash
+  fullNameAndHash   = fullNameAndHash.getSubName(0,fullNameAndHash.size()); // remove the zeroeth component of the name (/nesco), and the first component of the name (/serviceDiscovery). starting at component 0, keep the rest of the components, including the application parameter hash
+
+  std::string rxedInterestName        = simpleName.toUri();
+  std::string rxedInterestNameAndHash = simpleNameAndHash.toUri();
+  std::string rxedInterestFullNameAndHash = fullNameAndHash.toUri();
+
+  //NS_LOG_DEBUG("ServiceDiscoveryAPP rxedInterestName -> simpleName: " << rxedInterestName << '\n');
+  //NS_LOG_DEBUG("ServiceDiscoveryAPP rxedInterestNameAndHash: " << rxedInterestNameAndHash << '\n');
+  //NS_LOG_DEBUG("ServiceDiscoveryAPP rxedInterestFullNameAndHash: " << rxedInterestFullNameAndHash << '\n');
 
 
+  // We add prevHash to dagObject so that generated interests are unique
+  dagObject["prevHash"] = rxedInterestNameAndHash; // to keep the historical path of where interests have been, so they are all unique!
 
-  if (m_dagObject.empty() && m_service.toUri() == dagObject["head"])
-  {
-    // store the m_dagObject that we will use for regular forwarding (not for shortcut optimization)
-    m_dagObject = json::parse(dagString);
-  }
 
 
   // generate interests for inputs into hosted services early (shortcut optimization to parallelize workflow)
@@ -369,7 +337,7 @@ DagServiceDiscoveryApp::OnInterest(std::shared_ptr<const ndn::Interest> interest
       // only if we haven't already received a request for the service
       if (m_dagServTracker.empty()) // if we haven't generated an interest for this service, the dagServTracker will be empty
       {
-        NS_LOG_DEBUG("\n\nshortcutOPT: We are hosting service " << m_service.toUri() << ", looking for this service in the DAG!" << std::endl);
+        //NS_LOG_DEBUG("\n\nshortcutOPT: We are hosting service " << m_service.toUri() << ", looking for this service in the DAG!" << std::endl);
         for (auto& x : dagObject["dag"].items())
         {
           //std::cout << "Checking x.key: " << (std::string)x.key() << '\n';
@@ -385,13 +353,12 @@ DagServiceDiscoveryApp::OnInterest(std::shared_ptr<const ndn::Interest> interest
               //std::cout << "ServiceDiscovery dagServTracker data structure after: " << std::setw(2) << m_dagServTracker << '\n';
               //std::cout << "x.key is " << x.key() << ", and y.key is " << y.key() << '\n';
 
-              m_vectorOfServiceInputs.push_back(0);             // for now, just create vector entries for the inputs, so that if they arrive out of order, we can insert at any index location
+              //m_vectorOfServiceInputs.push_back(0);             // for now, just create vector entries for the inputs, so that if they arrive out of order, we can insert at any index location
             }
           }
         }
         //std::cout << "ServiceDiscovery dagServTracker data structure: " << std::setw(2) << m_dagServTracker << '\n';
-
-        NS_LOG_DEBUG("\n\nshortcutOPT: Generarating all interests for required inputs..." << '\n');
+        //NS_LOG_DEBUG("\n\nshortcutOPT: Generarating all interests for required inputs..." << '\n');
         // generate all the interests for required inputs
         //for (auto& serviceInput : m_dagServTracker[(std::string)m_nameUri]["inputsRxed"].items())
         for (auto& serviceInput : m_dagServTracker[(std::string)m_service.toUri()]["inputsRxed"].items())
@@ -400,11 +367,10 @@ DagServiceDiscoveryApp::OnInterest(std::shared_ptr<const ndn::Interest> interest
           {
             // generate the interest for this input, sendInterest will prune the DAG and set the head properly
             std::string dagString = dagObject.dump();
-            NS_LOG_DEBUG("\n\nshortcutOPT: Generating interest for " << serviceInput.key() << '\n');
+            //NS_LOG_DEBUG("\n\nshortcutOPT: Generating interest for " << serviceInput.key() << '\n');
             DagServiceDiscoveryApp::SendInterest(serviceInput.key(), dagString);
           }
         }
-
         m_nameAndDigest = interest->getName();   // store the name with digest so that we can later generate the data packet with the same name/digest!
                                                 // TODO6: this has issues - we cannot use the same service in more than one location in the DAG workflow!
                                                 // for this, we would need to be able to store and retrieve unique interests and their digest (perhaps using a fully hierarchical name?)
@@ -412,38 +378,58 @@ DagServiceDiscoveryApp::OnInterest(std::shared_ptr<const ndn::Interest> interest
                                         // we could turn that variable into a list of ndn::Name variables, and add to the list for each instance of the service?
                                     // we also have only one m_vectorOfServiceInputs[], so we would need a list of them, one for each version of the service.
                                     // once a service is fullfilled, we should remove the list items for it to clean up.
-
         //TODO: for now, I just force the single m_nameUri to be the same as the received interest name.
         m_nameUri = m_service.toUri();
       }
     }
-    //else
-    //{
-      //  std::cout << "   m_service is the same as dag head, dropping this interest." << std::endl;
-    //}
   }
+
+
 
   else // not dealing with a shortcut optimization interest
   {
 
-    // TODO: don't hard-code this to just be /sensor. It needs to do this for ANY ROOT NODE!
-    // TODO: if there are no inputs (root service), or if we are hosting results for this pDAG, then generate data packet containing calculated EFT and current (tx) timestamp.
-    if (rxedInterestName == "/sensor")
+    // if there are no inputs to this service (root service), or if we are hosting results for this pDAG, then generate data packet containing calculated EFT and current (tx) timestamp.
+    //if (rxedInterestName == "/sensor") // don't hard-code this to just be /sensor. It needs to do this for ANY ROOT NODE!
+    //if ((std::find(listOfRootServices.begin(), listOfRootServices.end(), rxedInterestName) != listOfRootServices.end())) // if rxedInterestName exists in listOfRootServices
+    if (dagObject["dag"].empty()) // ROOT NODE!
     {
+      NS_LOG_DEBUG("ServiceDiscoveryAPP Interest received for root service: " << rxedInterestName << ", generating data packet!");
       m_nameAndDigest = interest->getName();   // store the name with digest so that we can later generate the data packet with the same name/digest!
       auto new_data = std::make_shared<ndn::Data>(m_nameAndDigest);
       new_data->setFreshnessPeriod(ndn::time::milliseconds(m_lowestFreshness));
 
       //new_data->setContent(std::make_shared< ::ndn::Buffer>(1024));
       unsigned char myBuffer[1024];
+      json dataPacketContents;
+      Time timeNow;
+      timeNow = Simulator::Now();
+      // Convert to integer in milliseconds and then to string
+      int64_t timeNowNS = timeNow.ToInteger(ns3::Time::NS);
+      std::string timeStringNS = std::to_string(timeNowNS);
+      dataPacketContents["EFT"] = timeNowNS;
+      dataPacketContents["txTime"] = timeNowNS;
+      //NS_LOG_DEBUG("timeStringNS = " << timeStringNS);
 
-      // TODO: instead of just writing a single value to the buffer, write the JSON data structure containing EFT and tx timestamp
-      // write to the buffer
-      myBuffer[0] = 5;
-      new_data->setContent(myBuffer, 1024);
+      std::string dataPacketString = dataPacketContents.dump();
+
+      // instead of just writing a single value to the buffer, now we write the JSON data structure containing EFT and tx timestamp
+      // write to the buffer, after making sure it's big enough
+      if (strlen(dataPacketString.c_str())+1 > 1024) // string length plus NULL terminating character
+      {
+        NS_LOG_DEBUG("SD APP ERROR!! The data packet size is larger than 1024!!!");
+      }
+      //else
+      //{
+        //NS_LOG_DEBUG("The data packet size using strlen+1 is " << strlen(dataPacketString.c_str())+1);
+        //NS_LOG_DEBUG("The data packet size using length+1 operator is " << dataPacketString.length()+1);
+      //}
+      memcpy(myBuffer, dataPacketString.c_str(), strlen(dataPacketString.c_str())+1);
+      //new_data->setContent(myBuffer, 1024); // make the data always 1024 bytes long
+      new_data->setContent(myBuffer, strlen(dataPacketString.c_str())+1); // make the data just big enough to fit the json object
 
       ndn::StackHelper::getKeyChain().sign(*new_data);
-      NS_LOG_DEBUG("Sending Data packet for " << new_data->getName());
+      NS_LOG_DEBUG("ServiceDiscoveryAPP Sending Data packet for " << new_data->getName());
       // Call trace (for logging purposes)
       m_transmittedDatas(new_data, this, m_face);
       m_appLink->onReceiveData(*new_data);
@@ -462,45 +448,58 @@ DagServiceDiscoveryApp::OnInterest(std::shared_ptr<const ndn::Interest> interest
       }
       else
       {
-        // TODO: we are hosting this service, so look at required inputs, and generate those interests using the pDAG but keep the original interest absolute start time.
+        // we are hosting this service, so look at required inputs, and generate those interests using the pDAG but keep the original interest absolute start time.
 
-        // create data structure to keep track of which inputs have arrived. For now, we just create it. We mark them as received in "onData".
-        for (auto& x : m_dagObject["dag"].items())
+        // create data structure to keep track of which inputs have arrived. For now, we just create it. We mark them as received in "onData() below".
+        for (auto& x : dagObject["dag"].items())
         {
           //std::cout << "Checking x.key: " << (std::string)x.key() << '\n';
-          for (auto& y : m_dagObject["dag"][x.key()].items())
+          for (auto& y : dagObject["dag"][x.key()].items())
           {
             //std::cout << "Checking y.key: " << (std::string)y.key() << '\n';
             //if (y.key() == m_nameUri)
             if (y.key() == rxedInterestName)
             {
-              m_dagServTracker[(std::string)y.key()]["inputsRxed"][(std::string)x.key()] = 0; // initialize to 0, meaning this input has not been received yet.
-              m_dagServTracker[(std::string)y.key()]["EFT"][(std::string)x.key()] = -1; // initialize to -1, meaning it is an invalid EFT value that hasn't been calculated yet.
+              std::string updatedDagString = dagObject.dump();
+
+              // prune the workflow here, so that the hash we create is the real one that we use when sending the interest out. Prunning also changes the head.
+              std::string simpleServiceName = x.key();
+              updatedDagString = DagServiceDiscoveryApp::PruneDagWorkflow(simpleServiceName, updatedDagString);
+
+              // Create interest with simplename x.key(), then add application parameters, and use the new name&hash for the data structure inputsRxed item.
+              // in order to convert from std::string to a char[] datatype we do the following (https://stackoverflow.com/questions/7352099/stdstring-to-char):
+              char *dagStringParameter = new char[updatedDagString.length() + 1];
+              strcpy(dagStringParameter, updatedDagString.c_str());
+              size_t length = strlen(dagStringParameter);
+              //add modified object as a parameter to the new interest
+              auto new_interest = std::make_shared<ndn::Interest>(m_prefix.ndn::Name::toUri() + "/serviceDiscovery" + (std::string)x.key());
+              //Ptr<UniformRandomVariable> rand = CreateObject<UniformRandomVariable>();
+              //new_interest->setNonce(rand->GetValue(0, std::numeric_limits<uint32_t>::max()));
+              //new_interest->setInterestLifetime(ndn::time::seconds(10));
+              //new_interest->setMustBeFresh(true);
+
+              new_interest->setApplicationParameters((const uint8_t *)dagStringParameter, length);
+              //std::string serviceInputNameAndHash = new_interest->getName().getSubName(0,new_interest->getName().size()).toUri(); // starting at name element 0, get enough name elements to get us to the end of the name (get the full name)
+              std::string serviceInputNameAndHash = new_interest->getName().getSubName(2,new_interest->getName().size()).toUri(); // starting at name element 2, get enough name elements to get us to the end of the name (get the full name)
+              //NFD_LOG_DEBUG("NFDServiceDiscovery created serviceInputNameAndHash: " << serviceInputNameAndHash);
+
+              m_dagServTracker[rxedInterestFullNameAndHash]["inputsRxed"][serviceInputNameAndHash] = 0; // initialize to 0, meaning this input has not been received yet.
+              m_dagServTracker[rxedInterestFullNameAndHash]["EFT"][serviceInputNameAndHash] = -1; // initialize to -1, meaning it is an invalid EFT value that hasn't been calculated yet.
+
+              // generate the interest for this input
+              //DagServiceDiscoveryApp::SendInterest(serviceInputNameAndHash, updatedDagString);
+              NS_LOG_DEBUG("ServiceDiscoveryAPP: Sending Interest packet for " << *new_interest);
+              // Call trace (for logging purposes)
+              m_transmittedInterests(new_interest, this, m_face);
+              m_appLink->onReceiveInterest(*new_interest);
+
               //std::cout << "x.key is " << x.key() << ", and y.key is " << y.key() << '\n';
 
-              m_vectorOfServiceInputs.push_back(0);             // for now, just create vector entries for the inputs, so that if they arrive out of order, we can insert at any index location
             }
           }
         }
         //std::cout << "ServiceDiscovery dagServTracker data structure: " << std::setw(2) << m_dagServTracker << '\n';
-        NS_LOG_DEBUG("\n\nServiceDiscovery dagServTracker data structure: " << std::setw(2) << m_dagServTracker << '\n');
-
-
-
-        // generate all the interests for required inputs
-        //for (auto& serviceInput : m_dagServTracker[(std::string)m_nameUri]["inputsRxed"].items())
-        for (auto& serviceInput : m_dagServTracker[(std::string)rxedInterestName]["inputsRxed"].items())
-        {
-          if (serviceInput.value() == 0)
-          {
-            // generate the interest for this input
-            std::string dagString = m_dagObject.dump();
-            NS_LOG_DEBUG("ServiceDiscovery generating interest for " << serviceInput.key() << '\n');
-            DagServiceDiscoveryApp::SendInterest(serviceInput.key(), dagString);
-          }
-        }
-
-
+        //NS_LOG_DEBUG("\n\nServiceDiscoveryAPP dagServTracker data structure (on Interest): " << std::setw(2) << m_dagServTracker << '\n');
 
         m_nameAndDigest = interest->getName();  // store the name with digest so that we can later generate the data packet with the same name/digest!
                                                 // TODO6: this has issues - we cannot use the same service in more than one location in the DAG workflow!
@@ -545,259 +544,156 @@ DagServiceDiscoveryApp::OnData(std::shared_ptr<const ndn::Data> data)
 {
   NS_LOG_DEBUG("Receiving Data packet for " << data->getName());
 
-  //std::cout << "DATA received for name " << data->getName() << std::endl;
 
   //std::cout << "numRxedInputs = " << m_numRxedInputs << std::endl;
   //std::cout << "content = " << data->getContent() << std::endl;
 
+
   ndn::Name simpleName;
-  simpleName = (data->getName()).getPrefix(-1); // remove the last component of the name (the parameter digest) so we have just the raw name
-  simpleName = simpleName.getSubName(2); // remove the zeroth component of the name (/nesco), and the first component of the name (/serviceDiscovery)
-  //std::string rxedDataName = (data->getName()).getPrefix(-1).toUri(); // remove the last component of the name (the parameter digest) so we have just the raw name
-  std::string rxedDataName = simpleName.toUri();
-
-
-  //NS_LOG_DEBUG("\n\nServiceDiscovery rxedDataName is " << rxedDataName);
-  //NS_LOG_DEBUG("\n\nServiceDiscovery m_nameUri is " << m_nameUri);
-
-
-  // TODO: read data packet and extract EFT and tx timestamp. Calculate link delay for this pDAG out of this face. Calculate new EFT.
-
-  // TODO: if we are hosting the service, 
-    // TODO: if the hosted service needs several inputs, use the maximum (latest) of all required inputs.
-    // TODO: if ALL SD inputs have been received, then 
-    // TODO: determine how long it will take this node to execute the service, and add to the EFT. Then
-    // TODO: generate new data packet downstream with the calculated EFT and TX timestamp
-
-  // TODO: else, we're not hosting a service, so we are just a node that reproduced an SD interest
-    // TODO: THIS SHOULD LIKELY BE IN THE NFD FORWARDER, not here. ALL INTERESTS NEED TO BE ANALYZED, not just the ones for the services we are hosting!
-    // TODO: In NFD, look at all outgoing faces, and keep track of which interests have left, and which data packets have arrived, and calculate EFT, similar to APP above.  
-    // TODO: Will need a data structure like in the forwarder APP
+  ndn::Name simpleNameAndHash;
+  simpleName        = (data->getName()).getPrefix(-1); // remove the last component of the name (the parameter digest) so we have just the raw name
+  simpleNameAndHash = data->getName();
+  simpleName        = simpleName.getSubName(2,1); // remove the zeroeth component of the name (/nesco), and the first component of the name (/serviceDiscovery). starting at component 2, keep 1 component
+  simpleNameAndHash = simpleNameAndHash.getSubName(2,simpleNameAndHash.size()); // remove the zeroeth component of the name (/nesco), and the first component of the name (/serviceDiscovery). starting at component 2, keep the rest of the components, including the application parameter hash
+  //std::string rxedDataName      = (interest->getName()).getPrefix(-1).toUri(); // remove the last component of the name (the parameter digest) so we have just the raw name, and convert to Uri string
+  std::string rxedDataName        = simpleName.toUri();
+  std::string rxedDataNameAndHash = simpleNameAndHash.toUri();
 
 
 
-    // TODO: store the calculated EFT.
+  //NS_LOG_DEBUG("Now reading it into string...");
+
+  std::string dataPacketString;
+  dataPacketString = (const char *)data->getContent().value();
+  //NS_LOG_DEBUG("Data string received: " << dataPacketString);
 
 
+  //NS_LOG_DEBUG("Now parsing it into JSON...");
+  json dataPacketContents = json::parse(dataPacketString);
+  NS_LOG_DEBUG("Data received - EFT: " << dataPacketContents["EFT"] << ", txTime: " << dataPacketContents["txTime"]);
 
 
+  uint64_t dataTxTime = dataPacketContents["txTime"];
 
-  // TODO: below is the old service functionality
+  ns3::Time timeNow;
+  timeNow = ns3::Simulator::Now();
+  ns3::Time timeTx;
+  timeTx = ns3::Time::FromInteger(dataTxTime, ns3::Time::NS);
+  ns3::Time linkDelay;
+  linkDelay = timeNow - timeTx;
+  //NS_LOG_DEBUG("Calculated link delay is: time.now " << timeNow.ToInteger(ns3::Time::NS) << " - timeTx " << timeTx.ToInteger(ns3::Time::NS) << " = " << linkDelay.ToInteger(ns3::Time::NS) << "ns");
 
 
-  // TODO: this is a HACK. I need a better way to get to the first byte of the content. Right now, I'm just incrementing the pointer past the TLV type, and size.
-  // and then getting to the first byte (which is all I'm using for data)
-  unsigned char serviceOutput = 0;
-  uint8_t *pServiceInput = 0;
-  //pServiceInput = (uint8_t *)(m_mapOfRxedBlocks.back().data());
-  pServiceInput = (uint8_t *)(data->getContent().data()); // this points to the first byte, which is the TLV-TYPE (21 for data packet content)
-  pServiceInput++;  // now this points to the second byte, containing 253 (0xFD), meaning size (1024) is expressed with 2 octets
-  pServiceInput++;  // now this points to the first size octet
-  pServiceInput++;  // now this points to the second size octet
-  pServiceInput++;  // now we are pointing at the first byte of the true content
-  //m_mapOfServiceInputs[rxedDataName] = (*pServiceInput);
+  uint64_t dataEFT = dataPacketContents["EFT"];
 
-  // we keep track of which input is for which interest that was sent out. Data packets may arrive in different order than how interests were sent out.
-  // just read the index from the dagObject JSON structure
-  //TODO1: look at the current m_dagServTracker data structure to compare rxedDataName with inputsRxed, rather than using m_nameUri
-  // above won't work, m_dagServTracker can have more than one entry (one per each version of the hosted service)
-  //TODO2: instead, we should extract the "head" value from the parameter. BUT the data packets don't carry the parameter!
-  //TODO3: I need another way to determine the service version that made this specific data request, since I need the input index!
-  // perhaps keep a mapping of signature to requesting service, and use the received signature to determine which service version asked for it
-  //TODO4: for now, this works with a single version of each service. We can not have the same service appear twice in the same DAG until we make the changes above.
-  /*
-  auto dagParameterFromData = data->getApplicationParameters();
-  std::string dagString = std::string(reinterpret_cast<const char*>(dagParameterFromData.value()), dagParameterFromData.value_size());
-  m_dagObject = json::parse(dagString);
-  NS_LOG_DEBUG("Interest parameter head: " << dagObject["head"] << ", m_name attribute: " << m_name.ndn::Name::toUri());
-  std::string head = dagObject["head"];
-  */
+  ns3::Time eft;
+  eft = ns3::Time::FromInteger(dataEFT, ns3::Time::NS);
+  ns3::Time newEFT;
+  newEFT = eft + linkDelay;
+  //NS_LOG_DEBUG("Calculated EFT out of this face is: EFT " << eft.ToInteger(ns3::Time::NS) << " + upstreamLinkDelay " << linkDelay.ToInteger(ns3::Time::NS) << " = " << newEFT.ToInteger(ns3::Time::NS) << "ns");
 
-  //NS_LOG_DEBUG("\n\nServiceDiscovery storing received data in m_vectorOfServiceInputs....");
-
-  ndn::time::milliseconds data_freshnessPeriod = data->getFreshnessPeriod();
-  if (data_freshnessPeriod < m_lowestFreshness) {
-    m_lowestFreshness = data_freshnessPeriod;
-  }
-
-  char index = -1;
-  for (auto& x : m_dagObject["dag"].items())
+  // go through data structure elements, looking at the names in "inputsRxed" to see which one matches rxedDataNameAndHash, and then set serviceNameAndHash to that name
+  std::string serviceNameAndHash;
+  for (auto& serviceIterator : m_dagServTracker.items())
   {
-    if (x.key() == rxedDataName)
+    for (auto& inputIterator : m_dagServTracker[serviceIterator.key()]["inputsRxed"].items())
     {
-      for (auto& y : m_dagObject["dag"][x.key()].items())
+      if (inputIterator.key() == rxedDataNameAndHash)
       {
-        if (y.key() == m_nameUri)
-        //if (y.key() == head)
-        {
-          //std::cout << "  HIT, y.key(): " << y.key() << ", y.value(): " << y.value() << '\n';
-          index = y.value().template get<char>();
-        }
+        serviceNameAndHash = serviceIterator.key();
+        //NS_LOG_DEBUG("Match for " << rxedDataNameAndHash << " found: " << serviceIterator.key());
       }
     }
   }
-  if (index < 0)
+  //NS_LOG_DEBUG("ServiceNameAndHash (key) is: " << serviceNameAndHash);
+
+  // Mark this input as received
+  //m_dagServTracker[m_nameUri]["inputsRxed"][rxedDataName] = 1;
+  m_dagServTracker[serviceNameAndHash]["inputsRxed"][rxedDataNameAndHash] = 1;
+
+
+  // Convert Time to integer in milliseconds and then to string
+  int64_t linkDelayNS = linkDelay.ToInteger(ns3::Time::NS);
+  std::string linkDelayStringNS = std::to_string(linkDelayNS);
+  int64_t eftNS = newEFT.ToInteger(ns3::Time::NS);
+  std::string eftStringNS = std::to_string(eftNS);
+
+
+  m_dagServTracker[serviceNameAndHash]["EFT"][rxedDataNameAndHash] = eftNS;
+
+
+  //NS_LOG_DEBUG("\n\nServiceDiscoveryAPP dagServTracker data structure (on Data): " << std::setw(2) << m_dagServTracker << '\n');
+
+
+  // check if all inputs have been received
+  int allRxed = 1;
+  uint64_t highestEFT = -1;  // initialize to invalid EFT
+  //for (auto& serviceInput : m_dagServTracker[m_nameUri]["inputsRxed"].items())
+  for (auto& serviceInput : m_dagServTracker[serviceNameAndHash]["inputsRxed"].items())
   {
-    std::cout << "  ERROR!! index for m_vectorOfServiceInputs cannot be negative! Something went wrong!!" << '\n';
+      //if (m_dagServTracker[m_nameUri]["inputsRxed"][serviceInput.key()] != 1)
+      if (m_dagServTracker[serviceNameAndHash]["inputsRxed"][serviceInput.key()] != 1)
+      {
+        allRxed = 0;
+      }
+
+      // figure out which is the highest EFT of all the input services that we've received packets for so far
+      //uint64_t thisEFT = m_dagServTracker[m_nameUri]["EFT"][serviceInput.key()];
+      uint64_t thisEFT = m_dagServTracker[serviceNameAndHash]["EFT"][serviceInput.key()];
+      if (highestEFT == -1)
+      {
+        highestEFT = thisEFT; // initialize to the first one
+      }
+      if (thisEFT != -1 && thisEFT > highestEFT)
+      {
+        highestEFT = thisEFT; // this becomes the highestEFT EFT found so far
+      }
   }
-  else
-  {
-    m_vectorOfServiceInputs[index] = (*pServiceInput);
-  }
-
-  // mark this input as having been received
-  m_dagServTracker[m_nameUri]["inputsRxed"][rxedDataName] = 1;
-  //m_dagServTracker[head]["inputsRxed"][rxedDataName] = 1;
-  //std::cout << "ServiceDiscovery dagServTracker data structure: " << std::setw(2) << m_dagServTracker << '\n';
-  NS_LOG_DEBUG("\n\nServiceDiscovery dagServTracker data structure: " << std::setw(2) << m_dagServTracker << '\n');
-
-  // we have to check if we have received all necessary inputs for this instance of the hosted service!
-  //      if so, run the service below and generate new data packet to go downstream.
-  //      otherwise, just wait for the other inputs.
-  unsigned char allInputsReceived = 1;
-  for (auto& serviceInput : m_dagServTracker[m_nameUri]["inputsRxed"].items())
-  //for (auto& serviceInput : m_dagServTracker[head]["inputsRxed"].items())
-  {
-    if (serviceInput.value() == 0)
-    {
-      allInputsReceived = 0;
-      break;
-    }
-  }
-  if (allInputsReceived == 1)
+  // if all inputs have been received, then calculate largest EFT of all inputs, and generate data packet downstream
+  if (allRxed == 1)
   {
 
-    //"RUN" the service, and create a new data packet to respond downstream
-    //NS_LOG_DEBUG("Fake running service " << m_service);
-    NS_LOG_DEBUG("Running service " << m_service);
+    // determine how long it will take this node to execute the service, and add to the EFT
+    highestEFT += 1000000; //TODO: for now, I'm just assuming all services take 1ms to run (keep track of EFT in nanoseconds for granularity), but this will need to come from somewhere based on service and node
 
-    // run operation. First we need to figure out what service this is, so we know the operation. This screams to be a function pointer! For now just use if's
+    // generate new data packet downstream with the calculated EFT and TX timestamp
 
-    // TODO7: we should use function pointers here, and have each service be a function defined in a separate file. Figure out how to deal with potentially different num of inputs.
+    //NS_LOG_DEBUG("creating data for name: " << serviceNameAndHash);
 
-    if (m_service.ndn::Name::toUri() == "/service1"){
-      serviceOutput = (m_vectorOfServiceInputs[0])*2;
-    }
-    if (m_service.ndn::Name::toUri() == "/service2"){
-      serviceOutput = (m_vectorOfServiceInputs[0])+1;
-    }
-    if (m_service.ndn::Name::toUri() == "/service3"){
-      serviceOutput = (m_vectorOfServiceInputs[0])+7;
-    }
-    if (m_service.ndn::Name::toUri() == "/service4"){
-      serviceOutput = (m_vectorOfServiceInputs[0])*3 + (m_vectorOfServiceInputs[1])*4;
-    }
-    if (m_service.ndn::Name::toUri() == "/service5"){
-      serviceOutput = (m_vectorOfServiceInputs[0])*2;
-    }
-    if (m_service.ndn::Name::toUri() == "/service6"){
-      serviceOutput = (m_vectorOfServiceInputs[0])+1;
-    }
-    if (m_service.ndn::Name::toUri() == "/service7"){
-      serviceOutput = (m_vectorOfServiceInputs[0])+7;
-    }
-    if (m_service.ndn::Name::toUri() == "/service8"){
-      serviceOutput = (m_vectorOfServiceInputs[0])*1 + (m_vectorOfServiceInputs[1])*1;
-    }
-    if ((m_service.ndn::Name::toUri() == "/serviceL1") ||
-        (m_service.ndn::Name::toUri() == "/serviceL2") ||
-        (m_service.ndn::Name::toUri() == "/serviceL3") ||
-        (m_service.ndn::Name::toUri() == "/serviceL4") ||
-        (m_service.ndn::Name::toUri() == "/serviceL5") ||
-        (m_service.ndn::Name::toUri() == "/serviceL6") ||
-        (m_service.ndn::Name::toUri() == "/serviceL7") ||
-        (m_service.ndn::Name::toUri() == "/serviceL8") ||
-        (m_service.ndn::Name::toUri() == "/serviceL9") ||
-        (m_service.ndn::Name::toUri() == "/serviceL10") ||
-        (m_service.ndn::Name::toUri() == "/serviceL11") ||
-        (m_service.ndn::Name::toUri() == "/serviceL12") ||
-        (m_service.ndn::Name::toUri() == "/serviceL13") ||
-        (m_service.ndn::Name::toUri() == "/serviceL14") ||
-        (m_service.ndn::Name::toUri() == "/serviceL15") ||
-        (m_service.ndn::Name::toUri() == "/serviceL16") ||
-        (m_service.ndn::Name::toUri() == "/serviceL17") ||
-        (m_service.ndn::Name::toUri() == "/serviceL18") ||
-        (m_service.ndn::Name::toUri() == "/serviceL19") ||
-        (m_service.ndn::Name::toUri() == "/serviceL20")){
-      serviceOutput = (m_vectorOfServiceInputs[0])+1;
-    }
-    if ((m_service.ndn::Name::toUri() == "/serviceP1") ||
-        (m_service.ndn::Name::toUri() == "/serviceP2") ||
-        (m_service.ndn::Name::toUri() == "/serviceP3") ||
-        (m_service.ndn::Name::toUri() == "/serviceP4") ||
-        (m_service.ndn::Name::toUri() == "/serviceP5") ||
-        (m_service.ndn::Name::toUri() == "/serviceP6") ||
-        (m_service.ndn::Name::toUri() == "/serviceP7") ||
-        (m_service.ndn::Name::toUri() == "/serviceP8") ||
-        (m_service.ndn::Name::toUri() == "/serviceP9") ||
-        (m_service.ndn::Name::toUri() == "/serviceP10") ||
-        (m_service.ndn::Name::toUri() == "/serviceP11") ||
-        (m_service.ndn::Name::toUri() == "/serviceP12") ||
-        (m_service.ndn::Name::toUri() == "/serviceP13") ||
-        (m_service.ndn::Name::toUri() == "/serviceP14") ||
-        (m_service.ndn::Name::toUri() == "/serviceP15") ||
-        (m_service.ndn::Name::toUri() == "/serviceP16") ||
-        (m_service.ndn::Name::toUri() == "/serviceP17") ||
-        (m_service.ndn::Name::toUri() == "/serviceP18") ||
-        (m_service.ndn::Name::toUri() == "/serviceP19") ||
-        (m_service.ndn::Name::toUri() == "/serviceP20")){
-      serviceOutput = (m_vectorOfServiceInputs[0])+1;
-    }
-    if (m_service.ndn::Name::toUri() == "/serviceP21"){
-      serviceOutput =
-            (m_vectorOfServiceInputs[0])+
-            (m_vectorOfServiceInputs[1])+
-            (m_vectorOfServiceInputs[2])+
-            (m_vectorOfServiceInputs[3])+
-            (m_vectorOfServiceInputs[4])+
-            (m_vectorOfServiceInputs[5])+
-            (m_vectorOfServiceInputs[6])+
-            (m_vectorOfServiceInputs[7])+
-            (m_vectorOfServiceInputs[8])+
-            (m_vectorOfServiceInputs[9])+
-            (m_vectorOfServiceInputs[10])+
-            (m_vectorOfServiceInputs[11])+
-            (m_vectorOfServiceInputs[12])+
-            (m_vectorOfServiceInputs[13])+
-            (m_vectorOfServiceInputs[14])+
-            (m_vectorOfServiceInputs[15])+
-            (m_vectorOfServiceInputs[16])+
-            (m_vectorOfServiceInputs[17])+
-            (m_vectorOfServiceInputs[18])+
-            (m_vectorOfServiceInputs[19]);
-    }
-    if (m_service.ndn::Name::toUri().rfind("/serviceCPM-", 0) == 0) { // if name of string starts with /serviceCPM- (any of the 001-100 CPM services)
-      serviceOutput = (m_vectorOfServiceInputs[0])+1;
-    }
-    if ((m_service.ndn::Name::toUri() == "/serviceP22") ||
-        (m_service.ndn::Name::toUri() == "/serviceP23") ||
-        (m_service.ndn::Name::toUri() == "/serviceR1")){
-      serviceOutput =
-            (m_vectorOfServiceInputs[0])+
-            (m_vectorOfServiceInputs[1])+
-            (m_vectorOfServiceInputs[2]);
-    }
-    
-    NS_LOG_DEBUG("Service " << m_service.ndn::Name::toUri() << " has output: " << (int)serviceOutput);
-  
-    // this following line is for linear workflows only!
-    //now add the service name in front of the data name
-    //std::string new_name = m_service.ndn::Name::toUri() + data->getName().ndn::Name::toUri();
-    //NS_LOG_DEBUG("Creating data for new name: " << new_name);
-    // for dag workflows, FOR NOW we just generate the data packet with the name of the service we ran. We don't support repeated services yet. For that we need higharchical names/results such as "/S2/S1/sensor" for example
+    auto new_data = std::make_shared<ndn::Data>(serviceNameAndHash);
+    new_data->setFreshnessPeriod(data->getFreshnessPeriod());
 
-    NS_LOG_DEBUG("Creating data for name: " << m_nameAndDigest);  // m_name doesn't have the sha256 digest, so it doesn't match the original interest!
-                                                                  // We use m_nameAndDigest to store the old name with the digest.
-
-    //auto new_data = std::make_shared<ndn::Data>(new_name);
-    auto new_data = std::make_shared<ndn::Data>(m_nameAndDigest);
-    new_data->setFreshnessPeriod(ndn::time::milliseconds(m_lowestFreshness));
-
-    //new_data->setContent(std::make_shared< ::ndn::Buffer>(1024));
     unsigned char myBuffer[1024];
-    // write to the buffer
-    myBuffer[0] = serviceOutput;
-    new_data->setContent(myBuffer, 1024);
+    //json dataPacketContents;
+    //ns3::Time timeNow;
+    timeNow = ns3::Simulator::Now();
+    // Convert to integer in milliseconds and then to string
+    int64_t timeNowNS = timeNow.ToInteger(ns3::Time::NS);
+    std::string timeStringNS = std::to_string(timeNowNS);
+    dataPacketContents.clear();
+    dataPacketContents["txTime"] = timeNowNS;
+    dataPacketContents["EFT"] = highestEFT;
+
+    //std::string dataPacketString;
+    dataPacketString = dataPacketContents.dump();
+
+    // instead of just writing a single value to the buffer, now we write the JSON data structure containing EFT and tx timestamp
+    // write to the buffer, after making sure it's big enough
+    if (strlen(dataPacketString.c_str())+1 > 1024) // string length plus NULL terminating character
+    {
+      NS_LOG_DEBUG("SD APP ERROR!! The data packet size is larger than 1024!!!");
+    }
+    //else
+    //{
+      //NS_LOG_DEBUG("The data packet size using strlen+1 is " << strlen(dataPacketString.c_str())+1);
+      //NS_LOG_DEBUG("The data packet size using length+1 operator is " << dataPacketString.length()+1);
+    //}
+    memcpy(myBuffer, dataPacketString.c_str(), strlen(dataPacketString.c_str())+1);
+    //new_data->setContent(myBuffer, 1024); // make the data always 1024 bytes long
+    new_data->setContent(myBuffer, strlen(dataPacketString.c_str())+1); // make the data just big enough to fit the json object
+
+    NS_LOG_DEBUG("ServiceDiscoveryAPP - Sending Data packet for " << new_data->getName());
+
 
     ndn::StackHelper::getKeyChain().sign(*new_data);
     // Call trace (for logging purposes)
@@ -805,18 +701,10 @@ DagServiceDiscoveryApp::OnData(std::shared_ptr<const ndn::Data> data)
     m_appLink->onReceiveData(*new_data);
 
 
-    // now that we have run the service (and sent the result data out - and caching it), we set inputs to "not received"
-    // this is done so when cached results expire due to freshness, any new interests will trigger inputs to be fetched again, and the service will run again.
-    allInputsReceived = 0;
-    /*
-    for (auto& serviceInput : m_dagServTracker[m_nameUri]["inputsRxed"].items())
-    {
-      serviceInput.value() = 0;
-    }
-    */
-    m_dagServTracker.clear();
-    m_lowestFreshness = ndn::time::milliseconds(100000); // set to a high value (I know no producer freshness value is higher than 100 seconds)
 
+    //m_dagServTracker.clear();
+    m_dagServTracker.erase(serviceNameAndHash);
+    m_lowestFreshness = ndn::time::milliseconds(100000); // set to a high value (I know no producer freshness value is higher than 100 seconds)
 
 
   }
@@ -824,6 +712,7 @@ DagServiceDiscoveryApp::OnData(std::shared_ptr<const ndn::Data> data)
   {
     NS_LOG_DEBUG("    Even though we received data packet, we are still waiting for more inputs!");
   }
+
   
 }
 

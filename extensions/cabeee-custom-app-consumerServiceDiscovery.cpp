@@ -562,9 +562,13 @@ CustomAppConsumerServiceDiscovery::OnData(std::shared_ptr<const ndn::Data> data)
   NS_LOG_DEBUG("Receiving Data packet for " << data->getName());
 
 
-  if (data->getName().ndn::Name::getPrefix(2).ndn::Name::toUri() == "/serviceDiscovery")
+  if (data->getName().ndn::Name::getPrefix(-1).getSubName(1,1).ndn::Name::toUri() == "/serviceDiscovery")
   {
     std::cout << "\n\n      CONSUMER: Service Discovery DATA received for name " << data->getName() << std::endl << "\n\n";
+    std::string dataPacketString;
+    dataPacketString = (const char *)data->getContent().value();
+    json dataPacketContents = json::parse(dataPacketString);
+    NS_LOG_DEBUG("\n\nData received - EFT (nanoseconds): " << dataPacketContents["EFT"] << "\n\n");
   //TODO: IF this is an SD data packet, then begin the normal consumer workflow request (call CustomAppConsumerServiceDiscovery::SendInterest())
   }
   else
