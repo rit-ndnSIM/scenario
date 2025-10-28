@@ -5,6 +5,7 @@ import topo2json
 import json2topo
 
 from collections import defaultdict
+from itertools import combinations
 import argparse
 import json 
 import pathlib
@@ -89,16 +90,56 @@ def get_services(dag_file, hosting=None):
     return services
 
 
-# TODO
-#def generate_topo(num_routers, user_node="user"):
-#    routers = [{ "node": user_node, "comment": "NA", "x": 0, "y": 0 }]
-#
-#    x = 20
-#    for i in range(1, num_routers+1):
-#        routers.append({ "node": f"rtr-{i}", "comment": "NA", "x": x, "y": 0 })
-#        x += 20
-#
-#    return {"router": routers}
+def topo_from_class(topo):
+    routers = []
+    links = []
+    for n in topo.get_nodes():
+        routers.append({"node": n, "comment": "NA", "y": "0", "x": "1"})
+        for m in topo.get_outgoing(n):
+            if any(link["from"] == m and link["to"] == n for link in links):
+                continue
+            links.append({"from": n, "to": m, "capacity": "10Mbps", "metric": "0", "delay": "5ms"})
+
+    return {"router": routers, "link": links}
+
+
+# TODO: algorithm used should probably be configurable, maybe best to have topo generation in separate file
+def generate_topo(num_nodes, num_edges, user_node="user"):
+
+    if num_edges < num_nodes - 1:
+        raise ValueError("A connected graph requires at least num_nodes - 1 edges.")
+    if num_edges > num_nodes * (num_nodes - 1) // 2:
+        raise ValueError("Too many edges for a simple undirected graph.")
+    
+    topo = cpm.Topology()
+    
+    # create all nodes (numbers 0..num_nodes-1)
+    nodes = [f"rtr-{i}" for i in range(num_nodes-1)]
+    nodes.append(user_node)
+    
+    # create a random spanning tree to ensure connectivity
+    random.shuffle(nodes)
+    connected = {nodes[0]}
+    remaining = set(nodes[1:])
+    
+    while remaining:
+        a = random.choice(list(connected))
+        b = random.choice(list(remaining))
+        topo.add(a, b)
+        connected.add(b)
+        remaining.remove(b)
+    
+    # add additional random edges until we reach num_edges
+    all_possible_edges = [(u, v) for u, v in combinations(nodes, 2)
+                          if not topo.is_connected(u, v)]
+    
+    extra_edges_needed = num_edges - (num_nodes - 1)
+    if extra_edges_needed > 0:
+        extra_edges = random.sample(all_possible_edges, extra_edges_needed)
+        for u, v in extra_edges:
+            topo.add(u, v)
+    
+    return topo_from_class(topo)
 
 
 def generate_hosting(
@@ -186,27 +227,37 @@ def get_hosting(hosting_file, workflow_file):
 def main():
     parser = argparse.ArgumentParser("build_scenario")
     parser.add_argument('-p', '--prefix', type=str, default='/nesco', help="NDN prefix string")
-    parser.add_argument('-t', '--topo', type=pathlib.Path, required=True, help="Topology file to use, can be json or txt")
+    parser.add_argument('-t', '--topo', type=pathlib.Path, help="Topology file to use, can be json or txt")
     parser.add_argument('--topo-type', type=str, choices=('json', 'txt'), help="json or txt, inferred from '--topo'")
     parser.add_argument('--topo-out', type=pathlib.Path, help="Topo file output, creates file for generated json or txt")
     parser.add_argument('-d', '--dag', type=pathlib.Path, required=True, help="DAG workflow json")
     parser.add_argument('-r', '--hosting', type=pathlib.Path, help="Hosting json")
     parser.add_argument('--generate-hosting', action='store_true', help="Generate hosting")
+    parser.add_argument('--generate-topology', action='store_true', help="Generate topology")
     parser.add_argument('-o', '--output', type=argparse.FileType('w'), default='-', help="Scenario json output")
     # TODO: option to pretty print (just pipe into jq for now)
 
     args = parser.parse_args()
 
-    prefix = args.prefix
-    topofile, topo = get_topo(args.topo, args.topo_type, args.topo_out)
+    topofile = None
+    topo = None
     hosting = None
+
+    prefix = args.prefix
+    if args.topo:
+        topofile, topo = get_topo(args.topo, args.topo_type, args.topo_out)
 
     if args.hosting:
         hosting = get_hosting(args.hosting, args.dag)
-    else:
-        hosting = None
 
     services = get_services(args.dag, hosting)
+
+    if args.generate_topology:
+        topo = generate_topo(10, 15)
+        # TODO: generate topo txt file
+
+    if not topo:
+        print("No argument supplied to generate topo", file=sys.stderr)
 
     if args.generate_hosting:
         hosting = generate_hosting(services["services"], topo["router"], base_hosting=hosting)
