@@ -108,7 +108,7 @@ main(int argc, char* argv[])
   ndn::StrategyChoiceHelper::InstallAll(Prefix + "/service3", "/localhost/nfd/strategy/best-route");
   ndn::StrategyChoiceHelper::InstallAll(Prefix + "/service2", "/localhost/nfd/strategy/best-route");
   ndn::StrategyChoiceHelper::InstallAll(Prefix + "/service1", "/localhost/nfd/strategy/best-route");
-  ndn::StrategyChoiceHelper::InstallAll(Prefix + "/sensor", "/localhost/nfd/strategy/best-route");
+  ndn::StrategyChoiceHelper::InstallAll(Prefix + "/sensor",   "/localhost/nfd/strategy/best-route");
 
   //ndn::StrategyChoiceHelper::InstallAll(Prefix + "/serviceDiscovery", "/localhost/nfd/strategy/multicast");
   ndn::StrategyChoiceHelper::InstallAll(Prefix + "/serviceDiscovery", "/localhost/nfd/strategy/best-route");
