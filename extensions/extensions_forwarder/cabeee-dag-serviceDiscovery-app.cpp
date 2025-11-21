@@ -409,6 +409,7 @@ DagServiceDiscoveryApp::OnInterest(std::shared_ptr<const ndn::Interest> interest
       std::string timeStringNS = std::to_string(timeNowNS);
       dataPacketContents["EFT"] = timeNowNS;
       dataPacketContents["txTime"] = timeNowNS;
+      dataPacketContents["serviceLatency"] = 0; //TODO: for now, I'm just assuming all root node services take 0ms to run (keep track of EFT in nanoseconds for granularity), but this will need to come from somewhere based on service and node
       //NS_LOG_DEBUG("timeStringNS = " << timeStringNS);
 
       std::string dataPacketString = dataPacketContents.dump();
@@ -573,7 +574,7 @@ DagServiceDiscoveryApp::OnData(std::shared_ptr<const ndn::Data> data)
   NS_LOG_DEBUG("Data received - EFT: " << dataPacketContents["EFT"] << ", txTime: " << dataPacketContents["txTime"]);
 
 
-  uint64_t dataTxTime = dataPacketContents["txTime"];
+  int64_t dataTxTime = dataPacketContents["txTime"];
 
   ns3::Time timeNow;
   timeNow = ns3::Simulator::Now();
@@ -584,7 +585,7 @@ DagServiceDiscoveryApp::OnData(std::shared_ptr<const ndn::Data> data)
   //NS_LOG_DEBUG("Calculated link delay is: time.now " << timeNow.ToInteger(ns3::Time::NS) << " - timeTx " << timeTx.ToInteger(ns3::Time::NS) << " = " << linkDelay.ToInteger(ns3::Time::NS) << "ns");
 
 
-  uint64_t dataEFT = dataPacketContents["EFT"];
+  int64_t dataEFT = dataPacketContents["EFT"];
 
   ns3::Time eft;
   eft = ns3::Time::FromInteger(dataEFT, ns3::Time::NS);
@@ -627,7 +628,7 @@ DagServiceDiscoveryApp::OnData(std::shared_ptr<const ndn::Data> data)
 
   // check if all inputs have been received
   int allRxed = 1;
-  uint64_t highestEFT = -1;  // initialize to invalid EFT
+  int64_t highestEFT = -1;  // initialize to invalid EFT
   //for (auto& serviceInput : m_dagServTracker[m_nameUri]["inputsRxed"].items())
   for (auto& serviceInput : m_dagServTracker[serviceNameAndHash]["inputsRxed"].items())
   {
@@ -638,8 +639,8 @@ DagServiceDiscoveryApp::OnData(std::shared_ptr<const ndn::Data> data)
       }
 
       // figure out which is the highest EFT of all the input services that we've received packets for so far
-      //uint64_t thisEFT = m_dagServTracker[m_nameUri]["EFT"][serviceInput.key()];
-      uint64_t thisEFT = m_dagServTracker[serviceNameAndHash]["EFT"][serviceInput.key()];
+      //int64_t thisEFT = m_dagServTracker[m_nameUri]["EFT"][serviceInput.key()];
+      int64_t thisEFT = m_dagServTracker[serviceNameAndHash]["EFT"][serviceInput.key()];
       if (highestEFT == -1)
       {
         highestEFT = thisEFT; // initialize to the first one
@@ -653,13 +654,14 @@ DagServiceDiscoveryApp::OnData(std::shared_ptr<const ndn::Data> data)
   if (allRxed == 1)
   {
 
-    // TODO: send an interest to NFD to probe it for the currently scheduled tasks. Use interest name /nesco/serviceScheduling
-    // TODO: upon receiving a data packet for this interest, look at the JSON data to see when we can schedule it.
-    // TODO: Then update the EFT and send the data downstream as done below.
-    // TODO: Lastly, tell NDF when this service is scheduled for (using another interest?).
+    // TODO (nope): send an interest to NFD to probe it for the currently scheduled tasks. Use interest name /nesco/serviceScheduling
+    // TODO (nope): upon receiving a data packet for this interest, look at the JSON data to see when we can schedule it.
+    // TODO (nope): Then update the EFT and send the data downstream as done below.
+    // TODO (nope): Lastly, tell NDF when this service is scheduled for (using another interest?).
 
+    // TODO: report to NFD the EFT without adding CPU time for execution (serviceLatency). Send that value as a separate field.
     // determine how long it will take this node to execute the service, and add to the EFT
-    highestEFT += 1000000; //TODO: for now, I'm just assuming all services take 1ms to run (keep track of EFT in nanoseconds for granularity), but this will need to come from somewhere based on service and node
+    //highestEFT += 1000000; //TODO: for now, I'm just assuming all services take 1ms to run (keep track of EFT in nanoseconds for granularity), but this will need to come from somewhere based on service and node
 
     // generate new data packet downstream with the calculated EFT and TX timestamp
 
@@ -678,6 +680,8 @@ DagServiceDiscoveryApp::OnData(std::shared_ptr<const ndn::Data> data)
     dataPacketContents.clear();
     dataPacketContents["txTime"] = timeNowNS;
     dataPacketContents["EFT"] = highestEFT;
+    dataPacketContents["serviceLatency"] = 1000000; //TODO: for now, I'm just assuming all services take 1ms to run (keep track of EFT in nanoseconds for granularity), but this will need to come from somewhere based on service and node
+    NS_LOG_DEBUG("ServiceDiscoveryAPP - Sending Data packet with JSON data packet contents: " << dataPacketContents);
 
     //std::string dataPacketString;
     dataPacketString = dataPacketContents.dump();
