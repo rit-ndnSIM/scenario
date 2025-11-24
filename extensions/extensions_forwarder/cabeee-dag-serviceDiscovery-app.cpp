@@ -654,15 +654,6 @@ DagServiceDiscoveryApp::OnData(std::shared_ptr<const ndn::Data> data)
   if (allRxed == 1)
   {
 
-    // TODO (nope): send an interest to NFD to probe it for the currently scheduled tasks. Use interest name /nesco/serviceScheduling
-    // TODO (nope): upon receiving a data packet for this interest, look at the JSON data to see when we can schedule it.
-    // TODO (nope): Then update the EFT and send the data downstream as done below.
-    // TODO (nope): Lastly, tell NDF when this service is scheduled for (using another interest?).
-
-    // TODO: report to NFD the EFT without adding CPU time for execution (serviceLatency). Send that value as a separate field.
-    // determine how long it will take this node to execute the service, and add to the EFT
-    //highestEFT += 1000000; //TODO: for now, I'm just assuming all services take 1ms to run (keep track of EFT in nanoseconds for granularity), but this will need to come from somewhere based on service and node
-
     // generate new data packet downstream with the calculated EFT and TX timestamp
 
     //NS_LOG_DEBUG("creating data for name: " << serviceNameAndHash);
