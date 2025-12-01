@@ -73,6 +73,7 @@ private:
   ndn::Name m_prefix;
   ndn::Name m_service;
   uint16_t m_orchestrate;
+  uint16_t m_fwdOpt;
   std::string m_dagPath;
   Time m_SDstartTime;
   Time m_startTime;

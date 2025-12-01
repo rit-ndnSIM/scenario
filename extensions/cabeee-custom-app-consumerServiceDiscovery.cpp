@@ -66,7 +66,9 @@ CustomAppConsumerServiceDiscovery::GetTypeId()
     .AddAttribute("Workflow", "Requested workflow", StringValue("/workflows/dummy-workflow"),
                     MakeStringAccessor(&CustomAppConsumerServiceDiscovery::m_dagPath), MakeStringChecker())
     .AddAttribute("Orchestrate", "Requested orchestration", UintegerValue(0),
-                    MakeUintegerAccessor(&CustomAppConsumerServiceDiscovery::m_orchestrate), MakeUintegerChecker<uint16_t>());
+                    MakeUintegerAccessor(&CustomAppConsumerServiceDiscovery::m_orchestrate), MakeUintegerChecker<uint16_t>())
+    .AddAttribute("FwdOpt", "Requested forwarding optimization", UintegerValue(0),
+                    MakeUintegerAccessor(&CustomAppConsumerServiceDiscovery::m_fwdOpt), MakeUintegerChecker<uint16_t>());
   return tid;
 }
 
@@ -92,7 +94,14 @@ CustomAppConsumerServiceDiscovery::StartApplication()
 
 
   // Schedule send of first interest
-  Simulator::Schedule(Seconds(1.0), &CustomAppConsumerServiceDiscovery::SendSDInterest, this);
+  if (m_fwdOpt == 0) // no service discovery
+  {
+    Simulator::Schedule(Seconds(1.0), &CustomAppConsumerServiceDiscovery::SendInterest, this);
+  }
+  if (m_fwdOpt == 1 || m_fwdOpt == 2) // run service discovery before running workflow (1: no CPU allocation, 2: use CPU allocation)
+  {
+    Simulator::Schedule(Seconds(1.0), &CustomAppConsumerServiceDiscovery::SendSDInterest, this);
+  }
   //Simulator::Schedule(Seconds(2.0), &CustomAppConsumerServiceDiscovery::SendInterest, this);
   //Simulator::Schedule(Seconds(3.0), &CustomAppConsumerServiceDiscovery::SendInterest, this);
   //Simulator::Schedule(Seconds(4.0), &CustomAppConsumerServiceDiscovery::SendInterest, this);
@@ -100,7 +109,7 @@ CustomAppConsumerServiceDiscovery::StartApplication()
   //Simulator::Schedule(Seconds(6.0), &CustomAppConsumerServiceDiscovery::SendInterest, this);
   //Simulator::Schedule(Seconds(7.0), &CustomAppConsumerServiceDiscovery::SendInterest, this);
   //Simulator::Schedule(Seconds(8.0), &CustomAppConsumerServiceDiscovery::SendInterest, this);
-  Simulator::Schedule(Seconds(5.0), &CustomAppConsumerServiceDiscovery::SendInterest, this); //TODO: this is just for testing, remove eventually. Replace with calling it from "onData"
+  //Simulator::Schedule(Seconds(5.0), &CustomAppConsumerServiceDiscovery::SendInterest, this); //TODO: this is just for testing, remove eventually. Replace with calling it from "onData"
 }
 
 // Processing when application is stopped
@@ -163,6 +172,7 @@ CustomAppConsumerServiceDiscovery::SendSDInterest()
   std::string timeStringMS = ss_ms.str();
   //std::cout << "SD Start Time in milliseconds: " << timeStringMS << std::endl;
   dagObject["SDstartTimeMS"] = timeStringMS;
+  dagObject["resourceAllocation"] = m_fwdOpt; // run service discovery before running workflow (1: no CPU allocation, 2: use CPU allocation)
 
 
   //std::cout << "Consumer: Full DAG as read: " << std::setw(2) << dagObject << '\n';
@@ -569,7 +579,8 @@ CustomAppConsumerServiceDiscovery::OnData(std::shared_ptr<const ndn::Data> data)
     dataPacketString = (const char *)data->getContent().value();
     json dataPacketContents = json::parse(dataPacketString);
     NS_LOG_DEBUG("\n\nData received - EFT (nanoseconds): " << dataPacketContents["EFT"] << "\n\n");
-  //TODO: IF this is an SD data packet, then begin the normal consumer workflow request (call CustomAppConsumerServiceDiscovery::SendInterest())
+    //TODO: IF this is an SD data packet, then begin the normal consumer workflow request (call CustomAppConsumerServiceDiscovery::SendInterest())
+    CustomAppConsumerServiceDiscovery::SendInterest();
   }
   else
   {

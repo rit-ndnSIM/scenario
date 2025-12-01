@@ -80,14 +80,14 @@ DagServiceDiscoveryApp::StartApplication()
   
   NS_LOG_DEBUG("serviceDiscoveryAPP is performing AddRoute on name: " << m_name);
 
-  // Add entry to FIB for `/prefix/sub`
-  //ndn::FibHelper::AddRoute(GetNode(), "/prefix/sub", m_face, 0); //cabeee took this out, let the global router figure it out.
+  // Add entry to FIB for `/PREFIX/sub`
+  //ndn::FibHelper::AddRoute(GetNode(), "/PREFIX/sub", m_face, 0); //cabeee took this out, let the global router figure it out.
   ndn::FibHelper::AddRoute(GetNode(), m_name, m_face, 0);
 
-  //ndn::FibHelper::AddRoute(GetNode(), "/nesco/shortcutOPT", m_face, 0);
+  //ndn::FibHelper::AddRoute(GetNode(), "/PREFIX/shortcutOPT", m_face, 0);
   //NS_LOG_DEBUG("   cabeee application CABEEEshortcutOPT" << m_service << " is showing faceID: " << m_face->getId());
-  //ndn::Face::setInterestFilter("/nesco/shortcutOPT", std::bind(&DagServiceDiscoveryApp::OnInterest, this, _2));
-  //m_face->setInterestFilter("/nesco/shortcutOPT", &DagServiceDiscoveryApp::OnInterest);
+  //ndn::Face::setInterestFilter("/PREFIX/shortcutOPT", std::bind(&DagServiceDiscoveryApp::OnInterest, this, _2));
+  //m_face->setInterestFilter("/PREFIX/shortcutOPT", &DagServiceDiscoveryApp::OnInterest);
 
   m_nameUri = m_service.ndn::Name::toUri();
 
@@ -251,7 +251,7 @@ DagServiceDiscoveryApp::SendInterest(const std::string& interestName, std::strin
   /////////////////////////////////////
 
   // Create and configure ndn::Interest
-  //auto interest = std::make_shared<ndn::Interest>("/prefix/sub");
+  //auto interest = std::make_shared<ndn::Interest>("/PREFIX/sub");
   //auto interest = std::make_shared<ndn::Interest>(m_name); // must take it in as an argument, not just use m_name!!
   auto interest = std::make_shared<ndn::Interest>(m_prefix.ndn::Name::toUri() + "/serviceDiscovery" + interestName);
   Ptr<UniformRandomVariable> rand = CreateObject<UniformRandomVariable>();
@@ -311,9 +311,9 @@ DagServiceDiscoveryApp::OnInterest(std::shared_ptr<const ndn::Interest> interest
   simpleNameAndHash = interest->getName();
   fullNameAndHash   = interest->getName();
 
-  simpleName        = simpleName.getSubName(2,1); // remove the zeroeth component of the name (/nesco), and the first component of the name (/serviceDiscovery). starting at component 2, keep 1 component
-  simpleNameAndHash = simpleNameAndHash.getSubName(2,simpleNameAndHash.size()); // remove the zeroeth component of the name (/nesco), and the first component of the name (/serviceDiscovery). starting at component 2, keep the rest of the components, including the application parameter hash
-  fullNameAndHash   = fullNameAndHash.getSubName(0,fullNameAndHash.size()); // remove the zeroeth component of the name (/nesco), and the first component of the name (/serviceDiscovery). starting at component 0, keep the rest of the components, including the application parameter hash
+  simpleName        = simpleName.getSubName(2,1); // remove the zeroeth component of the name (/PREFIX), and the first component of the name (/serviceDiscovery). starting at component 2, keep 1 component
+  simpleNameAndHash = simpleNameAndHash.getSubName(2,simpleNameAndHash.size()); // remove the zeroeth component of the name (/PREFIX), and the first component of the name (/serviceDiscovery). starting at component 2, keep the rest of the components, including the application parameter hash
+  fullNameAndHash   = fullNameAndHash.getSubName(0,fullNameAndHash.size()); // remove the zeroeth component of the name (/PREFIX), and the first component of the name (/serviceDiscovery). starting at component 0, keep the rest of the components, including the application parameter hash
 
   std::string rxedInterestName        = simpleName.toUri();
   std::string rxedInterestNameAndHash = simpleNameAndHash.toUri();
@@ -554,8 +554,8 @@ DagServiceDiscoveryApp::OnData(std::shared_ptr<const ndn::Data> data)
   ndn::Name simpleNameAndHash;
   simpleName        = (data->getName()).getPrefix(-1); // remove the last component of the name (the parameter digest) so we have just the raw name
   simpleNameAndHash = data->getName();
-  simpleName        = simpleName.getSubName(2,1); // remove the zeroeth component of the name (/nesco), and the first component of the name (/serviceDiscovery). starting at component 2, keep 1 component
-  simpleNameAndHash = simpleNameAndHash.getSubName(2,simpleNameAndHash.size()); // remove the zeroeth component of the name (/nesco), and the first component of the name (/serviceDiscovery). starting at component 2, keep the rest of the components, including the application parameter hash
+  simpleName        = simpleName.getSubName(2,1); // remove the zeroeth component of the name (/PREFIX), and the first component of the name (/serviceDiscovery). starting at component 2, keep 1 component
+  simpleNameAndHash = simpleNameAndHash.getSubName(2,simpleNameAndHash.size()); // remove the zeroeth component of the name (/PREFIX), and the first component of the name (/serviceDiscovery). starting at component 2, keep the rest of the components, including the application parameter hash
   //std::string rxedDataName      = (interest->getName()).getPrefix(-1).toUri(); // remove the last component of the name (the parameter digest) so we have just the raw name, and convert to Uri string
   std::string rxedDataName        = simpleName.toUri();
   std::string rxedDataNameAndHash = simpleNameAndHash.toUri();

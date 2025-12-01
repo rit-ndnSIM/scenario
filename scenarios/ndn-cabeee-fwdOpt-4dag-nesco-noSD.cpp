@@ -83,10 +83,10 @@ main(int argc, char* argv[])
   Ptr<Node> router3 = Names::Find<Node>("rtr-3");
   Ptr<Node> consumer = Names::Find<Node>("user");
 
-  ndnHelper.setCsSize(100); // content store size (0 disables it)
+  ndnHelper.setCsSize(0); // content store size (0 disables it)
   ndnHelper.Install(producer);
 
-  ndnHelper.setCsSize(100); // content store size (0 disables it)
+  ndnHelper.setCsSize(0); // content store size (0 disables it)
   ndnHelper.Install(router1);
   ndnHelper.setCsSize(0); // content store size (0 disables it)
   ndnHelper.Install(router2);
@@ -187,6 +187,7 @@ main(int argc, char* argv[])
   userApp.SetAttribute("Service", StringValue("consumer"));
   userApp.SetAttribute("Workflow", StringValue("workflows/4dag.json"));
   userApp.SetAttribute("Orchestrate", UintegerValue(0));
+  userApp.SetAttribute("FwdOpt", UintegerValue(0));
   userApp.Install(consumer).Start(Seconds(0));
 
 
@@ -231,8 +232,8 @@ main(int argc, char* argv[])
 
   Simulator::Stop(Seconds(6.1));
 
-  ndn::L3RateTracer::InstallAll("rate-trace_cabeee-fwdOpt-4dag.txt", Seconds(0.0005));
-  ndn::CsTracer::InstallAll("cs-trace_cabeee-fwdOpt-4dag.txt", Seconds(0.0005));
+  ndn::L3RateTracer::InstallAll("rate-trace_cabeee-fwdOpt-4dag-nesco-noSD.txt", Seconds(0.0005));
+  ndn::CsTracer::InstallAll("cs-trace_cabeee-fwdOpt-4dag-nesco-noSD.txt", Seconds(0.0005));
 
   Simulator::Run();
   Simulator::Destroy();
