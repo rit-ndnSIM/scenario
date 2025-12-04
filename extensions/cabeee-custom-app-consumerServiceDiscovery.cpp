@@ -38,6 +38,7 @@
 #include <nlohmann/json.hpp>
 using json = nlohmann::json;
 
+//#include "ns3/integer.h"
 #include "ns3/uinteger.h"
 
 //#include "ns3/ndnSIM/ndn-cxx/ndn-cxx/encoding/encoder.hpp"
@@ -68,7 +69,11 @@ CustomAppConsumerServiceDiscovery::GetTypeId()
     .AddAttribute("Orchestrate", "Requested orchestration", UintegerValue(0),
                     MakeUintegerAccessor(&CustomAppConsumerServiceDiscovery::m_orchestrate), MakeUintegerChecker<uint16_t>())
     .AddAttribute("FwdOpt", "Requested forwarding optimization", UintegerValue(0),
-                    MakeUintegerAccessor(&CustomAppConsumerServiceDiscovery::m_fwdOpt), MakeUintegerChecker<uint16_t>());
+                    MakeUintegerAccessor(&CustomAppConsumerServiceDiscovery::m_fwdOpt), MakeUintegerChecker<uint16_t>())
+    .AddAttribute("SDstartTime", "Requested forwarding optimization", TimeValue(Seconds(1)),
+                    MakeTimeAccessor(&CustomAppConsumerServiceDiscovery::m_SDstartTime), MakeTimeChecker())
+    .AddAttribute("WFstartTime", "Requested forwarding optimization", TimeValue(Seconds(2)),
+                    MakeTimeAccessor(&CustomAppConsumerServiceDiscovery::m_WFstartTime), MakeTimeChecker());
   return tid;
 }
 
@@ -84,6 +89,7 @@ CustomAppConsumerServiceDiscovery::StartApplication()
   // initialize ndn::App
   ndn::App::StartApplication();
   m_isRunning = true;
+  m_SDrunning = false;
 
   // Add entry to FIB for `/prefix/sub`
   //ndn::FibHelper::AddRoute(GetNode(), "/prefix/sub", m_face, 0); //cabeee took this out, let the global router figure it out.
@@ -96,11 +102,12 @@ CustomAppConsumerServiceDiscovery::StartApplication()
   // Schedule send of first interest
   if (m_fwdOpt == 0) // no service discovery
   {
-    Simulator::Schedule(Seconds(1.0), &CustomAppConsumerServiceDiscovery::SendInterest, this);
+    Simulator::Schedule(m_WFstartTime, &CustomAppConsumerServiceDiscovery::SendInterest, this);
   }
   if (m_fwdOpt == 1 || m_fwdOpt == 2) // run service discovery before running workflow (1: no CPU allocation, 2: use CPU allocation)
   {
-    Simulator::Schedule(Seconds(1.0), &CustomAppConsumerServiceDiscovery::SendSDInterest, this);
+    Simulator::Schedule(m_SDstartTime, &CustomAppConsumerServiceDiscovery::SendSDInterest, this);
+    Simulator::Schedule(m_WFstartTime, &CustomAppConsumerServiceDiscovery::SendInterest, this);
   }
   //Simulator::Schedule(Seconds(2.0), &CustomAppConsumerServiceDiscovery::SendInterest, this);
   //Simulator::Schedule(Seconds(3.0), &CustomAppConsumerServiceDiscovery::SendInterest, this);
@@ -109,7 +116,6 @@ CustomAppConsumerServiceDiscovery::StartApplication()
   //Simulator::Schedule(Seconds(6.0), &CustomAppConsumerServiceDiscovery::SendInterest, this);
   //Simulator::Schedule(Seconds(7.0), &CustomAppConsumerServiceDiscovery::SendInterest, this);
   //Simulator::Schedule(Seconds(8.0), &CustomAppConsumerServiceDiscovery::SendInterest, this);
-  //Simulator::Schedule(Seconds(5.0), &CustomAppConsumerServiceDiscovery::SendInterest, this); //TODO: this is just for testing, remove eventually. Replace with calling it from "onData"
 }
 
 // Processing when application is stopped
@@ -130,6 +136,7 @@ CustomAppConsumerServiceDiscovery::SendSDInterest()
     return;
   }
 
+  m_SDrunning = true;
 
   /////////////////////////////////////
   // Sending one Interest packet out //
@@ -163,15 +170,23 @@ CustomAppConsumerServiceDiscovery::SendSDInterest()
     }
   }
 
-  m_SDstartTime = Simulator::Now();
+  //m_SDstartTime = Simulator::Now();
   // Convert to integer in milliseconds and then to string
-  int64_t SDstartTimeMS = m_SDstartTime.ToInteger(ns3::Time::MS);
-  std::stringstream ss_ms;
-  //ss_ms << SDstartTimeMS << " ms";
-  ss_ms << SDstartTimeMS;
-  std::string timeStringMS = ss_ms.str();
-  //std::cout << "SD Start Time in milliseconds: " << timeStringMS << std::endl;
-  dagObject["SDstartTimeMS"] = timeStringMS;
+  int64_t SDstartTimeNS = m_SDstartTime.ToInteger(ns3::Time::NS);
+  //std::stringstream ssSD_ns;
+  //ssSD_ns << SDstartTimeNS << " ns";
+  //ssSD_ns << SDstartTimeNS;
+  dagObject["serviceDiscoveryStartTimeNS"] = SDstartTimeNS;
+
+  //m_WFstartTime = Seconds(2.0);
+  // Convert to integer in milliseconds and then to string
+  int64_t WFstartTimeNS = m_WFstartTime.ToInteger(ns3::Time::NS);
+  //std::stringstream ssWF_ns;
+  //ssWF_ns << WFstartTimeNS << " ns";
+  //ssWF_ns << WFstartTimeNS;
+  //std::string timeStringNS = ssWF_ns.str();
+  //std::cout << "SD Start Time in milliseconds: " << timeStringNS << std::endl;
+  dagObject["workflowStartTimeNS"] = WFstartTimeNS;
   dagObject["resourceAllocation"] = m_fwdOpt; // run service discovery before running workflow (1: no CPU allocation, 2: use CPU allocation)
 
 
@@ -225,54 +240,10 @@ CustomAppConsumerServiceDiscovery::SendSDInterest()
   char *dagStringParameter = new char[dagString.length() + 1];
   strcpy(dagStringParameter, dagString.c_str());
 
-  //std::string dagStringParameter = "head:service4,dagWorkflow:sensor>service1#service1>service2,service3#service2>service4#service3>service4,hash:0123456789ABCDEF";
-  //char dagStringParameter[] = "head:service4,dagWorkflow:sensor>service1#service1>service2,service3#service2>service4#service3>service4,hash:0123456789ABCDEF";
-  //std::string dagStringParameter = "abcdef";
-  //const uint8_t * buffer = (const uint8_t*)dagStringParameter;
-
-  //add dagStringParameter as custom parameter to interest packet
-  //const uint8_t * buffer = (const uint8_t*)&dagStringParameter;
-  //const uint8_t * buffer = NULL;
-  //size_t length = dagParameter.length();
   size_t length = strlen(dagStringParameter);
 
 
-  //uint32_t type = ndn::tlv::ApplicationParameters;
-  //uint32_t type = 36;
-  //ndn::ConstBufferPtr value = buffer;
-  //ndn::Block appParamBlock = new ndn::Block(type, buffer);
-  //ndn::Block appParamBlock = new ndn::Block(type, buffer);
-
-  //ndn::Block appParamBlock = ndn::Encoder::BlockHelper::makeEmptyBlock(ndn::tlv::ApplicationParameters)
-  //ndn::Block appParamBlock = ndn::encoding::makeEmptyBlock(ndn::tlv::ApplicationParameters)
-  //ndn::Block appParamBlock = ndn::encoding::makeEmptyBlock(36);
-  //ndn::Block appParamBlock = ndn::encoding::makeStringBlock(36, "fred");
-  //ndn::Block appParamBlock = ndn::encoding::makeStringBlock(36, buffer);
-  //ndn::Block appParamBlock;
-  //auto appParamBlock = std::make_shared<ndn::Block>();
-
-
-  // the parameters are encoded as a TLV-Value!!!
-  //interest->setApplicationParameters(buffer, length);
   interest->setApplicationParameters((const uint8_t *)dagStringParameter, length);
-  //interest->setApplicationParameters(appParamBlock);
-  //extract custom parameter from interest packet
-  //auto dagStringParameterFromInterest = interest.getApplicationParameters();
-
-
-  /*
-  // These interests are NOT signed. The SHA256 digest added by the application parameters is separate from a signature!
-  auto sigPresent = interest->isSigned();
-  NS_LOG_DEBUG("Consumer: Interest is signed: " << sigPresent);
-  auto dagSignatureInfo = interest->getSignatureInfo();
-  //NS_LOG_DEBUG("Consumer: Interest signature info after adding appParams: " << dagSignatureInfo);
-  if (dagSignatureInfo) {
-    auto dagSignatureType2 = dagSignatureInfo->getSignatureType();
-    NS_LOG_DEBUG("Consumer: Interest signature type after adding appParams: " << dagSignatureType2);
-  }
-  auto dagSignatureValue = interest->getSignatureValue();
-  NS_LOG_DEBUG("Consumer: Interest signature value after adding appParams: " << dagSignatureValue);
-  */
 
 
   //NS_LOG_DEBUG("Consumer: Interest parameters being sent: " << dagStringParameter);
@@ -298,6 +269,14 @@ CustomAppConsumerServiceDiscovery::SendInterest()
     return;
   }
 
+  // if we are trying to run the workflow before service discovery finishes, report an error and abort.
+  if(m_SDrunning == true)
+  {
+    NS_LOG_DEBUG("\n\n  ERROR!!! Workflow started before Service Discovery process finished!" << "\n\n");
+    NS_LOG_DEBUG("\n\n  TO FIX ERROR: change the worflow start time for this scenario to be a little later, to allow SD to finish." << "\n\n");
+    return;
+  }
+
   m_startTime = Simulator::Now();
 
   /////////////////////////////////////
@@ -311,39 +290,6 @@ CustomAppConsumerServiceDiscovery::SendInterest()
   interest->setNonce(rand->GetValue(0, std::numeric_limits<uint32_t>::max()));
   interest->setInterestLifetime(ndn::time::seconds(540));
   //interest->setMustBeFresh(true);
-
-  /*
-  // this is my attempt to create the dag workflow using a struct, rather than using JSON. I aborted early on.
-  std::list<ndn::cabeee::DAG_SERVICE> serviceList;
-  ndn::cabeee::DAG_SERVICE service;
-
-  service.thisService = "sensor";
-  service.feeds.clear();
-  service.feeds.push_back("service1");
-
-  serviceList.push_back(service);
-
-  service.thisService = "service1";
-  service.feeds.clear();
-  service.feeds.push_back("service2");
-  service.feeds.push_back("service3");
-
-  serviceList.push_back(service);
-
-  service.thisService = "service2";
-  service.feeds.clear();
-  service.feeds.push_back("service4");
-
-  serviceList.push_back(service);
-
-  service.thisService = "service3";
-  service.feeds.clear();
-  service.feeds.push_back("service4");
-
-  serviceList.push_back(service);
-
-  //ndn::cabeee::DAG_INTEREST dagStringParameter = {.head = "service4", .dagWorkflow = serviceList, .hash = "0123456789ABCDEF"};
-  */
 
 
   std::ifstream f(m_dagPath);
@@ -364,70 +310,6 @@ CustomAppConsumerServiceDiscovery::SendInterest()
     }
   }
 
-
-/*
-  for (auto& x : dagObject["dag"].items())
-  {
-    m_listOfRootServices.push_back(x.key()); // for now, add ALL keys to the list, we'll remove non-root ones later
-    for (auto& y : dagObject["dag"][x.key()].items())
-    {
-      m_listOfServicesWithInputs.push_back(y.key()); // add all values to the list
-      if ((std::find(m_listOfSinkNodes.begin(), m_listOfSinkNodes.end(), y.key()) == m_listOfSinkNodes.end())) // if y.key() does not exist in m_listOfSinkNodes
-      {
-        m_listOfSinkNodes.push_back(y.key()); // for now, add ALL values to the list, we'll remove non-sinks later
-      }
-    }
-  }
-
-  // now remove services that feed into other services from the list of sink nodes
-  for (auto& x : dagObject["dag"].items())
-  {
-    if (!(std::find(m_listOfSinkNodes.begin(), m_listOfSinkNodes.end(), x.key()) == m_listOfSinkNodes.end())) // if x.key() exists in m_listOfSinkNodes
-    {
-      m_listOfSinkNodes.remove(x.key());
-    }
-  }
-
-  // now remove services that have other services as inputs from the list of root services
-  for (auto serviceWithInputs : m_listOfServicesWithInputs)
-  {
-    if (!(std::find(m_listOfRootServices.begin(), m_listOfRootServices.end(), serviceWithInputs) == m_listOfRootServices.end())) // if serviceWithInputs exists in m_listOfRootServices
-    {
-      m_listOfRootServices.remove(serviceWithInputs);
-    }
-  }
-
-  unsigned char numOfSinkServices = 0;
-  for (auto sinkService : m_listOfSinkNodes)
-  {
-    numOfSinkServices++;
-
-    if (m_orchestrate == 0) {
-      dagObject["head"] = sinkService;
-      interest->setName(sinkService);
-    }
-    else if (m_orchestrate == 1){ // orchestration method A
-      dagObject["head"] = "/serviceOrchestration";
-      interest->setName("/serviceOrchestration");
-    }
-    else if (m_orchestrate == 2){ // orchestration method B
-      dagObject["head"] = "/serviceOrchestration/dag";
-      interest->setName("/serviceOrchestration/dag");
-    }
-    else
-    {
-      NS_LOG_DEBUG("ERROR, this should not happen. m_orchestrate value set out of bounds!" << '\n');
-      return;
-    }
-  }
-
-  if (numOfSinkServices != 1)
-  {
-    NS_LOG_DEBUG("ERROR, this should not happen. Consumer found more than one (or none) sink services!" << '\n');
-    return;
-  }
-
-*/
 
   //std::cout << "Consumer: Full DAG as read: " << std::setw(2) << dagObject << '\n';
   //std::cout << "Consumer: setting head to sinkService: " << sinkService << '\n';
@@ -478,54 +360,14 @@ CustomAppConsumerServiceDiscovery::SendInterest()
   char *dagStringParameter = new char[dagString.length() + 1];
   strcpy(dagStringParameter, dagString.c_str());
 
-  //std::string dagStringParameter = "head:service4,dagWorkflow:sensor>service1#service1>service2,service3#service2>service4#service3>service4,hash:0123456789ABCDEF";
-  //char dagStringParameter[] = "head:service4,dagWorkflow:sensor>service1#service1>service2,service3#service2>service4#service3>service4,hash:0123456789ABCDEF";
-  //std::string dagStringParameter = "abcdef";
-  //const uint8_t * buffer = (const uint8_t*)dagStringParameter;
 
   //add dagStringParameter as custom parameter to interest packet
-  //const uint8_t * buffer = (const uint8_t*)&dagStringParameter;
-  //const uint8_t * buffer = NULL;
-  //size_t length = dagParameter.length();
   size_t length = strlen(dagStringParameter);
 
 
-  //uint32_t type = ndn::tlv::ApplicationParameters;
-  //uint32_t type = 36;
-  //ndn::ConstBufferPtr value = buffer;
-  //ndn::Block appParamBlock = new ndn::Block(type, buffer);
-  //ndn::Block appParamBlock = new ndn::Block(type, buffer);
 
-  //ndn::Block appParamBlock = ndn::Encoder::BlockHelper::makeEmptyBlock(ndn::tlv::ApplicationParameters)
-  //ndn::Block appParamBlock = ndn::encoding::makeEmptyBlock(ndn::tlv::ApplicationParameters)
-  //ndn::Block appParamBlock = ndn::encoding::makeEmptyBlock(36);
-  //ndn::Block appParamBlock = ndn::encoding::makeStringBlock(36, "fred");
-  //ndn::Block appParamBlock = ndn::encoding::makeStringBlock(36, buffer);
-  //ndn::Block appParamBlock;
-  //auto appParamBlock = std::make_shared<ndn::Block>();
-
-
-  // the parameters are encoded as a TLV-Value!!!
-  //interest->setApplicationParameters(buffer, length);
   interest->setApplicationParameters((const uint8_t *)dagStringParameter, length);
-  //interest->setApplicationParameters(appParamBlock);
-  //extract custom parameter from interest packet
-  //auto dagStringParameterFromInterest = interest.getApplicationParameters();
 
-
-  /*
-  // These interests are NOT signed. The SHA256 digest added by the application parameters is separate from a signature!
-  auto sigPresent = interest->isSigned();
-  NS_LOG_DEBUG("Consumer: Interest is signed: " << sigPresent);
-  auto dagSignatureInfo = interest->getSignatureInfo();
-  //NS_LOG_DEBUG("Consumer: Interest signature info after adding appParams: " << dagSignatureInfo);
-  if (dagSignatureInfo) {
-    auto dagSignatureType2 = dagSignatureInfo->getSignatureType();
-    NS_LOG_DEBUG("Consumer: Interest signature type after adding appParams: " << dagSignatureType2);
-  }
-  auto dagSignatureValue = interest->getSignatureValue();
-  NS_LOG_DEBUG("Consumer: Interest signature value after adding appParams: " << dagSignatureValue);
-  */
 
 
   //NS_LOG_DEBUG("Consumer: Interest parameters being sent: " << dagStringParameter);
@@ -578,9 +420,24 @@ CustomAppConsumerServiceDiscovery::OnData(std::shared_ptr<const ndn::Data> data)
     std::string dataPacketString;
     dataPacketString = (const char *)data->getContent().value();
     json dataPacketContents = json::parse(dataPacketString);
-    NS_LOG_DEBUG("\n\nData received - EFT (nanoseconds): " << dataPacketContents["EFT"] << "\n\n");
-    //TODO: IF this is an SD data packet, then begin the normal consumer workflow request (call CustomAppConsumerServiceDiscovery::SendInterest())
-    CustomAppConsumerServiceDiscovery::SendInterest();
+    NS_LOG_DEBUG("\n\nData received - absolute EFT    (nanoseconds): " << dataPacketContents["EFT"] << "\n"
+                     "              - workflow start: (nanoseconds): " << m_WFstartTime.ToInteger(ns3::Time::NS) << "\n\n");
+    int64_t workflowLatency_ns = dataPacketContents["EFT"].get<int64_t>() - m_WFstartTime.ToInteger(ns3::Time::NS);
+    NS_LOG_DEBUG("\n\n  Service Latency estimated by SD: " << workflowLatency_ns/1000 << " microseconds.\n\n");
+
+    // IF this is an SD data packet, then begin the normal consumer workflow request (call CustomAppConsumerServiceDiscovery::SendInterest())
+    //CustomAppConsumerServiceDiscovery::SendInterest();
+
+    m_SDrunning = false;
+
+    // if we have already started the workflow, report an error. (if current time is past the workflow start time)
+    Time timeNow = Simulator::Now();
+    if (timeNow > m_WFstartTime)
+    {
+      NS_LOG_DEBUG("\n\n  ERROR!!! Workflow started before Service Discovery process finished!" << "\n\n");
+      NS_LOG_DEBUG("\n\n  TO FIX ERROR: change the worflow start time for this scenario to be a little later, to allow SD to finish." << "\n\n");
+    }
+
   }
   else
   {
@@ -588,9 +445,13 @@ CustomAppConsumerServiceDiscovery::OnData(std::shared_ptr<const ndn::Data> data)
 
     std::cout << "\n\n      CONSUMER: DATA received for name " << data->getName() << std::endl << "\n\n";
 
+    m_endTime = Simulator::Now();
+    Time serviceLatency = m_endTime - m_startTime;
+    std::cout << "\n  Service Latency: " <<  serviceLatency.GetMilliSeconds() << " milliseconds." << std::endl;
+    std::cout << "\n  Service Latency: " <<  serviceLatency.GetMicroSeconds() << " microseconds." << std::endl;
+
     ndn::Block myRxedBlock = data->getContent();
     //std::cout << "\nCONSUMER: result = " << myRxedBlock << std::endl << "\n\n";
-
     uint8_t *pContent = (uint8_t *)(myRxedBlock.data()); // this points to the first byte, which is the TLV-TYPE (21 for data packet contet)
     pContent++;  // now this points to the second byte, containing 253 (0xFD), meaning size (1024) is expressed with 2 octets
     pContent++;  // now this points to the first size octet
@@ -598,10 +459,6 @@ CustomAppConsumerServiceDiscovery::OnData(std::shared_ptr<const ndn::Data> data)
     pContent++;  // now we are pointing at the first byte of the true content
     std::cout << "\n  The final answer is: " <<  (int)(*pContent) << std::endl << "\n\n";
 
-    m_endTime = Simulator::Now();
-    Time serviceLatency = m_endTime - m_startTime;
-    std::cout << "\n  Service Latency: " <<  serviceLatency.GetMilliSeconds() << " milliseconds." << std::endl;
-    std::cout << "\n  Service Latency: " <<  serviceLatency.GetMicroSeconds() << " microseconds." << std::endl;
   }
 
 }

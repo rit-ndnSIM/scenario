@@ -76,6 +76,8 @@ private:
   uint16_t m_fwdOpt;
   std::string m_dagPath;
   Time m_SDstartTime;
+  Time m_WFstartTime;
+  bool m_SDrunning;
   Time m_startTime;
   Time m_endTime;
 };

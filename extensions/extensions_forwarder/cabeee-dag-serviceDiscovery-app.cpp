@@ -406,8 +406,11 @@ DagServiceDiscoveryApp::OnInterest(std::shared_ptr<const ndn::Interest> interest
       timeNow = Simulator::Now();
       // Convert to integer in milliseconds and then to string
       int64_t timeNowNS = timeNow.ToInteger(ns3::Time::NS);
-      std::string timeStringNS = std::to_string(timeNowNS);
-      dataPacketContents["EFT"] = timeNowNS;
+      //std::string timeStringNS = std::to_string(timeNowNS);
+      int64_t SDstartTimeNS = dagObject["serviceDiscoveryStartTimeNS"];
+      int64_t WFstartTimeNS = dagObject["workflowStartTimeNS"];
+      //dataPacketContents["EFT"] = timeNowNS;
+      dataPacketContents["EFT"] = timeNowNS + WFstartTimeNS - SDstartTimeNS;
       dataPacketContents["txTime"] = timeNowNS;
       dataPacketContents["serviceLatency"] = 0; //TODO: for now, I'm just assuming all root node services take 0ms to run (keep track of EFT in nanoseconds for granularity), but this will need to come from somewhere based on service and node
       //NS_LOG_DEBUG("timeStringNS = " << timeStringNS);
