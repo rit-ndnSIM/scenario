@@ -38,9 +38,12 @@ TOPOLOGY_DIR="$HOME/ndnSIM/scenario/topologies"
 
 declare -a scenarios=(
 	# 4 DAG
-	"ndn-cabeee-fwdOpt-4dag-nesco-noSD nesco 4dag.json 4dag-fwdOpt.hosting topo-cabeee-3node-fwdOpt.json"
-	"ndn-cabeee-fwdOpt-4dag-nesco-SD-noAllocation nesco 4dag.json 4dag-fwdOpt.hosting topo-cabeee-3node-fwdOpt.json"
-	"ndn-cabeee-fwdOpt-4dag-nesco-SD-allocation nesco 4dag.json 4dag-fwdOpt.hosting topo-cabeee-3node-fwdOpt.json"
+	#"ndn-cabeee-fwdOpt-4dag-nesco-noSD nesco 4dag.json 4dag-fwdOpt.hosting topo-cabeee-3node-fwdOpt.json"
+	#"ndn-cabeee-fwdOpt-4dag-nesco-SD-noAllocation nesco 4dag.json 4dag-fwdOpt.hosting topo-cabeee-3node-fwdOpt.json"
+	#"ndn-cabeee-fwdOpt-4dag-nesco-SD-allocation nesco 4dag.json 4dag-fwdOpt.hosting topo-cabeee-3node-fwdOpt.json"
+	"ndn-cabeee-fwdOpt-8dag-nesco-noSD nesco 8dag.json 8dag-fwdOpt.hosting topo-cabeee-3node-fwdOpt.json"
+	"ndn-cabeee-fwdOpt-8dag-nesco-SD-noAllocation nesco 8dag.json 8dag-fwdOpt.hosting topo-cabeee-3node-fwdOpt.json"
+	"ndn-cabeee-fwdOpt-8dag-nesco-SD-allocation nesco 8dag.json 8dag-fwdOpt.hosting topo-cabeee-3node-fwdOpt.json"
 	)
 	
 scenario_log="$SCENARIO_DIR/scenario.log"
