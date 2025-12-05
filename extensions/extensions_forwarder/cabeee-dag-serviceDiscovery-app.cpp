@@ -242,7 +242,7 @@ DagServiceDiscoveryApp::SendInterest(const std::string& interestName, std::strin
 {
   if (!m_isRunning)
   {
-    NS_LOG_DEBUG("Warning: trying to send interest while application is stopped!");
+    NS_LOG_WARN("Warning: trying to send interest while application is stopped!");
     return;
   }
 
@@ -421,7 +421,7 @@ DagServiceDiscoveryApp::OnInterest(std::shared_ptr<const ndn::Interest> interest
       // write to the buffer, after making sure it's big enough
       if (strlen(dataPacketString.c_str())+1 > 1024) // string length plus NULL terminating character
       {
-        NS_LOG_DEBUG("SD APP ERROR!! The data packet size is larger than 1024!!!");
+        NS_LOG_ERROR("SD APP ERROR!! The data packet size is larger than 1024!!!");
       }
       //else
       //{
@@ -448,7 +448,7 @@ DagServiceDiscoveryApp::OnInterest(std::shared_ptr<const ndn::Interest> interest
         // we would also keep track of which ones have left, so that when data packets arrive, I can evaluate their EFTs. Once all have returned, generate data packet with lowest EFT.
         // BUT ACTUALLY, WE CAN'T DO THIS HERE. WE NEED TO DO THIS IN THE NFD FORWARDER! This app will not be receiving these interests.
         // THIS SHOULD NOT HAPPEN, REPORT AN ERROR. This APP should not receive an interest for a service that it's not hosting.
-        NS_LOG_DEBUG("SD APP ERROR!! This APP should not receive an interest for a service that it's not hosting. Interest name: " << interest->getName());
+        NS_LOG_ERROR("SD APP ERROR!! This APP should not receive an interest for a service that it's not hosting. Interest name: " << interest->getName());
       }
       else
       {
@@ -684,7 +684,7 @@ DagServiceDiscoveryApp::OnData(std::shared_ptr<const ndn::Data> data)
     // write to the buffer, after making sure it's big enough
     if (strlen(dataPacketString.c_str())+1 > 1024) // string length plus NULL terminating character
     {
-      NS_LOG_DEBUG("SD APP ERROR!! The data packet size is larger than 1024!!!");
+      NS_LOG_ERROR("SD APP ERROR!! The data packet size is larger than 1024!!!");
     }
     //else
     //{

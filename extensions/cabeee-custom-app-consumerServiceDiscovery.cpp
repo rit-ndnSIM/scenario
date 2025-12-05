@@ -132,7 +132,7 @@ CustomAppConsumerServiceDiscovery::SendSDInterest()
 {
   if (!m_isRunning)
   {
-    NS_LOG_DEBUG("Warning: trying to send Service Discovery interest while application is stopped!");
+    NS_LOG_WARN("Warning: trying to send Service Discovery interest while application is stopped!");
     return;
   }
 
@@ -228,7 +228,7 @@ CustomAppConsumerServiceDiscovery::SendSDInterest()
   }
   else
   {
-    NS_LOG_DEBUG("ERROR, this should not happen. m_orchestrate value set out of bounds!" << '\n');
+    NS_LOG_ERROR("ERROR, this should not happen. m_orchestrate value set out of bounds!" << '\n');
     return;
   }
 
@@ -265,19 +265,19 @@ CustomAppConsumerServiceDiscovery::SendInterest()
 {
   if (!m_isRunning)
   {
-    NS_LOG_DEBUG("Warning: trying to send interest while application is stopped!");
+    NS_LOG_WARN("Warning: trying to send interest while application is stopped!");
     return;
   }
 
   // if we are trying to run the workflow before service discovery finishes, report an error and abort.
   if(m_SDrunning == true)
   {
-    NS_LOG_DEBUG("\n\n  ERROR!!! Workflow started before Service Discovery process finished!" << "\n\n");
-    NS_LOG_DEBUG("\n\n  TO FIX ERROR: change the worflow start time for this scenario to be a little later, to allow SD to finish." << "\n\n");
+    NS_LOG_ERROR("\n\n  ERROR!!! Workflow started before Service Discovery process finished!" << "\n\n");
+    NS_LOG_ERROR("\n\n  TO FIX ERROR: change the worflow start time for this scenario to be a little later, to allow SD to finish." << "\n\n");
     return;
   }
 
-  m_startTime = Simulator::Now();
+  //m_WFstartTime = Simulator::Now();
 
   /////////////////////////////////////
   // Sending one Interest packet out //
@@ -348,7 +348,7 @@ CustomAppConsumerServiceDiscovery::SendInterest()
   }
   else
   {
-    NS_LOG_DEBUG("ERROR, this should not happen. m_orchestrate value set out of bounds!" << '\n');
+    NS_LOG_ERROR("ERROR, this should not happen. m_orchestrate value set out of bounds!" << '\n');
     return;
   }
 
@@ -416,14 +416,20 @@ CustomAppConsumerServiceDiscovery::OnData(std::shared_ptr<const ndn::Data> data)
 
   if (data->getName().ndn::Name::getPrefix(-1).getSubName(1,1).ndn::Name::toUri() == "/serviceDiscovery")
   {
-    std::cout << "\n\n      CONSUMER: Service Discovery DATA received for name " << data->getName() << std::endl << "\n\n";
+    NS_LOG_INFO("\n\n      CONSUMER: Service Discovery DATA received for name " << data->getName() << std::endl << "\n\n");
+    m_SDendTime = Simulator::Now();
+    Time serviceDiscoveryLatency = m_SDendTime - m_SDstartTime;
+    NS_LOG_INFO("\n  Service Discovery Latency: " <<  serviceDiscoveryLatency.GetMilliSeconds() << " milliseconds." << std::endl);
+    NS_LOG_INFO("\n  Service Discovery Latency: " <<  serviceDiscoveryLatency.GetMicroSeconds() << " microseconds." << std::endl);
+    NS_LOG_INFO("\n  Service Discovery Latency: " <<  serviceDiscoveryLatency.GetNanoSeconds() << " nanoseconds." << std::endl);
+
     std::string dataPacketString;
     dataPacketString = (const char *)data->getContent().value();
     json dataPacketContents = json::parse(dataPacketString);
-    NS_LOG_DEBUG("\n\nData received - absolute EFT    (nanoseconds): " << dataPacketContents["EFT"] << "\n"
-                     "              - workflow start: (nanoseconds): " << m_WFstartTime.ToInteger(ns3::Time::NS) << "\n\n");
+    NS_LOG_INFO("\n\nData received - absolute EFT:   " << dataPacketContents["EFT"] << " nanoseconds\n"
+                    "              - workflow start: " << m_WFstartTime.ToInteger(ns3::Time::NS) << " nanoseconds\n\n");
     int64_t workflowLatency_ns = dataPacketContents["EFT"].get<int64_t>() - m_WFstartTime.ToInteger(ns3::Time::NS);
-    NS_LOG_DEBUG("\n\n  Service Latency estimated by SD: " << workflowLatency_ns/1000 << " microseconds.\n\n");
+    NS_LOG_INFO("\n\n  Service Latency estimated by SD: " << workflowLatency_ns/1000 << " microseconds.\n\n");
 
     // IF this is an SD data packet, then begin the normal consumer workflow request (call CustomAppConsumerServiceDiscovery::SendInterest())
     //CustomAppConsumerServiceDiscovery::SendInterest();
@@ -434,8 +440,8 @@ CustomAppConsumerServiceDiscovery::OnData(std::shared_ptr<const ndn::Data> data)
     Time timeNow = Simulator::Now();
     if (timeNow > m_WFstartTime)
     {
-      NS_LOG_DEBUG("\n\n  ERROR!!! Workflow started before Service Discovery process finished!" << "\n\n");
-      NS_LOG_DEBUG("\n\n  TO FIX ERROR: change the worflow start time for this scenario to be a little later, to allow SD to finish." << "\n\n");
+      NS_LOG_ERROR("\n\n  ERROR!!! Workflow started before Service Discovery process finished!" << "\n\n");
+      NS_LOG_ERROR("\n\n  TO FIX ERROR: change the worflow start time for this scenario to be a little later, to allow SD to finish." << "\n\n");
     }
 
   }
@@ -443,21 +449,24 @@ CustomAppConsumerServiceDiscovery::OnData(std::shared_ptr<const ndn::Data> data)
   {
   // else, it's the final workflow data packet, so just report the result and stop the simulation timer
 
-    std::cout << "\n\n      CONSUMER: DATA received for name " << data->getName() << std::endl << "\n\n";
+    NS_LOG_INFO("\n\n      CONSUMER: DATA received for name " << data->getName() << std::endl << "\n\n");
 
-    m_endTime = Simulator::Now();
-    Time serviceLatency = m_endTime - m_startTime;
-    std::cout << "\n  Service Latency: " <<  serviceLatency.GetMilliSeconds() << " milliseconds." << std::endl;
-    std::cout << "\n  Service Latency: " <<  serviceLatency.GetMicroSeconds() << " microseconds." << std::endl;
+    m_WFendTime = Simulator::Now();
+    Time serviceLatency = m_WFendTime - m_WFstartTime;
+    NS_LOG_INFO("\n  Service Latency: " <<  serviceLatency.GetMilliSeconds() << " milliseconds." << std::endl);
+    NS_LOG_INFO("\n  Service Latency: " <<  serviceLatency.GetMicroSeconds() << " microseconds." << std::endl);
+    NS_LOG_INFO("\n  Service Latency: " <<  serviceLatency.GetNanoSeconds() << " nanoseconds." << std::endl);
 
     ndn::Block myRxedBlock = data->getContent();
-    //std::cout << "\nCONSUMER: result = " << myRxedBlock << std::endl << "\n\n";
+    //NS_LOG_DEBUG("\nCONSUMER: result = " << myRxedBlock << std::endl << "\n\n");
     uint8_t *pContent = (uint8_t *)(myRxedBlock.data()); // this points to the first byte, which is the TLV-TYPE (21 for data packet contet)
     pContent++;  // now this points to the second byte, containing 253 (0xFD), meaning size (1024) is expressed with 2 octets
     pContent++;  // now this points to the first size octet
     pContent++;  // now this points to the second size octet
     pContent++;  // now we are pointing at the first byte of the true content
-    std::cout << "\n  The final answer is: " <<  (int)(*pContent) << std::endl << "\n\n";
+    NS_LOG_INFO("\n  The final answer is: " <<  (int)(*pContent) << std::endl << "\n\n");
+
+    Simulator::Stop(Simulator::Now()); // end the simulation as soon as we receive this data packet, no need to keep going.
 
   }
 

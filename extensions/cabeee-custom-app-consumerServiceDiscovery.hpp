@@ -75,11 +75,11 @@ private:
   uint16_t m_orchestrate;
   uint16_t m_fwdOpt;
   std::string m_dagPath;
-  Time m_SDstartTime;
-  Time m_WFstartTime;
   bool m_SDrunning;
-  Time m_startTime;
-  Time m_endTime;
+  Time m_SDstartTime;
+  Time m_SDendTime;
+  Time m_WFstartTime;
+  Time m_WFendTime;
 };
 
 } // namespace ns3

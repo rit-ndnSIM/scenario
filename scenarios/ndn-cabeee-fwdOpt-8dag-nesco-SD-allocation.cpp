@@ -316,7 +316,7 @@ main(int argc, char* argv[])
 
 
 
-  Simulator::Stop(Seconds(8.0));
+  Simulator::Stop(Seconds(20.1)); // pick a large value, the consumer will end the simulation as soon as the workflow data packet is received.
 
   //ndn::L3RateTracer::InstallAll("rate-trace_cabeee-8dag.txt", Seconds(0.1));
   //ndn::CsTracer::InstallAll("cs-trace_cabeee-8dag.txt", Seconds(0.1));

@@ -232,7 +232,7 @@ main(int argc, char* argv[])
   Config::ConnectWithoutContext("/NodeList/*/DeviceList/*/$ns3::PointToPointNetDevice/MacTx",
                                 MakeCallback(&PcapWriter::TracePacket, &trace));
 
-  Simulator::Stop(Seconds(6.1));
+  Simulator::Stop(Seconds(20.1)); // pick a large value, the consumer will end the simulation as soon as the workflow data packet is received.
 
   ndn::L3RateTracer::InstallAll("rate-trace_cabeee-fwdOpt-4dag-nesco-SD-allocation.txt", Seconds(0.0005));
   ndn::CsTracer::InstallAll("cs-trace_cabeee-fwdOpt-4dag-nesco-SD-allocation.txt", Seconds(0.0005));
