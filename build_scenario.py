@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 
-import critical_path_metric as cpm
+import graph
 import topo2json
 import json2topo
 
 from collections import defaultdict
 from itertools import combinations
 import argparse
-import json 
+import json
 import pathlib
 import os
 import random
@@ -55,8 +55,8 @@ def get_topo(topo_in, topo_type=None, topo_out=None):
 
 
 def get_services(dag_file, hosting=None):
-    dag_cxns = cpm.workflow_connections_from_file(dag_file)
-    dag = cpm.Workflow(dag_cxns)
+    dag_cxns = graph.workflow_connections_from_file(dag_file)
+    dag = graph.Workflow(dag_cxns)
 
     services = dict()
     services["services"] = []
@@ -111,7 +111,7 @@ def generate_topo(num_nodes, num_edges, user_node="user"):
     if num_edges > num_nodes * (num_nodes - 1) // 2:
         raise ValueError("Too many edges for a simple undirected graph.")
     
-    topo = cpm.Topology()
+    topo = graph.Topology()
     
     # create all nodes (numbers 0..num_nodes-1)
     nodes = [f"rtr-{i}" for i in range(num_nodes-1)]
