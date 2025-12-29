@@ -98,6 +98,7 @@ CustomAppConsumerServiceDiscovery::StartApplication()
   // This is why we must remove the line, otherwise the interest is simply fowarded back into the app???
   // Although I don't see the log entry for receiving an interest.
 
+    NS_LOG_INFO("\n\n  - workflow start: " << m_WFstartTime.ToInteger(ns3::Time::NS) << " nanoseconds\n\n");
 
   // Schedule send of first interest
   if (m_fwdOpt == 0) // no service discovery
@@ -426,8 +427,7 @@ CustomAppConsumerServiceDiscovery::OnData(std::shared_ptr<const ndn::Data> data)
     std::string dataPacketString;
     dataPacketString = (const char *)data->getContent().value();
     json dataPacketContents = json::parse(dataPacketString);
-    NS_LOG_INFO("\n\nData received - absolute EFT:   " << dataPacketContents["EFT"] << " nanoseconds\n"
-                    "              - workflow start: " << m_WFstartTime.ToInteger(ns3::Time::NS) << " nanoseconds\n\n");
+    NS_LOG_INFO("\n\nData received - absolute EFT:   " << dataPacketContents["EFT"] << " nanoseconds\n");
     int64_t workflowLatency_ns = dataPacketContents["EFT"].get<int64_t>() - m_WFstartTime.ToInteger(ns3::Time::NS);
     NS_LOG_INFO("\n\n  Service Latency estimated by SD: " << workflowLatency_ns/1000 << " microseconds.\n\n");
 

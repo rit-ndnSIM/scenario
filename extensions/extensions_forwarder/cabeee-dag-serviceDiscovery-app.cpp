@@ -78,6 +78,7 @@ DagServiceDiscoveryApp::StartApplication()
 
   m_name = m_prefix.ndn::Name::toUri() + "/serviceDiscovery" + m_service.ndn::Name::toUri();
   
+  NS_LOG_DEBUG("serviceDiscoveryAPP is running on node " << GetNode()->GetId());
   NS_LOG_DEBUG("serviceDiscoveryAPP is performing AddRoute on name: " << m_name);
 
   // Add entry to FIB for `/PREFIX/sub`
@@ -253,7 +254,7 @@ DagServiceDiscoveryApp::SendInterest(const std::string& interestName, std::strin
   // Create and configure ndn::Interest
   //auto interest = std::make_shared<ndn::Interest>("/PREFIX/sub");
   //auto interest = std::make_shared<ndn::Interest>(m_name); // must take it in as an argument, not just use m_name!!
-  auto interest = std::make_shared<ndn::Interest>(m_prefix.ndn::Name::toUri() + "/serviceDiscovery" + interestName);
+  auto interest = std::make_shared<ndn::Interest>(interestName);
   Ptr<UniformRandomVariable> rand = CreateObject<UniformRandomVariable>();
   interest->setNonce(rand->GetValue(0, std::numeric_limits<uint32_t>::max()));
   interest->setInterestLifetime(ndn::time::seconds(10));
@@ -289,6 +290,42 @@ DagServiceDiscoveryApp::OnInterest(std::shared_ptr<const ndn::Interest> interest
 
   NS_LOG_DEBUG("ServiceDiscoveryAPP Received Interest packet for " << interest->getName());
 
+
+
+  // if we are receiving a schedulerRelease message from a node downstream, then remove the scheduled service from this node if it exists. If it does not exist, forward the release request further upstream.
+  if (interest->getName().getSubName(1,1).toUri() == "/schedulerRelease") // starting at component 1, get 1 component (where /schedulerRelease would be)
+  {
+    // name&hash to remove from CPU scheduling will come as an application parameter, not as part of the actual schedulerRelease name
+    auto appParameterFromInterest = interest->getApplicationParameters();
+    std::string nameAndHashToRemove = std::string(reinterpret_cast<const char*>(appParameterFromInterest.value()), appParameterFromInterest.value_size());
+    NS_LOG_DEBUG("ServiceDiscoveryAPP - received schedulerRelease message for " << nameAndHashToRemove << std::endl);
+
+    //NS_LOG_DEBUG("\n\nServiceDiscoveryAPP - m_dagServTracker data structure (on schedulerRelease interest): " << std::setw(2) << m_dagServTracker << '\n');
+
+    // iterate through dagServTracker data structure, and generate schedulerRelease messages upstream for all inputs.
+    // go through data structure elements, looking at the names in "inputsRxed" to generate new schedulerRelease messages for them
+    bool has_inputs = false;
+    for (auto& serviceIterator : m_dagServTracker.items())
+    {
+      if (serviceIterator.key() == nameAndHashToRemove)
+      {
+        for (auto& inputIterator : m_dagServTracker[serviceIterator.key()]["inputsRxed"].items())
+        {
+          has_inputs = true;
+          NS_LOG_DEBUG("ServiceDiscoveryAPP - generating schedulerReleaseFromApp message for " << m_prefix.ndn::Name::toUri() + "/serviceDiscovery" + inputIterator.key() << std::endl);
+          DagServiceDiscoveryApp::SendInterest(m_prefix.ndn::Name::toUri() + "/schedulerRelease", m_prefix.ndn::Name::toUri() + "/serviceDiscovery" + inputIterator.key());
+        }
+      }
+    }
+    if (has_inputs == false)
+    {
+      NS_LOG_DEBUG("ServiceDiscoveryAPP - after receiving schedulerRelease message, determined there's no inputs for this service.");
+    }
+    return;
+  } //else
+
+
+
   // decode the DAG string contained in the application parameters, so we can generate the new interest(s)
   //extract custom parameter from interest packet
   auto dagParameterFromInterest = interest->getApplicationParameters();
@@ -300,6 +337,7 @@ DagServiceDiscoveryApp::OnInterest(std::shared_ptr<const ndn::Interest> interest
 
 
   //NS_LOG_DEBUG("\n\nServiceDiscoveryAPP - Full DAG as received: " << std::setw(2) << dagObject << '\n');
+  NS_LOG_DEBUG("ServiceDiscoveryAPP Received Interest packet for " << interest->getName() << " where prev name&hash was " << dagObject["prevHash"]);
 
 
   // create the tracking data structure using JSON
@@ -368,7 +406,7 @@ DagServiceDiscoveryApp::OnInterest(std::shared_ptr<const ndn::Interest> interest
             // generate the interest for this input, sendInterest will prune the DAG and set the head properly
             std::string dagString = dagObject.dump();
             //NS_LOG_DEBUG("\n\nshortcutOPT: Generating interest for " << serviceInput.key() << '\n');
-            DagServiceDiscoveryApp::SendInterest(serviceInput.key(), dagString);
+            DagServiceDiscoveryApp::SendInterest(m_prefix.ndn::Name::toUri() + "/serviceDiscovery" + serviceInput.key(), dagString);
           }
         }
         m_nameAndDigest = interest->getName();   // store the name with digest so that we can later generate the data packet with the same name/digest!
@@ -412,7 +450,7 @@ DagServiceDiscoveryApp::OnInterest(std::shared_ptr<const ndn::Interest> interest
       //dataPacketContents["EFT"] = timeNowNS;
       dataPacketContents["EFT"] = timeNowNS + WFstartTimeNS - SDstartTimeNS;
       dataPacketContents["txTime"] = timeNowNS;
-      dataPacketContents["serviceLatency"] = 0; //TODO: for now, I'm just assuming all root node services take 0ms to run (keep track of EFT in nanoseconds for granularity), but this will need to come from somewhere based on service and node
+      dataPacketContents["serviceLatency"] = 1000000; //TODO: for now, I'm just assuming all root node services take 1ms to run (keep track of EFT in nanoseconds for granularity), but this will need to come from somewhere based on service and node
       //NS_LOG_DEBUG("timeStringNS = " << timeStringNS);
 
       std::string dataPacketString = dataPacketContents.dump();
@@ -491,7 +529,7 @@ DagServiceDiscoveryApp::OnInterest(std::shared_ptr<const ndn::Interest> interest
               m_dagServTracker[rxedInterestFullNameAndHash]["EFT"][serviceInputNameAndHash] = -1; // initialize to -1, meaning it is an invalid EFT value that hasn't been calculated yet.
 
               // generate the interest for this input
-              //DagServiceDiscoveryApp::SendInterest(serviceInputNameAndHash, updatedDagString);
+              //DagServiceDiscoveryApp::SendInterest(m_prefix.ndn::Name::toUri() + "/serviceDiscovery" + serviceInputNameAndHash, updatedDagString);
               NS_LOG_DEBUG("ServiceDiscoveryAPP: Sending Interest packet for " << *new_interest);
               // Call trace (for logging purposes)
               m_transmittedInterests(new_interest, this, m_face);
@@ -706,7 +744,10 @@ DagServiceDiscoveryApp::OnData(std::shared_ptr<const ndn::Data> data)
 
 
     //m_dagServTracker.clear();
-    m_dagServTracker.erase(serviceNameAndHash);
+    //m_dagServTracker.erase(serviceNameAndHash);
+    // If I just erase the entry, then schedulerRelease won't know to send messages upstream. Each entry is unique now (hash contains info on historic path), so it's OK to leave them.
+    //m_dagServTracker[serviceNameAndHash]["EFT"] = -1;
+    //m_dagServTracker[serviceNameAndHash]["inputsRxed"] = 0;
     m_lowestFreshness = ndn::time::milliseconds(100000); // set to a high value (I know no producer freshness value is higher than 100 seconds)
 
 

@@ -15,19 +15,22 @@ clear
 set -e
 
 # log levels: error, warn, info, debug
+# inclusive log levels don't seem to work (using level_debug won't show more severe errors, only debug)
 
-LOGS=CustomAppConsumer=warn
-LOGS=$LOGS:CustomAppConsumerServiceDiscovery=info
-LOGS=$LOGS:CustomAppConsumer2=warn
-LOGS=$LOGS:CustomAppProducer=warn
-LOGS=$LOGS:DagForwarderApp=warn
-LOGS=$LOGS:DagServiceDiscoveryApp=warn
-LOGS=$LOGS:ndn.App=warn
-LOGS=$LOGS:DagOrchestratorA_App=warn
-LOGS=$LOGS:DagServiceA_App=warn
-LOGS=$LOGS:DagOrchestratorB_App=warn
-LOGS=$LOGS:DagServiceB_App=warn
-LOGS=$LOGS:ndn-cxx.nfd.Forwarder=info
+LOGS=CustomAppConsumer="error|warn"
+LOGS=$LOGS:CustomAppConsumerServiceDiscovery="error|warn|info"
+LOGS=$LOGS:CustomAppConsumer2="error|warn"
+LOGS=$LOGS:CustomAppProducer="error|warn"
+LOGS=$LOGS:DagForwarderApp="error|warn"
+#LOGS=$LOGS:DagServiceDiscoveryApp="error|warn|info|time|node|func"
+LOGS=$LOGS:DagServiceDiscoveryApp="error|warn|info|debug|time|node|func"
+LOGS=$LOGS:ndn.App="error|warn"
+LOGS=$LOGS:DagOrchestratorA_App="error|warn"
+LOGS=$LOGS:DagServiceA_App="error|warn"
+LOGS=$LOGS:DagOrchestratorB_App="error|warn"
+LOGS=$LOGS:DagServiceB_App="error|warn"
+#LOGS=$LOGS:ndn-cxx.nfd.Forwarder="error|warn|info|time|node|func"
+LOGS=$LOGS:ndn-cxx.nfd.Forwarder="error|warn|info|debug|time|node|func"
 
 export NS_LOG="$LOGS"
 
@@ -40,12 +43,14 @@ TOPOLOGY_DIR="$HOME/ndnSIM/scenario/topologies"
 
 declare -a scenarios=(
 	# 4 DAG
-	"ndn-cabeee-fwdOpt-4dag-nesco-noSD nesco 4dag.json 4dag-fwdOpt.hosting topo-cabeee-3node-fwdOpt.json"
-	"ndn-cabeee-fwdOpt-4dag-nesco-SD-noAllocation nesco 4dag.json 4dag-fwdOpt.hosting topo-cabeee-3node-fwdOpt.json"
-	"ndn-cabeee-fwdOpt-4dag-nesco-SD-allocation nesco 4dag.json 4dag-fwdOpt.hosting topo-cabeee-3node-fwdOpt.json"
-	"ndn-cabeee-fwdOpt-8dag-nesco-noSD nesco 8dag.json 8dag-fwdOpt.hosting topo-cabeee-3node-fwdOpt.json"
-	"ndn-cabeee-fwdOpt-8dag-nesco-SD-noAllocation nesco 8dag.json 8dag-fwdOpt.hosting topo-cabeee-3node-fwdOpt.json"
+	#"ndn-cabeee-fwdOpt-4dag-nesco-noSD nesco 4dag.json 4dag-fwdOpt.hosting topo-cabeee-3node-fwdOpt.json"
+	#"ndn-cabeee-fwdOpt-4dag-nesco-SD-noAllocation nesco 4dag.json 4dag-fwdOpt.hosting topo-cabeee-3node-fwdOpt.json"
+	#"ndn-cabeee-fwdOpt-4dag-nesco-SD-allocation nesco 4dag.json 4dag-fwdOpt.hosting topo-cabeee-3node-fwdOpt.json"
+	#"ndn-cabeee-fwdOpt-8dag-nesco-noSD nesco 8dag.json 8dag-fwdOpt.hosting topo-cabeee-3node-fwdOpt.json"
+	#"ndn-cabeee-fwdOpt-8dag-nesco-SD-noAllocation nesco 8dag.json 8dag-fwdOpt.hosting topo-cabeee-3node-fwdOpt.json"
 	"ndn-cabeee-fwdOpt-8dag-nesco-SD-allocation nesco 8dag.json 8dag-fwdOpt.hosting topo-cabeee-3node-fwdOpt.json"
+	#"ndn-cabeee-fwdOpt-2dag-nesco-SD-noAllocation nesco 2dag.json 2dag-fwdOpt.hosting topo-cabeee-3node-fwdOpt.json"
+	#"ndn-cabeee-fwdOpt-2dag-nesco-SD-allocation nesco 2dag.json 2dag-fwdOpt.hosting topo-cabeee-3node-fwdOpt.json"
 	)
 	
 scenario_log="$SCENARIO_DIR/scenario.log"
@@ -54,7 +59,7 @@ csv_out="$SCENARIO_DIR/perf-results-simulation-fwdOpt.csv"
 
 
 
-header="Example, SD Interest Packets Generated, SD Data Packets Generated, SD Interest Packets Transmitted, SD Data Packets Transmitted, WF Interest Packets Generated, WF Data Packets Generated, WF Interest Packets Transmitted, WF Data Packets Transmitted, Critical-Path-Metric, CPM-t_exec(ns), SD Latency (us), SD Estimated WF Service Latency (us), WF Service Latency (us), Total Node Usage Time (us), Average Node Utilization (%), Final Result, Time, ns-3 commit, pybindgen commit, scenario commit, ndnSIM commit"
+header="Example, SD Interest Packets Generated, SD Data Packets Generated, SD Interest Packets Transmitted, SD Data Packets Transmitted, WF Interest Packets Generated, WF Data Packets Generated, WF Interest Packets Transmitted, WF Data Packets Transmitted, Critical-Path-Metric, CPM-t_exec(ns), SD Latency (us), SD Estimated WF Service Latency (us), WF Service Latency (us), Total Node Usage Time (us), Average Node Utilization (%), Coefficient of Variation (load distribution), Final Result, Time, ns-3 commit, pybindgen commit, scenario commit, ndnSIM commit"
 
 if [ ! -f "$csv_out" ]; then
 	echo "Creating csv..."
@@ -131,7 +136,7 @@ do
     result="${result:-N.A.}"
 
 	packets=$( \
-		python process_nfd_logs.py | sed -n \
+		python process_nfd_logs.py ${scenario}.png | sed -n \
 		-e 's/^SD Interest Packets Generated: \([0-9]*\) interests$/\1,/p' \
 		-e 's/^SD Data Packets Generated: \([0-9]*\) data$/\1,/p' \
 		-e 's/^SD Interest Packets Transmitted: \([0-9]*\) interests$/\1,/p' \
@@ -142,6 +147,7 @@ do
 		-e 's/^WF Data Packets Transmitted: \([0-9]*\) data/\1,/p' \
 		-e 's/^Overall Total Busy Time (All Nodes): \([0-9.]*\) microseconds/\1,/p' \
 		-e 's/^Average Utilization (All Nodes): \([0-9.]*\)%$/\1,/p' \
+		-e 's/^Coefficient of Variation (load distribution): \([0-9.]*\)/\1,/p' \
 		| tr -d '\n' \
 	)
 
@@ -161,6 +167,7 @@ do
 	WFdata_trans="${packetArray[7]:-N.A.}"
 	totalNodeUsageTime="${packetArray[8]:-N.A.}"
 	avgNodeUsage="${packetArray[9]:-N.A.}"
+	coeffVariation="${packetArray[10]:-N.A.}"
 
 	cpm=$( \
 		../CPM/cpm --scheme ${type} --workflow ${wf} --hosting ${hosting} --topology ${topo} | sed -n \
@@ -173,7 +180,7 @@ do
 		| tr -d '\n' \
 	)
 
-	row="$scenario, $SDinterest_gen, $SDdata_gen, $SDinterest_trans, $SDdata_trans, $WFinterest_gen, $WFdata_gen, $WFinterest_trans, $WFdata_trans, $cpm, $cpm_t, $SDlatency, $estimatedWFLatency, $WFlatency, $totalNodeUsageTime, $avgNodeUsage, $result, $now, $ns_3_hash, $pybindgen_hash, $scenario_hash, $ndnsim_hash"
+	row="$scenario, $SDinterest_gen, $SDdata_gen, $SDinterest_trans, $SDdata_trans, $WFinterest_gen, $WFdata_gen, $WFinterest_trans, $WFdata_trans, $cpm, $cpm_t, $SDlatency, $estimatedWFLatency, $WFlatency, $totalNodeUsageTime, $avgNodeUsage, $coeffVariation, $result, $now, $ns_3_hash, $pybindgen_hash, $scenario_hash, $ndnsim_hash"
 
 	echo "Dumping to csv..."
 	line_num="$(grep -n -F "$scenario," "$csv_out" | cut -d: -f1 | head -1)"
