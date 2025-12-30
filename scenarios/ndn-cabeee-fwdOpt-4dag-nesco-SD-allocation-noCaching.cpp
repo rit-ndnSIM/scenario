@@ -88,7 +88,6 @@ main(int argc, char* argv[])
 
   ndnHelper.setCsSize(0); // content store size (0 disables it)
   ndnHelper.Install(router1);
-  ndnHelper.setCsSize(0); // content store size (0 disables it)
   ndnHelper.Install(router2);
   ndnHelper.Install(router3);
 

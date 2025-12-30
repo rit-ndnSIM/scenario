@@ -102,19 +102,18 @@ main(int argc, char* argv[])
   //Ptr<Node> orchestrator = Names::Find<Node>("orch");
   Ptr<Node> consumer = Names::Find<Node>("user");
 
-  ndnHelper.setCsSize(0); // disable content store
+  ndnHelper.setCsSize(1000); // content store size (0 disables it)
   ndnHelper.Install(producer);
 
-  //ndnHelper.setCsSize(0); // enable/disable content store
-  ndnHelper.setCsSize(0); // enable/disable content store
+  ndnHelper.setCsSize(1000); // content store size (0 disables it)
   ndnHelper.Install(router1);
   ndnHelper.Install(router2);
   ndnHelper.Install(router3);
 
-  //ndnHelper.setCsSize(0); // disable content store
+  //ndnHelper.setCsSize(0); // content store size (0 disables it)
   //ndnHelper.Install(orchestrator);
 
-  ndnHelper.setCsSize(0); // disable content store
+  ndnHelper.setCsSize(0); // content store size (0 disables it)
   ndnHelper.Install(consumer);
 
 
