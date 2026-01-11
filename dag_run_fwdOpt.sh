@@ -43,14 +43,14 @@ TOPOLOGY_DIR="$HOME/ndnSIM/scenario/topologies"
 
 declare -a scenarios=(
 	# 4 DAG
-	#"ndn-cabeee-fwdOpt-4dag-nesco-noSD nesco 4dag.json 4dag-fwdOpt.hosting topo-cabeee-3node-fwdOpt.json"
-	#"ndn-cabeee-fwdOpt-4dag-nesco-SD-noAllocation nesco 4dag.json 4dag-fwdOpt.hosting topo-cabeee-3node-fwdOpt.json"
-	#"ndn-cabeee-fwdOpt-4dag-nesco-SD-allocation-noCaching nesco 4dag.json 4dag-fwdOpt.hosting topo-cabeee-3node-fwdOpt.json"
-	#"ndn-cabeee-fwdOpt-4dag-nesco-SD-allocation-caching nesco 4dag.json 4dag-fwdOpt.hosting topo-cabeee-3node-fwdOpt.json"
-	#"ndn-cabeee-fwdOpt-8dag-nesco-noSD nesco 8dag.json 8dag-fwdOpt.hosting topo-cabeee-3node-fwdOpt.json"
-	#"ndn-cabeee-fwdOpt-8dag-nesco-SD-noAllocation nesco 8dag.json 8dag-fwdOpt.hosting topo-cabeee-3node-fwdOpt.json"
+	"ndn-cabeee-fwdOpt-4dag-nesco-noSD nesco 4dag.json 4dag-fwdOpt.hosting topo-cabeee-3node-fwdOpt.json"
+	"ndn-cabeee-fwdOpt-4dag-nesco-SD-noAllocation nesco 4dag.json 4dag-fwdOpt.hosting topo-cabeee-3node-fwdOpt.json"
+	"ndn-cabeee-fwdOpt-4dag-nesco-SD-allocation-noCaching nesco 4dag.json 4dag-fwdOpt.hosting topo-cabeee-3node-fwdOpt.json"
+	"ndn-cabeee-fwdOpt-4dag-nesco-SD-allocation-caching nesco 4dag.json 4dag-fwdOpt.hosting topo-cabeee-3node-fwdOpt.json"
+	"ndn-cabeee-fwdOpt-8dag-nesco-noSD nesco 8dag.json 8dag-fwdOpt.hosting topo-cabeee-3node-fwdOpt.json"
+	"ndn-cabeee-fwdOpt-8dag-nesco-SD-noAllocation nesco 8dag.json 8dag-fwdOpt.hosting topo-cabeee-3node-fwdOpt.json"
 	"ndn-cabeee-fwdOpt-8dag-nesco-SD-allocation-noCaching nesco 8dag.json 8dag-fwdOpt.hosting topo-cabeee-3node-fwdOpt.json"
-	#"ndn-cabeee-fwdOpt-8dag-nesco-SD-allocation-caching nesco 8dag.json 8dag-fwdOpt.hosting topo-cabeee-3node-fwdOpt.json"
+	"ndn-cabeee-fwdOpt-8dag-nesco-SD-allocation-caching nesco 8dag.json 8dag-fwdOpt.hosting topo-cabeee-3node-fwdOpt.json"
 	#"ndn-cabeee-fwdOpt-2dag-nesco-SD-noAllocation nesco 2dag.json 2dag-fwdOpt.hosting topo-cabeee-3node-fwdOpt.json"
 	#"ndn-cabeee-fwdOpt-2dag-nesco-SD-allocation nesco 2dag.json 2dag-fwdOpt.hosting topo-cabeee-3node-fwdOpt.json"
 	)
@@ -122,11 +122,12 @@ do
     #result="${parseArray[2]:-N.A.}"    			# 3. Final Result (Expected in parseArray[2])
 
 	# 1. SD Estimated Service Latency
-    estimatedWFLatency=$(grep "Service Latency estimated by SD:" "$scenario_log" | sed -n 's/^\s*Service Latency estimated by SD: \([0-9\.]*\) microseconds.$/\1/p')
+    #estimatedWFLatency=$(grep "Service Latency estimated by SD:" "$scenario_log" | sed -n 's/^\s*Service Latency estimated by SD: \([0-9\.]*\) microseconds.$/\1/p')
+    estimatedWFLatency=$(grep "Service Latency estimated by SD:" "$scenario_log" | tail -n 1 | sed -n 's/^\s*Service Latency estimated by SD: \([0-9\.]*\) microseconds.$/\1/p')
     estimatedWFLatency="${estimatedWFLatency:-N.A.}"
     
     # 2. Service Discovery Latency
-    SDlatency=$(grep "Service Discovery Latency:" "$scenario_log" | sed -n 's/^\s*Service Discovery Latency: \([0-9\.]*\) microseconds.$/\1/p')
+    SDlatency=$(grep "Service Discovery Latency:" "$scenario_log" | tail -n 1 | sed -n 's/^\s*Service Discovery Latency: \([0-9\.]*\) microseconds.$/\1/p')
     SDlatency="${SDlatency:-N.A.}"
     
     # 3. Service Latency
@@ -134,7 +135,7 @@ do
     WFlatency="${WFlatency:-N.A.}"
     
     # 4. Final Result
-    result=$(grep "The final answer is:" "$scenario_log" | sed -n 's/^\s*The final answer is: \([0-9]*\)$/\1/p')
+    result=$(grep "The final answer is:" "$scenario_log" | tail -n 1 | sed -n 's/^\s*The final answer is: \([0-9]*\)$/\1/p')
     result="${result:-N.A.}"
 
 	packets=$( \
