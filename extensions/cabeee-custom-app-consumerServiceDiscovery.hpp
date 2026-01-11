@@ -73,7 +73,10 @@ private:
   ndn::Name m_prefix;
   ndn::Name m_service;
   uint16_t m_orchestrate;
-  uint16_t m_fwdOpt;
+  uint16_t m_serviceDiscovery;
+  uint16_t m_resourceAllocation;
+  uint16_t m_allocationReuse;
+  uint16_t m_scheduleCompaction;
   std::string m_dagPath;
   bool m_SDrunning;
   Time m_SDstartTime;

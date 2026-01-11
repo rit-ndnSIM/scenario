@@ -68,8 +68,14 @@ CustomAppConsumerServiceDiscovery::GetTypeId()
                     MakeStringAccessor(&CustomAppConsumerServiceDiscovery::m_dagPath), MakeStringChecker())
     .AddAttribute("Orchestrate", "Requested orchestration", UintegerValue(0),
                     MakeUintegerAccessor(&CustomAppConsumerServiceDiscovery::m_orchestrate), MakeUintegerChecker<uint16_t>())
-    .AddAttribute("FwdOpt", "Requested forwarding optimization", UintegerValue(0),
-                    MakeUintegerAccessor(&CustomAppConsumerServiceDiscovery::m_fwdOpt), MakeUintegerChecker<uint16_t>())
+    .AddAttribute("ServiceDiscovery", "Requested forwarding optimization", UintegerValue(0),
+                    MakeUintegerAccessor(&CustomAppConsumerServiceDiscovery::m_serviceDiscovery), MakeUintegerChecker<uint16_t>())
+    .AddAttribute("ResourceAllocation", "Requested forwarding optimization", UintegerValue(0),
+                    MakeUintegerAccessor(&CustomAppConsumerServiceDiscovery::m_resourceAllocation), MakeUintegerChecker<uint16_t>())
+    .AddAttribute("AllocationReuse", "Requested forwarding optimization", UintegerValue(0),
+                    MakeUintegerAccessor(&CustomAppConsumerServiceDiscovery::m_allocationReuse), MakeUintegerChecker<uint16_t>())
+    .AddAttribute("ScheduleCompaction", "Requested forwarding optimization", UintegerValue(0),
+                    MakeUintegerAccessor(&CustomAppConsumerServiceDiscovery::m_scheduleCompaction), MakeUintegerChecker<uint16_t>())
     .AddAttribute("SDstartTime", "Requested forwarding optimization", TimeValue(Seconds(1)),
                     MakeTimeAccessor(&CustomAppConsumerServiceDiscovery::m_SDstartTime), MakeTimeChecker())
     .AddAttribute("WFstartTime", "Requested forwarding optimization", TimeValue(Seconds(2)),
@@ -101,11 +107,11 @@ CustomAppConsumerServiceDiscovery::StartApplication()
     NS_LOG_INFO("\n\n  - workflow start: " << m_WFstartTime.ToInteger(ns3::Time::NS) << " nanoseconds\n\n");
 
   // Schedule send of first interest
-  if (m_fwdOpt == 0) // no service discovery
+  if (m_serviceDiscovery == 0) // no service discovery
   {
     Simulator::Schedule(m_WFstartTime, &CustomAppConsumerServiceDiscovery::SendInterest, this);
   }
-  if (m_fwdOpt == 1 || m_fwdOpt == 2) // run service discovery before running workflow (1: no CPU allocation, 2: use CPU allocation)
+  if (m_serviceDiscovery == 1) // perform service discovery
   {
     Simulator::Schedule(m_SDstartTime, &CustomAppConsumerServiceDiscovery::SendSDInterest, this);
     Simulator::Schedule(m_WFstartTime, &CustomAppConsumerServiceDiscovery::SendInterest, this);
@@ -188,7 +194,10 @@ CustomAppConsumerServiceDiscovery::SendSDInterest()
   //std::string timeStringNS = ssWF_ns.str();
   //std::cout << "SD Start Time in milliseconds: " << timeStringNS << std::endl;
   dagObject["workflowStartTimeNS"] = WFstartTimeNS;
-  dagObject["resourceAllocation"] = m_fwdOpt; // run service discovery before running workflow (1: no CPU allocation, 2: use CPU allocation)
+  dagObject["serviceDiscovery"] = m_serviceDiscovery;
+  dagObject["resourceAllocation"] = m_resourceAllocation;
+  dagObject["allocationReuse"] = m_allocationReuse;
+  dagObject["scheduleCompaction"] = m_scheduleCompaction;
 
 
   //std::cout << "Consumer: Full DAG as read: " << std::setw(2) << dagObject << '\n';

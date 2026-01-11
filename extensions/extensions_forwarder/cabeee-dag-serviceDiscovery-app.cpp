@@ -292,7 +292,7 @@ DagServiceDiscoveryApp::OnInterest(std::shared_ptr<const ndn::Interest> interest
 
 
 
-  // if we are receiving a schedulerRelease message from a node downstream, then remove the scheduled service from this node if it exists. If it does not exist, forward the release request further upstream.
+  // if we are receiving a schedulerRelease message from the NFD forwarder, then check the inputs to this service, and generate new schedulerRelease messages for each of them, which will be forwarded further upstream.
   if (interest->getName().getSubName(1,1).toUri() == "/schedulerRelease") // starting at component 1, get 1 component (where /schedulerRelease would be)
   {
     // name&hash to remove from CPU scheduling will come as an application parameter, not as part of the actual schedulerRelease name

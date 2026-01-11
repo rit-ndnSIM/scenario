@@ -301,7 +301,10 @@ main(int argc, char* argv[])
   userApp.SetAttribute("Service", StringValue("consumer"));
   userApp.SetAttribute("Workflow", StringValue("workflows/8dag.json"));
   userApp.SetAttribute("Orchestrate", UintegerValue(0));
-  userApp.SetAttribute("FwdOpt", UintegerValue(2));
+  userApp.SetAttribute("ServiceDiscovery", UintegerValue(1));
+  userApp.SetAttribute("ResourceAllocation", UintegerValue(1));
+  userApp.SetAttribute("AllocationReuse", UintegerValue(1));
+  userApp.SetAttribute("ScheduleCompaction", UintegerValue(1));
   userApp.SetAttribute("SDstartTime", TimeValue(Seconds(1)));
   userApp.SetAttribute("WFstartTime", TimeValue(Seconds(2)));
   userApp.Install(consumer).Start(Seconds(0));
