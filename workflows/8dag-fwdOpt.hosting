@@ -1,0 +1,30 @@
+{
+	"routerHosting": {
+		"sensor": [
+			"/sensor",
+			"/service1"
+		],
+		"rtr-3": [
+			"/sensor",
+			"/service1",
+			"/service2",
+			"/service5"
+		],
+		"rtr-1": [
+			"/sensor",
+			"/service2",
+			"/service3",
+			"/service6",
+			"/service7",
+			"/service8"
+		],
+		"rtr-2": [
+			"/service3",
+			"/service4",
+			"/service8"
+		],
+		"user": [
+			"/consumer"
+		]
+	}
+}
