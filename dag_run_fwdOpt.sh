@@ -139,7 +139,7 @@ do
     result="${result:-N.A.}"
 
 	packets=$( \
-		python process_nfd_logs.py ${scenario}.png | sed -n \
+		python process_nfd_logs_SD.py ${scenario}.png | sed -n \
 		-e 's/^SD Interest Packets Generated: \([0-9]*\) interests$/\1,/p' \
 		-e 's/^SD Data Packets Generated: \([0-9]*\) data$/\1,/p' \
 		-e 's/^SD Interest Packets Transmitted: \([0-9]*\) interests$/\1,/p' \
