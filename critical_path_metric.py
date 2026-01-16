@@ -306,6 +306,30 @@ class Graph(object):
         # if a node is in the graph but has no outgoing connections, self._graph[node] will not exist
         return self.get_outgoing() | self.get_incoming()
 
+    def get_contiguous_nodes(self, nodes):
+        fringe = nodes
+        closed = set()
+
+        while fringe:
+            n = fringe.pop()
+            if n in closed:
+                continue
+            closed.add(n)
+            for m in self.get_outgoing(n):
+                fringe.append(m)
+
+        return closed
+
+    def is_contiguous(self):
+        all_nodes = self.get_nodes()
+        
+        if not self._directed:
+            closed = self.get_contiguous_nodes(self._graph.keys()[0])
+        else:
+            raise "not implemented"
+
+        return all_nodes == closed
+
     # TODO: some sort of state to not re-do work each time we call this
     # may or may not be necessary for complex topologies
     # only implement caching if we have a performance issue
@@ -353,7 +377,7 @@ class Graph(object):
 class Workflow(Graph):
     """ Workflow data structure, directed graph """
 
-    def __init__(self, connections):
+    def __init__(self, connections=[]):
         super().__init__(connections, True)
 
     def clone(self):
@@ -390,6 +414,15 @@ class Workflow(Graph):
     def prune_split(self, service):
         return (self.clone().prune_downstream(service), self.clone().prune_upstream(service))
 
+    def get_producers(self):
+        return self.get_roots()
+
+    def get_consumers(self):
+        return self.get_sinks()
+
+    def get_services(self):
+        return self.get_incoming() & self.get_outgoing()
+
 
 class Topology(Graph):
     """ Topology data structure, undirected graph """
@@ -399,7 +432,7 @@ class Topology(Graph):
 
         return __class__([(node, service) for node, services in self._graph.items() for service in services])
 
-    def __init__(self, connections):
+    def __init__(self, connections=[]):
         super().__init__(connections, False)
 
 
@@ -411,7 +444,7 @@ class Hosting(Graph):
 
         return __class__([(node, service) for node, services in self._graph.items() for service in services])
 
-    def __init__(self, connections):
+    def __init__(self, connections=[]):
         super().__init__(connections, True)
         self.get_hosts = self.get_incoming
         self.get_hosting = self.get_outgoing
