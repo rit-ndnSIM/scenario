@@ -82,6 +82,17 @@ main(int argc, char* argv[])
     }
 
     std::string Prefix = scenario_json.at("prefix");
+    int8_t serviceDiscoveryFlag = scenario_json.at("serviceDiscovery");
+    int8_t resourceAllocationFlag = scenario_json.at("resourceAllocation");
+    int8_t allocationReuseFlag = scenario_json.at("allocationReuse");
+    int8_t scheduleCompactionFlag = scenario_json.at("scheduleCompaction");
+    int8_t startTimeSD;
+    int8_t startTimeWF;
+    int8_t simulationEndTime = scenario_json.at("simulationEndTime");
+    if (serviceDiscoveryFlag == 1) {
+        startTimeSD = scenario_json.at("startTimeSD");
+        startTimeWF = scenario_json.at("startTimeWF");
+    }
 
     for (const auto& srv : scenario_json.at("services")) {
         std::string strategy{ "/localhost/nfd/strategy/multicast" };
@@ -96,11 +107,10 @@ main(int argc, char* argv[])
     }
 
     // Installing global routing interface on all nodes
-    //ndn::GlobalRoutingHelper ndnGlobalRoutingHelper;
-    //ndnGlobalRoutingHelper.InstallAll();
+    ndn::GlobalRoutingHelper ndnGlobalRoutingHelper;
+    ndnGlobalRoutingHelper.InstallAll();
 
     // Installing applications
-
     for (const auto& hosting : scenario_json.at("routerHosting")) {
         std::string rtr_name{ hosting.at("router") };
         std::string srv_name{ hosting.at("service") };
@@ -134,18 +144,46 @@ main(int argc, char* argv[])
         }
 
         ndn::AppHelper appHelper("DagForwarderApp");
+        ndn::AppHelper serviceDiscoveryApp("DagServiceDiscoveryApp");
 
         if (type == "producer") {
             appHelper = ndn::AppHelper("CustomAppProducer");
+            if (serviceDiscoveryFlag == 1) {
+                serviceDiscoveryApp = ndn::AppHelper("DagServiceDiscoveryApp");
+                serviceDiscoveryApp.SetPrefix(Prefix);
+                serviceDiscoveryApp.SetAttribute("Service", StringValue(srv_name));
+                auto sd_app = serviceDiscoveryApp.Install(rtr_node);
+                sd_app.Start(Seconds(start));
+                if (end > 0)
+                    sd_app.Stop(Seconds(end));
+            }
+            ndnGlobalRoutingHelper.AddOrigins(Prefix + srv_name, rtr_name);
+            if (serviceDiscoveryFlag == 1) {
+                ndnGlobalRoutingHelper.AddOrigins(Prefix + "/serviceDiscovery" + srv_name, rtr_name);
+            }
         } else if (type == "service") {
             if (Prefix == "nesco" || Prefix == "nescoSCOPT"){
                 appHelper = ndn::AppHelper("DagForwarderApp");
+                serviceDiscoveryApp = ndn::AppHelper("DagServiceDiscoveryApp");
             }
             if (Prefix == "orchA") {
                 appHelper = ndn::AppHelper("DagServiceA_App");
             }
             if (Prefix == "orchB") {
                 appHelper = ndn::AppHelper("DagServiceB_App");
+            }
+            if (serviceDiscoveryFlag == 1) {
+                serviceDiscoveryApp = ndn::AppHelper("DagServiceDiscoveryApp");
+                serviceDiscoveryApp.SetPrefix(Prefix);
+                serviceDiscoveryApp.SetAttribute("Service", StringValue(srv_name));
+                auto sd_app = serviceDiscoveryApp.Install(rtr_node);
+                sd_app.Start(Seconds(start));
+                if (end > 0)
+                    sd_app.Stop(Seconds(end));
+            }
+            ndnGlobalRoutingHelper.AddOrigins(Prefix + srv_name, rtr_name);
+            if (serviceDiscoveryFlag == 1) {
+                ndnGlobalRoutingHelper.AddOrigins(Prefix + "/serviceDiscovery" + srv_name, rtr_name);
             }
         } else if (type == "consumer") {
             //TODO: do we want to support having the DAG workflow in the scenario_file? Right now we just support it being in a separate file (workflowFile)
@@ -156,10 +194,19 @@ main(int argc, char* argv[])
                 std::cerr << "No workflow file specified for consumer " << (srv_name) << ". (make sure you use '--scenario FILE' and this file has workflowFile specified)\n";
                 std::exit(1);
             }
-            appHelper = ndn::AppHelper("CustomAppConsumer");
+            //appHelper = ndn::AppHelper("CustomAppConsumer");
+            appHelper = ndn::AppHelper("CustomAppConsumerServiceDiscovery");
             appHelper.SetAttribute("Workflow", StringValue(workflow_file));
             if (Prefix == "nesco" || Prefix == "nescoSCOPT") {
                 appHelper.SetAttribute("Orchestrate", UintegerValue(0));
+                if (serviceDiscoveryFlag == 1) {
+                    appHelper.SetAttribute("ServiceDiscovery", UintegerValue(serviceDiscoveryFlag));
+                    appHelper.SetAttribute("ResourceAllocation", UintegerValue(resourceAllocationFlag));
+                    appHelper.SetAttribute("AllocationReuse", UintegerValue(allocationReuseFlag));
+                    appHelper.SetAttribute("ScheduleCompaction", UintegerValue(scheduleCompactionFlag));
+                    appHelper.SetAttribute("SDstartTime", TimeValue(Seconds(startTimeSD)));
+                    appHelper.SetAttribute("WFstartTime", TimeValue(Seconds(startTimeWF)));
+                }
             }
             if (Prefix == "orchA") {
                 appHelper.SetAttribute("Orchestrate", UintegerValue(1));
@@ -226,14 +273,17 @@ main(int argc, char* argv[])
 
         appHelper.SetAttribute("Service", StringValue(srv_name));
         appHelper.SetPrefix(Prefix);
-        auto app = appHelper.Install(rtr_node);
+        auto srv_app = appHelper.Install(rtr_node);
 
-        app.Start(Seconds(start));
+        srv_app.Start(Seconds(start));
         if (end > 0)
-            app.Stop(Seconds(end));
+            srv_app.Stop(Seconds(end));
     }
 
-    Simulator::Stop(Seconds(100.0)); //TODO: stop time should be set in json file, since some simulations can take much longer than others.
+    // Calculate and install FIBs
+    ndn::GlobalRoutingHelper::CalculateRoutes();
+
+    Simulator::Stop(Seconds(simulationEndTime));
 
     Simulator::Run();
     Simulator::Destroy();

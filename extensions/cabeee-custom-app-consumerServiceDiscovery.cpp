@@ -282,12 +282,13 @@ CustomAppConsumerServiceDiscovery::SendInterest()
   // if we are trying to run the workflow before service discovery finishes, report an error and abort.
   if(m_SDrunning == true)
   {
-    NS_LOG_ERROR("\n\n  ERROR!!! Workflow started before Service Discovery process finished!" << "\n\n");
+    //NS_LOG_ERROR("\n\n  ERROR!!! Workflow started before Service Discovery process finished!" << "\n\n");
+    NS_LOG_ERROR("\n\n  ERROR!!! Workflow started before Service Discovery process finished! Current time: " << Simulator::Now().GetNanoSeconds() << " nanoseconds, WF start time: " << m_WFstartTime.ToInteger(ns3::Time::NS) << " nanoseconds." << "\n\n");
     NS_LOG_ERROR("\n\n  TO FIX ERROR: change the worflow start time for this scenario to be a little later, to allow SD to finish." << "\n\n");
     return;
   }
 
-  //m_WFstartTime = Simulator::Now();
+  ///now = Simulator::Now();
 
   /////////////////////////////////////
   // Sending one Interest packet out //
@@ -449,7 +450,8 @@ CustomAppConsumerServiceDiscovery::OnData(std::shared_ptr<const ndn::Data> data)
     Time timeNow = Simulator::Now();
     if (timeNow > m_WFstartTime)
     {
-      NS_LOG_ERROR("\n\n  ERROR!!! Workflow started before Service Discovery process finished!" << "\n\n");
+      //NS_LOG_ERROR("\n\n  ERROR!!! Workflow started before Service Discovery process finished!" << "\n\n");
+      NS_LOG_ERROR("\n\n  ERROR!!! Workflow started before Service Discovery process finished! Current time: " << Simulator::Now().GetSeconds() << ", WF start time: " << m_WFstartTime.ToInteger(ns3::Time::S) << " seconds." << "\n\n");
       NS_LOG_ERROR("\n\n  TO FIX ERROR: change the worflow start time for this scenario to be a little later, to allow SD to finish." << "\n\n");
     }
 
