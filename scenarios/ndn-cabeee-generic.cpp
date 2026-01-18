@@ -28,6 +28,7 @@
 
 using json = nlohmann::json;
 
+
 namespace ns3 {
 
 int
@@ -102,7 +103,7 @@ main(int argc, char* argv[])
             strategy = srv["strategy"];
         }
         if (verbose)
-            std::cout << "Now setting routing strategy for " << (name) << " to " << (strategy) << std::endl;
+            std::cout << "Now setting routing strategy for " << (Prefix + name) << " to " << (strategy) << std::endl;
         ndn::StrategyChoiceHelper::InstallAll(Prefix + name, strategy);
     }
 

@@ -163,20 +163,11 @@ main(int argc, char* argv[])
   sensorApp.SetAttribute("Service", StringValue("sensor"));
   serviceDiscoveryApp.SetAttribute("Service", StringValue("sensor"));
 
-  sensorApp.Install(producer).Start(Seconds(0));
-  serviceDiscoveryApp.Install(producer).Start(Seconds(0));
-  ndnGlobalRoutingHelper.AddOrigins(Prefix + "/sensor", producer);
-  //ndnGlobalRoutingHelper.AddOrigins(Prefix + "/serviceDiscovery/sensor", producer);
-
-  sensorApp.Install(router1).Start(Seconds(0));
-  serviceDiscoveryApp.Install(router1).Start(Seconds(0));
-  ndnGlobalRoutingHelper.AddOrigins(Prefix + "/sensor", router1);
-  //ndnGlobalRoutingHelper.AddOrigins(Prefix + "/serviceDiscovery/sensor", router1);
 
   sensorApp.Install(router3).Start(Seconds(0));
   serviceDiscoveryApp.Install(router3).Start(Seconds(0));
   ndnGlobalRoutingHelper.AddOrigins(Prefix + "/sensor", router3);
-  //ndnGlobalRoutingHelper.AddOrigins(Prefix + "/serviceDiscovery/sensor", router3);
+  ndnGlobalRoutingHelper.AddOrigins(Prefix + "/serviceDiscovery/sensor", router3);
 
 
 
@@ -184,15 +175,10 @@ main(int argc, char* argv[])
   routerApp.SetAttribute("Service", StringValue("service1"));
   serviceDiscoveryApp.SetAttribute("Service", StringValue("service1"));
 
-  routerApp.Install(producer).Start(Seconds(0));
-  serviceDiscoveryApp.Install(producer).Start(Seconds(0));
-  ndnGlobalRoutingHelper.AddOrigins(Prefix + "/service1", producer);
-  //ndnGlobalRoutingHelper.AddOrigins(Prefix + "/serviceDiscovery/service1", producer);
-
   routerApp.Install(router3).Start(Seconds(0));
   serviceDiscoveryApp.Install(router3).Start(Seconds(0));
   ndnGlobalRoutingHelper.AddOrigins(Prefix + "/service1", router3);
-  //ndnGlobalRoutingHelper.AddOrigins(Prefix + "/serviceDiscovery/service1", router3);
+  ndnGlobalRoutingHelper.AddOrigins(Prefix + "/serviceDiscovery/service1", router3);
 
 
 
@@ -200,15 +186,10 @@ main(int argc, char* argv[])
   routerApp.SetAttribute("Service", StringValue("service2"));
   serviceDiscoveryApp.SetAttribute("Service", StringValue("service2"));
 
-  routerApp.Install(router1).Start(Seconds(0));
-  serviceDiscoveryApp.Install(router1).Start(Seconds(0));
-  ndnGlobalRoutingHelper.AddOrigins(Prefix + "/service2", router1);
-  //ndnGlobalRoutingHelper.AddOrigins(Prefix + "/serviceDiscovery/service2", router1);
-
   routerApp.Install(router3).Start(Seconds(0));
   serviceDiscoveryApp.Install(router3).Start(Seconds(0));
   ndnGlobalRoutingHelper.AddOrigins(Prefix + "/service2", router3);
-  //ndnGlobalRoutingHelper.AddOrigins(Prefix + "/serviceDiscovery/service2", router3);
+  ndnGlobalRoutingHelper.AddOrigins(Prefix + "/serviceDiscovery/service2", router3);
 
 
 
@@ -216,15 +197,10 @@ main(int argc, char* argv[])
   routerApp.SetAttribute("Service", StringValue("service3"));
   serviceDiscoveryApp.SetAttribute("Service", StringValue("service3"));
 
-  routerApp.Install(router1).Start(Seconds(0));
-  serviceDiscoveryApp.Install(router1).Start(Seconds(0));
-  ndnGlobalRoutingHelper.AddOrigins(Prefix + "/service3", router1);
-  //ndnGlobalRoutingHelper.AddOrigins(Prefix + "/serviceDiscovery/service3", router1);
-
-  routerApp.Install(router2).Start(Seconds(0));
-  serviceDiscoveryApp.Install(router2).Start(Seconds(0));
-  ndnGlobalRoutingHelper.AddOrigins(Prefix + "/service3", router2);
-  //ndnGlobalRoutingHelper.AddOrigins(Prefix + "/serviceDiscovery/service3", router2);
+  routerApp.Install(router3).Start(Seconds(0));
+  serviceDiscoveryApp.Install(router3).Start(Seconds(0));
+  ndnGlobalRoutingHelper.AddOrigins(Prefix + "/service3", router3);
+  ndnGlobalRoutingHelper.AddOrigins(Prefix + "/serviceDiscovery/service3", router3);
 
 
 
@@ -232,10 +208,10 @@ main(int argc, char* argv[])
   routerApp.SetAttribute("Service", StringValue("service4"));
   serviceDiscoveryApp.SetAttribute("Service", StringValue("service4"));
 
-  routerApp.Install(router2).Start(Seconds(0));
-  serviceDiscoveryApp.Install(router2).Start(Seconds(0));
-  ndnGlobalRoutingHelper.AddOrigins(Prefix + "/service4", router2);
-  //ndnGlobalRoutingHelper.AddOrigins(Prefix + "/serviceDiscovery/service4", router2);
+  routerApp.Install(router3).Start(Seconds(0));
+  serviceDiscoveryApp.Install(router3).Start(Seconds(0));
+  ndnGlobalRoutingHelper.AddOrigins(Prefix + "/service4", router3);
+  ndnGlobalRoutingHelper.AddOrigins(Prefix + "/serviceDiscovery/service4", router3);
 
 
 
@@ -246,7 +222,7 @@ main(int argc, char* argv[])
   routerApp.Install(router3).Start(Seconds(0));
   serviceDiscoveryApp.Install(router3).Start(Seconds(0));
   ndnGlobalRoutingHelper.AddOrigins(Prefix + "/service5", router3);
-  //ndnGlobalRoutingHelper.AddOrigins(Prefix + "/serviceDiscovery/service5", router3);
+  ndnGlobalRoutingHelper.AddOrigins(Prefix + "/serviceDiscovery/service5", router3);
 
 
 
@@ -254,26 +230,20 @@ main(int argc, char* argv[])
   routerApp.SetAttribute("Service", StringValue("service6"));
   serviceDiscoveryApp.SetAttribute("Service", StringValue("service6"));
 
-  routerApp.Install(router1).Start(Seconds(0));
-  serviceDiscoveryApp.Install(router1).Start(Seconds(0));
-  ndnGlobalRoutingHelper.AddOrigins(Prefix + "/service6", router1);
-  //ndnGlobalRoutingHelper.AddOrigins(Prefix + "/serviceDiscovery/service6", router1);
-
-  routerApp.Install(producer).Start(Seconds(0));
-  serviceDiscoveryApp.Install(producer).Start(Seconds(0));
-  ndnGlobalRoutingHelper.AddOrigins(Prefix + "/service6", producer);
-  //ndnGlobalRoutingHelper.AddOrigins(Prefix + "/serviceDiscovery/service6", producer);
-
+  routerApp.Install(router3).Start(Seconds(0));
+  serviceDiscoveryApp.Install(router3).Start(Seconds(0));
+  ndnGlobalRoutingHelper.AddOrigins(Prefix + "/service6", router3);
+  ndnGlobalRoutingHelper.AddOrigins(Prefix + "/serviceDiscovery/service6", router3);
 
 
 
   routerApp.SetAttribute("Service", StringValue("service7"));
   serviceDiscoveryApp.SetAttribute("Service", StringValue("service7"));
 
-  routerApp.Install(router1).Start(Seconds(0));
-  serviceDiscoveryApp.Install(router1).Start(Seconds(0));
-  ndnGlobalRoutingHelper.AddOrigins(Prefix + "/service7", router1);
-  //ndnGlobalRoutingHelper.AddOrigins(Prefix + "/serviceDiscovery/service7", router1);
+  routerApp.Install(router3).Start(Seconds(0));
+  serviceDiscoveryApp.Install(router3).Start(Seconds(0));
+  ndnGlobalRoutingHelper.AddOrigins(Prefix + "/service7", router3);
+  ndnGlobalRoutingHelper.AddOrigins(Prefix + "/serviceDiscovery/service7", router3);
 
 
 
@@ -281,15 +251,11 @@ main(int argc, char* argv[])
   routerApp.SetAttribute("Service", StringValue("service8"));
   serviceDiscoveryApp.SetAttribute("Service", StringValue("service8"));
 
-  routerApp.Install(router1).Start(Seconds(0));
-  serviceDiscoveryApp.Install(router1).Start(Seconds(0));
-  ndnGlobalRoutingHelper.AddOrigins(Prefix + "/service8", router1);
-  //ndnGlobalRoutingHelper.AddOrigins(Prefix + "/serviceDiscovery/service8", router1);
+  routerApp.Install(router3).Start(Seconds(0));
+  serviceDiscoveryApp.Install(router3).Start(Seconds(0));
+  ndnGlobalRoutingHelper.AddOrigins(Prefix + "/service8", router3);
+  ndnGlobalRoutingHelper.AddOrigins(Prefix + "/serviceDiscovery/service8", router3);
 
-  routerApp.Install(router2).Start(Seconds(0));
-  serviceDiscoveryApp.Install(router2).Start(Seconds(0));
-  ndnGlobalRoutingHelper.AddOrigins(Prefix + "/service8", router2);
-  //ndnGlobalRoutingHelper.AddOrigins(Prefix + "/serviceDiscovery/service8", router2);
 
 
  
@@ -301,11 +267,11 @@ main(int argc, char* argv[])
   userApp.SetAttribute("Service", StringValue("consumer"));
   userApp.SetAttribute("Workflow", StringValue("workflows/8dag.json"));
   userApp.SetAttribute("Orchestrate", UintegerValue(0));
-  userApp.SetAttribute("ServiceDiscovery", UintegerValue(0));
+  userApp.SetAttribute("ServiceDiscovery", UintegerValue(1));
   userApp.SetAttribute("ResourceAllocation", UintegerValue(0));
   userApp.SetAttribute("AllocationReuse", UintegerValue(0));
   userApp.SetAttribute("ScheduleCompaction", UintegerValue(0));
-  //userApp.SetAttribute("SDstartTime", TimeValue(Seconds(1)));
+  userApp.SetAttribute("SDstartTime", TimeValue(Seconds(1)));
   userApp.SetAttribute("WFstartTime", TimeValue(Seconds(2)));
   userApp.Install(consumer).Start(Seconds(0));
 

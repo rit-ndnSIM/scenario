@@ -23,14 +23,14 @@
 #include "ns3/network-module.h"
 #include "ns3/ndnSIM-module.h"
 #include "ns3/string.h"
-#include "ns3/point-to-point-module.h" // added for pCap generation
+//#include "ns3/point-to-point-module.h" // added for pCap generation
 
 
 #define PREFIX "/nesco"
 
 namespace ns3 {
 
-
+/*
 class PcapWriter {
 public:
   PcapWriter(const std::string& file)
@@ -51,6 +51,7 @@ public:
 private:
   Ptr<PcapFileWrapper> m_pcap;
 };
+*/
 
 int
 main(int argc, char* argv[])
@@ -204,13 +205,13 @@ main(int argc, char* argv[])
   ndnGlobalRoutingHelper.AddOrigins(Prefix + "/service3", router2);
   ndnGlobalRoutingHelper.AddOrigins(Prefix + "/service4", router2);
 
-  ndnGlobalRoutingHelper.AddOrigins(Prefix + "/serviceDiscovery/sensor", producer);
-  ndnGlobalRoutingHelper.AddOrigins(Prefix + "/serviceDiscovery/service1", producer);
-  ndnGlobalRoutingHelper.AddOrigins(Prefix + "/serviceDiscovery/service1", router3);
-  ndnGlobalRoutingHelper.AddOrigins(Prefix + "/serviceDiscovery/service2", router1);
-  ndnGlobalRoutingHelper.AddOrigins(Prefix + "/serviceDiscovery/service3", router1);
-  ndnGlobalRoutingHelper.AddOrigins(Prefix + "/serviceDiscovery/service3", router2);
-  ndnGlobalRoutingHelper.AddOrigins(Prefix + "/serviceDiscovery/service4", router2);
+  //ndnGlobalRoutingHelper.AddOrigins(Prefix + "/serviceDiscovery/sensor", producer);
+  //ndnGlobalRoutingHelper.AddOrigins(Prefix + "/serviceDiscovery/service1", producer);
+  //ndnGlobalRoutingHelper.AddOrigins(Prefix + "/serviceDiscovery/service1", router3);
+  //ndnGlobalRoutingHelper.AddOrigins(Prefix + "/serviceDiscovery/service2", router1);
+  //ndnGlobalRoutingHelper.AddOrigins(Prefix + "/serviceDiscovery/service3", router1);
+  //ndnGlobalRoutingHelper.AddOrigins(Prefix + "/serviceDiscovery/service3", router2);
+  //ndnGlobalRoutingHelper.AddOrigins(Prefix + "/serviceDiscovery/service4", router2);
 
 
 
@@ -230,14 +231,14 @@ main(int argc, char* argv[])
   // set the routes, OR set the forwarding strategy to multi-cast with the appropriate prefixes
 
 
-  PcapWriter trace("ndn-cabeee-4dag-nesco-trace.pcap");
-  Config::ConnectWithoutContext("/NodeList/*/DeviceList/*/$ns3::PointToPointNetDevice/MacTx",
-                                MakeCallback(&PcapWriter::TracePacket, &trace));
+  //PcapWriter trace("ndn-cabeee-4dag-nesco-trace.pcap");
+  //Config::ConnectWithoutContext("/NodeList/*/DeviceList/*/$ns3::PointToPointNetDevice/MacTx",
+                                //MakeCallback(&PcapWriter::TracePacket, &trace));
 
-  Simulator::Stop(Seconds(20.1)); // pick a large value, the consumer will end the simulation as soon as the workflow data packet is received.
+  Simulator::Stop(Seconds(20)); // pick a large value, the consumer will end the simulation as soon as the workflow data packet is received.
 
-  ndn::L3RateTracer::InstallAll("rate-trace_cabeee-fwdOpt-4dag-nesco-noSD.txt", Seconds(0.0005));
-  ndn::CsTracer::InstallAll("cs-trace_cabeee-fwdOpt-4dag-nesco-noSD.txt", Seconds(0.0005));
+  //ndn::L3RateTracer::InstallAll("rate-trace_cabeee-fwdOpt-4dag-nesco-noSD.txt", Seconds(0.0005));
+  //ndn::CsTracer::InstallAll("cs-trace_cabeee-fwdOpt-4dag-nesco-noSD.txt", Seconds(0.0005));
 
   Simulator::Run();
   Simulator::Destroy();

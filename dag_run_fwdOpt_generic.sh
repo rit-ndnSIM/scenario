@@ -36,6 +36,7 @@ SCENARIO_DIR="$HOME/ndnSIM/scenario"
 WORKFLOW_DIR="$HOME/ndnSIM/scenario/workflows"
 TOPOLOGY_DIR="$HOME/ndnSIM/scenario/topologies"
 SCENARIO_JSON_DIR="$SCENARIO_DIR/scenario_json"
+USAGE_ALLOCATION_GRAPHS_DIR="$HOME/ndnSIM/scenario/usage_allocation_graphs"
 
 mkdir -p "$SCENARIO_JSON_DIR"
 
@@ -82,7 +83,8 @@ do
 
         # Run the simulation, piping ALL output (stderr and stdout) to tee, 
         # which duplicates it to the screen and the log file ($scenario_log).
-        "$SCENARIO_DIR/waf" --run="ndn-cabeee-generic --scenario=$scenario_json" |& tee "$scenario_log"
+        "$SCENARIO_DIR/waf" --run="ndn-cabeee-generic --scenario=$scenario_json --verbose=false" |& tee "$scenario_log"
+        #"$SCENARIO_DIR/waf" --run="ndn-cabeee-generic --scenario=$scenario_json --verbose=true" |& tee "$scenario_log"
 
     	echo "Parsing logs..."
     
@@ -104,7 +106,7 @@ do
         result="${result:-N.A.}"
 
         packets=$( \
-            python process_nfd_logs_SD.py ${scenario}.png | sed -n \
+            python process_nfd_logs_SD.py $USAGE_ALLOCATION_GRAPHS_DIR/${scenario}.png | sed -n \
             -e 's/^SD Interest Packets Generated: \([0-9]*\) interests$/\1,/p' \
             -e 's/^SD Data Packets Generated: \([0-9]*\) data$/\1,/p' \
             -e 's/^SD Interest Packets Transmitted: \([0-9]*\) interests$/\1,/p' \

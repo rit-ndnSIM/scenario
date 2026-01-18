@@ -23,10 +23,12 @@
 #include "ns3/network-module.h"
 #include "ns3/ndnSIM-module.h"
 #include "ns3/string.h"
-#include "ns3/point-to-point-module.h" // added for pCap generation
+//#include "ns3/point-to-point-module.h" // added for pCap generation
 
 
 #define PREFIX "/nesco"
+
+NS_LOG_COMPONENT_DEFINE("ScenarioMain");
 
 namespace ns3 {
 
@@ -84,10 +86,11 @@ main(int argc, char* argv[])
   Ptr<Node> router3 = Names::Find<Node>("rtr-3");
   Ptr<Node> consumer = Names::Find<Node>("user");
 
-  ndnHelper.setCsSize(1000); // content store size (0 disables it)
+  NS_LOG_INFO("Now setting the Cache sizes to 0" << std::endl);
+  ndnHelper.setCsSize(0); // content store size (0 disables it)
   ndnHelper.Install(producer);
 
-  ndnHelper.setCsSize(1000); // content store size (0 disables it)
+  ndnHelper.setCsSize(0); // content store size (0 disables it)
   ndnHelper.Install(router1);
   ndnHelper.Install(router2);
   ndnHelper.Install(router3);
@@ -104,14 +107,15 @@ main(int argc, char* argv[])
   //ndn::StrategyChoiceHelper::InstallAll("/prefix", "/localhost/nfd/strategy/best-route");
   //ndn::StrategyChoiceHelper::InstallAll("/prefix", "/localhost/nfd/strategy/multicast");
 
-  ndn::StrategyChoiceHelper::InstallAll(Prefix + "/service4", "/localhost/nfd/strategy/best-route");
-  ndn::StrategyChoiceHelper::InstallAll(Prefix + "/service3", "/localhost/nfd/strategy/best-route");
-  ndn::StrategyChoiceHelper::InstallAll(Prefix + "/service2", "/localhost/nfd/strategy/best-route");
-  ndn::StrategyChoiceHelper::InstallAll(Prefix + "/service1", "/localhost/nfd/strategy/best-route");
-  ndn::StrategyChoiceHelper::InstallAll(Prefix + "/sensor",   "/localhost/nfd/strategy/best-route");
+  NS_LOG_INFO("Now setting the routing strategies to multicast" << std::endl);
+  ndn::StrategyChoiceHelper::InstallAll(Prefix + "/service4", "/localhost/nfd/strategy/multicast");
+  ndn::StrategyChoiceHelper::InstallAll(Prefix + "/service3", "/localhost/nfd/strategy/multicast");
+  ndn::StrategyChoiceHelper::InstallAll(Prefix + "/service2", "/localhost/nfd/strategy/multicast");
+  ndn::StrategyChoiceHelper::InstallAll(Prefix + "/service1", "/localhost/nfd/strategy/multicast");
+  ndn::StrategyChoiceHelper::InstallAll(Prefix + "/sensor",   "/localhost/nfd/strategy/multicast");
 
   //ndn::StrategyChoiceHelper::InstallAll(Prefix + "/serviceDiscovery", "/localhost/nfd/strategy/multicast");
-  ndn::StrategyChoiceHelper::InstallAll(Prefix + "/serviceDiscovery", "/localhost/nfd/strategy/best-route");
+  ndn::StrategyChoiceHelper::InstallAll(Prefix + "/serviceDiscovery", "/localhost/nfd/strategy/multicast");
 
   //ndn::StrategyChoiceHelper::InstallAll(Prefix + "/service4/serviceDiscovery", "/localhost/nfd/strategy/multicast"); these are no longer in this order. Now we do /serviceDiscovery/serviceX
   //ndn::StrategyChoiceHelper::InstallAll(Prefix + "/service3/serviceDiscovery", "/localhost/nfd/strategy/multicast"); these are no longer in this order. Now we do /serviceDiscovery/serviceX
@@ -137,6 +141,7 @@ main(int argc, char* argv[])
 
 
   // Installing applications
+  NS_LOG_INFO("Now installing all the applications" << std::endl);
 
   // Custom App for Sensor(Producer)
   ndn::AppHelper sensorApp("CustomAppProducer");
@@ -187,16 +192,17 @@ main(int argc, char* argv[])
   userApp.SetAttribute("Service", StringValue("consumer"));
   userApp.SetAttribute("Workflow", StringValue("workflows/4dag.json"));
   userApp.SetAttribute("Orchestrate", UintegerValue(0));
-  userApp.SetAttribute("ServiceDiscovery", UintegerValue(1));
-  userApp.SetAttribute("ResourceAllocation", UintegerValue(1));
-  userApp.SetAttribute("AllocationReuse", UintegerValue(1));
-  userApp.SetAttribute("ScheduleCompaction", UintegerValue(1));
-  userApp.SetAttribute("SDstartTime", TimeValue(Seconds(1)));
+  userApp.SetAttribute("ServiceDiscovery", UintegerValue(0));
+  userApp.SetAttribute("ResourceAllocation", UintegerValue(0));
+  userApp.SetAttribute("AllocationReuse", UintegerValue(0));
+  userApp.SetAttribute("ScheduleCompaction", UintegerValue(0));
+  //userApp.SetAttribute("SDstartTime", TimeValue(Seconds(1)));
   userApp.SetAttribute("WFstartTime", TimeValue(Seconds(2)));
   userApp.Install(consumer).Start(Seconds(0));
 
 
   // Register all service prefix names to their locations
+  NS_LOG_INFO("Now registering service prefixes to their locations" << std::endl);
   ndnGlobalRoutingHelper.AddOrigins(Prefix + "/sensor", producer);
   ndnGlobalRoutingHelper.AddOrigins(Prefix + "/service1", producer);
   ndnGlobalRoutingHelper.AddOrigins(Prefix + "/service1", router3);
@@ -205,17 +211,18 @@ main(int argc, char* argv[])
   ndnGlobalRoutingHelper.AddOrigins(Prefix + "/service3", router2);
   ndnGlobalRoutingHelper.AddOrigins(Prefix + "/service4", router2);
 
-  ndnGlobalRoutingHelper.AddOrigins(Prefix + "/serviceDiscovery/sensor", producer);
-  ndnGlobalRoutingHelper.AddOrigins(Prefix + "/serviceDiscovery/service1", producer);
-  ndnGlobalRoutingHelper.AddOrigins(Prefix + "/serviceDiscovery/service1", router3);
-  ndnGlobalRoutingHelper.AddOrigins(Prefix + "/serviceDiscovery/service2", router1);
-  ndnGlobalRoutingHelper.AddOrigins(Prefix + "/serviceDiscovery/service3", router1);
-  ndnGlobalRoutingHelper.AddOrigins(Prefix + "/serviceDiscovery/service3", router2);
-  ndnGlobalRoutingHelper.AddOrigins(Prefix + "/serviceDiscovery/service4", router2);
+  //ndnGlobalRoutingHelper.AddOrigins(Prefix + "/serviceDiscovery/sensor", producer);
+  //ndnGlobalRoutingHelper.AddOrigins(Prefix + "/serviceDiscovery/service1", producer);
+  //ndnGlobalRoutingHelper.AddOrigins(Prefix + "/serviceDiscovery/service1", router3);
+  //ndnGlobalRoutingHelper.AddOrigins(Prefix + "/serviceDiscovery/service2", router1);
+  //ndnGlobalRoutingHelper.AddOrigins(Prefix + "/serviceDiscovery/service3", router1);
+  //ndnGlobalRoutingHelper.AddOrigins(Prefix + "/serviceDiscovery/service3", router2);
+  //ndnGlobalRoutingHelper.AddOrigins(Prefix + "/serviceDiscovery/service4", router2);
 
 
 
   // Calculate and install FIBs
+  NS_LOG_INFO("Now calculating and installing FIBS" << std::endl);
   ndn::GlobalRoutingHelper::CalculateRoutes();
 
   // Manually configure FIB routes
@@ -235,10 +242,10 @@ main(int argc, char* argv[])
   //Config::ConnectWithoutContext("/NodeList/*/DeviceList/*/$ns3::PointToPointNetDevice/MacTx",
                                 //MakeCallback(&PcapWriter::TracePacket, &trace));
 
-  Simulator::Stop(Seconds(20.1)); // pick a large value, the consumer will end the simulation as soon as the workflow data packet is received.
+  Simulator::Stop(Seconds(20)); // pick a large value, the consumer will end the simulation as soon as the workflow data packet is received.
 
-  //ndn::L3RateTracer::InstallAll("rate-trace_cabeee-fwdOpt-4dag-nesco-SD-allocation-caching.txt", Seconds(0.0005));
-  //ndn::CsTracer::InstallAll("cs-trace_cabeee-fwdOpt-4dag-nesco-SD-allocation-caching.txt", Seconds(0.0005));
+  //ndn::L3RateTracer::InstallAll("rate-trace_cabeee-fwdOpt-4dag-nesco-noSD-multicast.txt", Seconds(0.0005));
+  //ndn::CsTracer::InstallAll("cs-trace_cabeee-fwdOpt-4dag-nesco-noSD-multicast.txt", Seconds(0.0005));
 
   Simulator::Run();
   Simulator::Destroy();
