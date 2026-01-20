@@ -33,6 +33,11 @@
 
 #include "ns3/random-variable-stream.h"
 
+#include <nlohmann/json.hpp>
+using json = nlohmann::json;
+
+#include "ns3/uinteger.h"
+
 NS_LOG_COMPONENT_DEFINE("CustomAppProducer");
 
 namespace ns3 {
@@ -57,7 +62,9 @@ CustomAppProducer::GetTypeId()
     .AddAttribute("Prefix", "Requested prefix", StringValue("/dumb-interest"),
                     ndn::MakeNameAccessor(&CustomAppProducer::m_prefix), ndn::MakeNameChecker())
     .AddAttribute("Service", "Requested service", StringValue("dumb-service"),
-                    ndn::MakeNameAccessor(&CustomAppProducer::m_service), ndn::MakeNameChecker());
+                    ndn::MakeNameAccessor(&CustomAppProducer::m_service), ndn::MakeNameChecker())
+    .AddAttribute("Makespan", "Requested service makespan", UintegerValue(0),
+                    MakeUintegerAccessor(&CustomAppProducer::m_makespan), MakeUintegerChecker<uint64_t>());
   return tid;
 }
 
@@ -144,8 +151,29 @@ CustomAppProducer::OnInterest(std::shared_ptr<const ndn::Interest> interest)
   //data->setContent(std::make_shared< ::ndn::Buffer>(1024));
   unsigned char myBuffer[1024];
   // write to the buffer
-  myBuffer[0] = 5;
-  data->setContent(myBuffer, 1024);
+  //myBuffer[0] = 5;
+  //data->setContent(myBuffer, 1024);
+
+  json dataPacketContents;
+  dataPacketContents.clear();
+  dataPacketContents["makespanNS"] = m_makespan;
+  dataPacketContents["serviceOutput"] = 5;
+  NS_LOG_DEBUG("ProducerAPP - Sending Data packet with JSON data packet contents: " << dataPacketContents);
+  std::string dataPacketString;
+  dataPacketString = dataPacketContents.dump();
+  // write to the buffer
+  //myBuffer[0] = serviceOutput;
+  //data->setContent(myBuffer, 1024);
+  // instead of just writing a single value to the buffer, now we write the JSON data structure containing makespan and serviceOutput
+  // write to the buffer, after making sure it's big enough
+  if (strlen(dataPacketString.c_str())+1 > 1024) // string length plus NULL terminating character
+  {
+    NS_LOG_ERROR("ConsumerAPP ERROR!! The data packet size is larger than 1024!!!");
+  }
+  memcpy(myBuffer, dataPacketString.c_str(), strlen(dataPacketString.c_str())+1);
+  data->setContent(myBuffer, strlen(dataPacketString.c_str())+1); // make the data just big enough to fit the json object
+
+
 
   ndn::StackHelper::getKeyChain().sign(*data);
 

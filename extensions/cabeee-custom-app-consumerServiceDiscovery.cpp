@@ -62,7 +62,7 @@ CustomAppConsumerServiceDiscovery::GetTypeId()
     .AddConstructor<CustomAppConsumerServiceDiscovery>()
     .AddAttribute("Prefix", "Requested prefix", StringValue("/dumb-interest"),
                     ndn::MakeNameAccessor(&CustomAppConsumerServiceDiscovery::m_prefix), ndn::MakeNameChecker())
-    .AddAttribute("Service", "Requested service", StringValue("/dumb-interest"),
+    .AddAttribute("Service", "Requested service", StringValue("/dumb-service"),
                     ndn::MakeNameAccessor(&CustomAppConsumerServiceDiscovery::m_service), ndn::MakeNameChecker())
     .AddAttribute("Workflow", "Requested workflow", StringValue("/workflows/dummy-workflow"),
                     MakeStringAccessor(&CustomAppConsumerServiceDiscovery::m_dagPath), MakeStringChecker())
@@ -468,6 +468,9 @@ CustomAppConsumerServiceDiscovery::OnData(std::shared_ptr<const ndn::Data> data)
     NS_LOG_INFO("\n  Service Latency: " <<  serviceLatency.GetMicroSeconds() << " microseconds." << std::endl);
     NS_LOG_INFO("\n  Service Latency: " <<  serviceLatency.GetNanoSeconds() << " nanoseconds." << std::endl);
 
+/*
+    // this is a HACK. I need a better way to get to the first byte of the content. Right now, I'm just incrementing the pointer past the TLV type, and size.
+    // and then getting to the first byte (which is all I'm using for data)
     ndn::Block myRxedBlock = data->getContent();
     //NS_LOG_DEBUG("\nCONSUMER: result = " << myRxedBlock << std::endl << "\n\n");
     uint8_t *pContent = (uint8_t *)(myRxedBlock.data()); // this points to the first byte, which is the TLV-TYPE (21 for data packet contet)
@@ -475,7 +478,22 @@ CustomAppConsumerServiceDiscovery::OnData(std::shared_ptr<const ndn::Data> data)
     pContent++;  // now this points to the first size octet
     pContent++;  // now this points to the second size octet
     pContent++;  // now we are pointing at the first byte of the true content
-    NS_LOG_INFO("\n  The final answer is: " <<  (int)(*pContent) << std::endl << "\n\n");
+*/
+
+    //NS_LOG_DEBUG("Now reading it into string...");
+    std::string dataPacketString;
+    dataPacketString = (const char *)data->getContent().value();
+    //NS_LOG_DEBUG("Data string received: " << dataPacketString);
+
+    //NS_LOG_DEBUG("Now parsing it into JSON...");
+    json dataPacketContents = json::parse(dataPacketString);
+    //NS_LOG_DEBUG("Data received: " << dataPacketContents);
+
+    int64_t finalResult = 0;
+    finalResult = dataPacketContents["serviceOutput"];
+
+    //NS_LOG_INFO("\n  The final answer is: " <<  (int)(*pContent) << std::endl << "\n\n");
+    NS_LOG_INFO("\n  The final answer is: " <<  finalResult << std::endl << "\n\n");
 
     Simulator::Stop(Simulator::Now()); // end the simulation as soon as we receive this data packet, no need to keep going.
 

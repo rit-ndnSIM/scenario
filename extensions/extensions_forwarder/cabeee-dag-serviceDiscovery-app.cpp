@@ -43,6 +43,8 @@
 #include <nlohmann/json.hpp>
 using json = nlohmann::json;
 
+#include "ns3/uinteger.h"
+
 NS_LOG_COMPONENT_DEFINE("DagServiceDiscoveryApp");
 
 namespace ns3 {
@@ -59,7 +61,9 @@ DagServiceDiscoveryApp::GetTypeId()
     .AddAttribute("Prefix", "Requested prefix", StringValue("/dumb-interest"),
                     ndn::MakeNameAccessor(&DagServiceDiscoveryApp::m_prefix), ndn::MakeNameChecker())
     .AddAttribute("Service", "Requested service", StringValue("dumb-service"),
-                    ndn::MakeNameAccessor(&DagServiceDiscoveryApp::m_service), ndn::MakeNameChecker());
+                    ndn::MakeNameAccessor(&DagServiceDiscoveryApp::m_service), ndn::MakeNameChecker())
+    .AddAttribute("Makespan", "Requested service makespan", UintegerValue(0),
+                    MakeUintegerAccessor(&DagServiceDiscoveryApp::m_makespan), MakeUintegerChecker<uint64_t>());
   return tid;
 }
 
@@ -450,7 +454,7 @@ DagServiceDiscoveryApp::OnInterest(std::shared_ptr<const ndn::Interest> interest
       //dataPacketContents["EFT"] = timeNowNS;
       dataPacketContents["EFT"] = timeNowNS + WFstartTimeNS - SDstartTimeNS;
       dataPacketContents["txTime"] = timeNowNS;
-      dataPacketContents["serviceLatency"] = 1000000; //TODO: for now, I'm just assuming all root node services take 1ms to run (keep track of EFT in nanoseconds for granularity), but this will need to come from somewhere based on service and node
+      dataPacketContents["serviceLatency"] = m_makespan;
       //NS_LOG_DEBUG("timeStringNS = " << timeStringNS);
 
       std::string dataPacketString = dataPacketContents.dump();
@@ -712,7 +716,7 @@ DagServiceDiscoveryApp::OnData(std::shared_ptr<const ndn::Data> data)
     dataPacketContents.clear();
     dataPacketContents["txTime"] = timeNowNS;
     dataPacketContents["EFT"] = highestEFT;
-    dataPacketContents["serviceLatency"] = 1000000; //TODO: for now, I'm just assuming all services take 1ms to run (keep track of EFT in nanoseconds for granularity), but this will need to come from somewhere based on service and node
+    dataPacketContents["serviceLatency"] = m_makespan;
     NS_LOG_DEBUG("ServiceDiscoveryAPP - Sending Data packet with JSON data packet contents: " << dataPacketContents);
 
     //std::string dataPacketString;

@@ -398,12 +398,30 @@ CustomAppConsumer::OnData(std::shared_ptr<const ndn::Data> data)
   ndn::Block myRxedBlock = data->getContent();
   //std::cout << "\nCONSUMER: result = " << myRxedBlock << std::endl << "\n\n";
 
+/*
+  // this is a HACK. I need a better way to get to the first byte of the content. Right now, I'm just incrementing the pointer past the TLV type, and size.
+  // and then getting to the first byte (which is all I'm using for data)
   uint8_t *pContent = (uint8_t *)(myRxedBlock.data()); // this points to the first byte, which is the TLV-TYPE (21 for data packet contet)
   pContent++;  // now this points to the second byte, containing 253 (0xFD), meaning size (1024) is expressed with 2 octets
   pContent++;  // now this points to the first size octet
   pContent++;  // now this points to the second size octet
   pContent++;  // now we are pointing at the first byte of the true content
-  std::cout << "\n  The final answer is: " <<  (int)(*pContent) << std::endl << "\n\n";
+*/
+
+  //NS_LOG_DEBUG("Now reading it into string...");
+  std::string dataPacketString;
+  dataPacketString = (const char *)data->getContent().value();
+  //NS_LOG_DEBUG("Data string received: " << dataPacketString);
+
+  //NS_LOG_DEBUG("Now parsing it into JSON...");
+  json dataPacketContents = json::parse(dataPacketString);
+  //NS_LOG_DEBUG("Data received: " << dataPacketContents);
+
+  int64_t finalResult = 0;
+  finalResult = dataPacketContents["serviceOutput"];
+
+  //std::cout << "\n  The final answer is: " <<  (int)(*pContent) << std::endl << "\n\n";
+  std::cout << "\n  The final answer is: " <<  finalResult << std::endl << "\n\n";
 
   m_endTime = Simulator::Now();
   Time serviceLatency = m_endTime - m_startTime;

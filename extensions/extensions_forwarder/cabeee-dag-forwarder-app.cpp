@@ -43,6 +43,8 @@
 #include <nlohmann/json.hpp>
 using json = nlohmann::json;
 
+#include "ns3/uinteger.h"
+
 NS_LOG_COMPONENT_DEFINE("DagForwarderApp");
 
 namespace ns3 {
@@ -59,7 +61,9 @@ DagForwarderApp::GetTypeId()
     .AddAttribute("Prefix", "Requested prefix", StringValue("/dumb-interest"),
                     ndn::MakeNameAccessor(&DagForwarderApp::m_prefix), ndn::MakeNameChecker())
     .AddAttribute("Service", "Requested service", StringValue("dumb-service"),
-                    ndn::MakeNameAccessor(&DagForwarderApp::m_service), ndn::MakeNameChecker());
+                    ndn::MakeNameAccessor(&DagForwarderApp::m_service), ndn::MakeNameChecker())
+    .AddAttribute("Makespan", "Requested service makespan", UintegerValue(0),
+                    MakeUintegerAccessor(&DagForwarderApp::m_makespan), MakeUintegerChecker<uint64_t>());
   return tid;
 }
 
@@ -514,10 +518,9 @@ DagForwarderApp::OnData(std::shared_ptr<const ndn::Data> data)
   //std::string rxedDataName = (data->getName()).getPrefix(-1).toUri(); // remove the last component of the name (the parameter digest) so we have just the raw name
   std::string rxedDataName = simpleName.toUri();
 
-
-  // TODO: this is a HACK. I need a better way to get to the first byte of the content. Right now, I'm just incrementing the pointer past the TLV type, and size.
+/*
+  // this is a HACK. I need a better way to get to the first byte of the content. Right now, I'm just incrementing the pointer past the TLV type, and size.
   // and then getting to the first byte (which is all I'm using for data)
-  unsigned char serviceOutput = 0;
   uint8_t *pServiceInput = 0;
   //pServiceInput = (uint8_t *)(m_mapOfRxedBlocks.back().data());
   pServiceInput = (uint8_t *)(data->getContent().data()); // this points to the first byte, which is the TLV-TYPE (21 for data packet content)
@@ -526,6 +529,25 @@ DagForwarderApp::OnData(std::shared_ptr<const ndn::Data> data)
   pServiceInput++;  // now this points to the second size octet
   pServiceInput++;  // now we are pointing at the first byte of the true content
   //m_mapOfServiceInputs[rxedDataName] = (*pServiceInput);
+*/
+
+  //NS_LOG_DEBUG("Now reading it into string...");
+  std::string dataPacketString;
+  dataPacketString = (const char *)data->getContent().value();
+  //NS_LOG_DEBUG("Data string received: " << dataPacketString);
+
+  //NS_LOG_DEBUG("Now parsing it into JSON...");
+  json dataPacketContents = json::parse(dataPacketString);
+  //NS_LOG_DEBUG("Data received: " << dataPacketContents);
+
+  int64_t serviceInput = 0;
+  int64_t serviceOutput = 0;
+  serviceInput = dataPacketContents["serviceOutput"];
+  //uint64_t makespanNS = 0;
+  //makespanNS = dataPacketContents["makespanNS"]; // we don't really do anything with the previous service's makespan here.
+
+
+
 
   // we keep track of which input is for which interest that was sent out. Data packets may arrive in different order than how interests were sent out.
   // just read the index from the dagObject JSON structure
@@ -570,7 +592,8 @@ DagForwarderApp::OnData(std::shared_ptr<const ndn::Data> data)
   }
   else
   {
-    m_vectorOfServiceInputs[index] = (*pServiceInput);
+    //m_vectorOfServiceInputs[index] = (*pServiceInput);
+    m_vectorOfServiceInputs[index] = serviceInput;
   }
 
   // mark this input as having been received
@@ -722,9 +745,24 @@ DagForwarderApp::OnData(std::shared_ptr<const ndn::Data> data)
 
     //new_data->setContent(std::make_shared< ::ndn::Buffer>(1024));
     unsigned char myBuffer[1024];
+    json dataPacketContents;
+    dataPacketContents.clear();
+    dataPacketContents["makespanNS"] = m_makespan;
+    dataPacketContents["serviceOutput"] = serviceOutput;
+    NS_LOG_DEBUG("ForwarderAPP - Sending Data packet with JSON data packet contents: " << dataPacketContents);
+    std::string dataPacketString;
+    dataPacketString = dataPacketContents.dump();
+    if (strlen(dataPacketString.c_str())+1 > 1024) // string length plus NULL terminating character
+    {
+      NS_LOG_ERROR("ForwarderAPP ERROR!! The data packet size is larger than 1024!!!");
+    }
+    memcpy(myBuffer, dataPacketString.c_str(), strlen(dataPacketString.c_str())+1);
+    new_data->setContent(myBuffer, strlen(dataPacketString.c_str())+1); // make the data just big enough to fit the json object
     // write to the buffer
-    myBuffer[0] = serviceOutput;
-    new_data->setContent(myBuffer, 1024);
+    //myBuffer[0] = serviceOutput;
+    //new_data->setContent(myBuffer, 1024);
+    // instead of just writing a single value to the buffer, now we write the JSON data structure containing makespan and serviceOutput
+    // write to the buffer, after making sure it's big enough
 
     ndn::StackHelper::getKeyChain().sign(*new_data);
     // Call trace (for logging purposes)

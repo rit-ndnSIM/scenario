@@ -80,6 +80,7 @@ private:
   std::string m_nameUri;
   ndn::Name m_nameAndDigest;
   ndn::Name m_service;
+  uint64_t m_makespan;
   json m_dagServTracker; // with this data structure, we can keep track of WHICH inputs have arrived, rather than just the NUMBER of inputs. (in case one inputs arrives multiple times)
   //json m_dagObject;
   //int m_numRxedInputs;

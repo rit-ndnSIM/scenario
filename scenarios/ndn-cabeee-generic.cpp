@@ -71,8 +71,7 @@ main(int argc, char* argv[])
         std::string name{ rtr.at("node") };
         Ptr<Node> node = Names::Find<Node>(name);
         rtr_map[name] = &rtr;
-        // default to 1000
-        int cs_size = 1000;
+        int cs_size = 0; // set default size (in case json doesn't specify size)
         if (rtr.contains("cs-size")) {
             cs_size = rtr["cs-size"];
         }
@@ -96,7 +95,7 @@ main(int argc, char* argv[])
     }
 
     for (const auto& srv : scenario_json.at("services")) {
-        std::string strategy{ "/localhost/nfd/strategy/multicast" };
+        std::string strategy{ "/localhost/nfd/strategy/multicast" }; // set default strategy (in case json doesn't specify)
         std::string name = srv.at("name");
         srv_map[name] = &srv;
         if (srv.contains("strategy")) {
@@ -112,9 +111,13 @@ main(int argc, char* argv[])
     ndnGlobalRoutingHelper.InstallAll();
 
     // Installing applications
+    uint64_t makespanNS;
     for (const auto& hosting : scenario_json.at("routerHosting")) {
         std::string rtr_name{ hosting.at("router") };
         std::string srv_name{ hosting.at("service") };
+        if (hosting.contains("makespanNS")) {
+            makespanNS = hosting["makespanNS"];
+        }
         Ptr<Node> rtr_node = Names::Find<Node>(rtr_name);
         hosting_map[rtr_name + srv_name] = &hosting;
 
@@ -139,6 +142,9 @@ main(int argc, char* argv[])
 
         if (verbose) {
             std::cout << "Now installing " << (srv_name) << " in router " << (rtr_name) << ", starting at time: " << start << std::endl;
+            if (hosting.contains("makespanNS")) {
+                std::cout << "Makespan is " << makespanNS << std::endl;
+            }
             if (hosting.contains("workflowFile")) {
                 std::cout << "workflowFile is: " << (hosting["workflowFile"]) << std::endl;
             }
@@ -149,10 +155,12 @@ main(int argc, char* argv[])
 
         if (type == "producer") {
             appHelper = ndn::AppHelper("CustomAppProducer");
+            appHelper.SetAttribute("Makespan", UintegerValue(makespanNS));
             if (serviceDiscoveryFlag == 1) {
                 serviceDiscoveryApp = ndn::AppHelper("DagServiceDiscoveryApp");
                 serviceDiscoveryApp.SetPrefix(Prefix);
                 serviceDiscoveryApp.SetAttribute("Service", StringValue(srv_name));
+                serviceDiscoveryApp.SetAttribute("Makespan", UintegerValue(makespanNS));
                 auto sd_app = serviceDiscoveryApp.Install(rtr_node);
                 sd_app.Start(Seconds(start));
                 if (end > 0)
@@ -173,10 +181,12 @@ main(int argc, char* argv[])
             if (Prefix == "orchB") {
                 appHelper = ndn::AppHelper("DagServiceB_App");
             }
+            appHelper.SetAttribute("Makespan", UintegerValue(makespanNS));
             if (serviceDiscoveryFlag == 1) {
                 serviceDiscoveryApp = ndn::AppHelper("DagServiceDiscoveryApp");
                 serviceDiscoveryApp.SetPrefix(Prefix);
                 serviceDiscoveryApp.SetAttribute("Service", StringValue(srv_name));
+                serviceDiscoveryApp.SetAttribute("Makespan", UintegerValue(makespanNS));
                 auto sd_app = serviceDiscoveryApp.Install(rtr_node);
                 sd_app.Start(Seconds(start));
                 if (end > 0)

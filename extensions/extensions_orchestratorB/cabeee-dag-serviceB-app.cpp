@@ -43,6 +43,8 @@
 #include <nlohmann/json.hpp>
 using json = nlohmann::json;
 
+#include "ns3/uinteger.h"
+
 NS_LOG_COMPONENT_DEFINE("DagServiceB_App");
 
 namespace ns3 {
@@ -59,7 +61,9 @@ DagServiceB_App::GetTypeId()
     .AddAttribute("Prefix", "Requested prefix", StringValue("/dumb-interest"),
                     ndn::MakeNameAccessor(&DagServiceB_App::m_prefix), ndn::MakeNameChecker())
     .AddAttribute("Service", "Requested service", StringValue("dumb-service"),
-                    ndn::MakeNameAccessor(&DagServiceB_App::m_service), ndn::MakeNameChecker());
+                    ndn::MakeNameAccessor(&DagServiceB_App::m_service), ndn::MakeNameChecker())
+    .AddAttribute("Makespan", "Requested service makespan", UintegerValue(0),
+                    MakeUintegerAccessor(&DagServiceB_App::m_makespan), MakeUintegerChecker<uint64_t>());
   return tid;
 }
 
@@ -251,11 +255,26 @@ DagServiceB_App::OnInterest(std::shared_ptr<const ndn::Interest> interest)
       //auto new_data = std::make_shared<ndn::Data>(new_name);
       auto new_data = std::make_shared<ndn::Data>(m_nameAndDigest);
       new_data->setFreshnessPeriod(ndn::time::milliseconds(m_lowestFreshness));
+
       //new_data->setContent(std::make_shared< ::ndn::Buffer>(1024));
       unsigned char myBuffer[1024];
+      json dataPacketContents;
+      dataPacketContents.clear();
+      dataPacketContents["makespanNS"] = m_makespan;
+      dataPacketContents["serviceOutput"] = m_serviceOutput;
+      NS_LOG_DEBUG("ServiceB_APP - Sending Data packet with JSON data packet contents: " << dataPacketContents);
+      std::string dataPacketString;
+      dataPacketString = dataPacketContents.dump();
+      if (strlen(dataPacketString.c_str())+1 > 1024) // string length plus NULL terminating character
+      {
+        NS_LOG_ERROR("ServiceB_APP ERROR!! The data packet size is larger than 1024!!!");
+      }
+      memcpy(myBuffer, dataPacketString.c_str(), strlen(dataPacketString.c_str())+1);
+      new_data->setContent(myBuffer, strlen(dataPacketString.c_str())+1); // make the data just big enough to fit the json object
+
       // write to the buffer
-      myBuffer[0] = m_serviceOutput;
-      new_data->setContent(myBuffer, 1024);
+      //myBuffer[0] = m_serviceOutput;
+      //new_data->setContent(myBuffer, 1024);
       ndn::StackHelper::getKeyChain().sign(*new_data);
 
       // Call trace (for logging purposes)
@@ -356,7 +375,8 @@ std::cout << "        DOES THIS EVER HAPPEN?? " << m_service << " received DATA 
     rxedDataName = simpleName.toUri();
   }
 
-  // TODO: this is a HACK. I need a better way to get to the first byte of the content. Right now, I'm just incrementing the pointer past the TLV type, and size.
+/*
+  // this is a HACK. I need a better way to get to the first byte of the content. Right now, I'm just incrementing the pointer past the TLV type, and size.
   // and then getting to the first byte (which is all I'm using for data)
   uint8_t *pServiceInput = 0;
   //pServiceInput = (uint8_t *)(m_mapOfRxedBlocks.back().data());
@@ -366,6 +386,21 @@ std::cout << "        DOES THIS EVER HAPPEN?? " << m_service << " received DATA 
   pServiceInput++;  // now this points to the second size octet
   pServiceInput++;  // now we are pointing at the first byte of the true content
   //m_mapOfServiceInputs[rxedDataName] = (*pServiceInput);
+*/
+
+  //NS_LOG_DEBUG("Now reading it into string...");
+  std::string dataPacketString;
+  dataPacketString = (const char *)data->getContent().value();
+  //NS_LOG_DEBUG("Data string received: " << dataPacketString);
+
+  //NS_LOG_DEBUG("Now parsing it into JSON...");
+  json dataPacketContents = json::parse(dataPacketString);
+  //NS_LOG_DEBUG("Data received: " << dataPacketContents);
+
+  int64_t serviceInput = 0;
+  serviceInput = dataPacketContents["serviceOutput"];
+  //uint64_t makespanNS = 0;
+  //makespanNS = dataPacketContents["makespanNS"]; // we don't really do anything with the previous service's makespan here.
 
   ndn::time::milliseconds data_freshnessPeriod = data->getFreshnessPeriod();
   if (data_freshnessPeriod < m_lowestFreshness) {
@@ -403,7 +438,8 @@ std::cout << "        DOES THIS EVER HAPPEN?? " << m_service << " received DATA 
   }
   else
   {
-    m_vectorOfServiceInputs[index] = (*pServiceInput);
+    //m_vectorOfServiceInputs[index] = (*pServiceInput);
+    m_vectorOfServiceInputs[index] = serviceInput;
   }
 
   // mark this input as having been received

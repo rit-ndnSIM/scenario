@@ -142,6 +142,7 @@ main(int argc, char* argv[])
   ndn::AppHelper sensorApp("CustomAppProducer");
   sensorApp.SetPrefix(Prefix);
   sensorApp.SetAttribute("Service", StringValue("sensor"));
+  sensorApp.SetAttribute("Makespan", UintegerValue(1000000)); // TODO: read from file instead?
   sensorApp.Install(producer).Start(Seconds(0));
 
   // Custom App for Services and Forwarding
@@ -149,34 +150,48 @@ main(int argc, char* argv[])
   routerApp.SetPrefix(Prefix);
 
   routerApp.SetAttribute("Service", StringValue("service1"));
+  routerApp.SetAttribute("Makespan", UintegerValue(1000000)); // TODO: read from file instead?
   routerApp.Install(producer).Start(Seconds(0));
+  routerApp.SetAttribute("Makespan", UintegerValue(1000000)); // TODO: read from file instead?
   routerApp.Install(router3).Start(Seconds(0));
 
   routerApp.SetAttribute("Service", StringValue("service2"));
+  routerApp.SetAttribute("Makespan", UintegerValue(1000000)); // TODO: read from file instead?
   routerApp.Install(router1).Start(Seconds(0));
 
   routerApp.SetAttribute("Service", StringValue("service3"));
+  routerApp.SetAttribute("Makespan", UintegerValue(1000000)); // TODO: read from file instead?
   routerApp.Install(router1).Start(Seconds(0));
+  routerApp.SetAttribute("Makespan", UintegerValue(1000000)); // TODO: read from file instead?
   routerApp.Install(router2).Start(Seconds(0));
 
   routerApp.SetAttribute("Service", StringValue("service4"));
+  routerApp.SetAttribute("Makespan", UintegerValue(1000000)); // TODO: read from file instead?
   routerApp.Install(router2).Start(Seconds(0));
 
   // Custom App for ServiceDiscovery
   ndn::AppHelper serviceDiscoveryApp("DagServiceDiscoveryApp");
   serviceDiscoveryApp.SetPrefix(Prefix);
+  serviceDiscoveryApp.SetAttribute("Makespan", UintegerValue(1000000)); // TODO: read from file instead?
 
   serviceDiscoveryApp.SetAttribute("Service", StringValue("sensor"));
+  serviceDiscoveryApp.SetAttribute("Makespan", UintegerValue(1000000)); // TODO: read from file instead?
   serviceDiscoveryApp.Install(producer).Start(Seconds(0));
   serviceDiscoveryApp.SetAttribute("Service", StringValue("service1"));
+  serviceDiscoveryApp.SetAttribute("Makespan", UintegerValue(1000000)); // TODO: read from file instead?
   serviceDiscoveryApp.Install(producer).Start(Seconds(0));
+  serviceDiscoveryApp.SetAttribute("Makespan", UintegerValue(1000000)); // TODO: read from file instead?
   serviceDiscoveryApp.Install(router3).Start(Seconds(0));
   serviceDiscoveryApp.SetAttribute("Service", StringValue("service2"));
+  serviceDiscoveryApp.SetAttribute("Makespan", UintegerValue(1000000)); // TODO: read from file instead?
   serviceDiscoveryApp.Install(router1).Start(Seconds(0));
   serviceDiscoveryApp.SetAttribute("Service", StringValue("service3"));
+  serviceDiscoveryApp.SetAttribute("Makespan", UintegerValue(1000000)); // TODO: read from file instead?
   serviceDiscoveryApp.Install(router1).Start(Seconds(0));
+  serviceDiscoveryApp.SetAttribute("Makespan", UintegerValue(1000000)); // TODO: read from file instead?
   serviceDiscoveryApp.Install(router2).Start(Seconds(0));
   serviceDiscoveryApp.SetAttribute("Service", StringValue("service4"));
+  serviceDiscoveryApp.SetAttribute("Makespan", UintegerValue(1000000)); // TODO: read from file instead?
   serviceDiscoveryApp.Install(router2).Start(Seconds(0));
 
   // Custom App for User(Consumer)

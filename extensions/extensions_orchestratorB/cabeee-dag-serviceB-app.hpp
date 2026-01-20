@@ -80,6 +80,7 @@ private:
   std::string m_nameUri;
   ndn::Name m_nameAndDigest;
   ndn::Name m_service;
+  uint64_t m_makespan;
   //ndn::Data m_data;
   bool m_done;
   bool m_extracted;

@@ -331,11 +331,26 @@ DagOrchestratorB_App::OnInterest(std::shared_ptr<const ndn::Interest> interest)
             auto new_data = std::make_shared<ndn::Data>(nameAndDigest);
             //new_data->setFreshnessPeriod(ndn::time::milliseconds(0)); // we set the freshness to zero, so that it is not cached. We can't cache it because future requests need to be served from the orchestrator to keep the dagOrchTracker updated.
             new_data->setFreshnessPeriod(ndn::time::milliseconds(m_lowestFreshness));
+
             //new_data->setContent(std::make_shared< ::ndn::Buffer>(1024));
             unsigned char myBuffer[1024];
+            json dataPacketContents;
+            dataPacketContents.clear();
+            dataPacketContents["makespanNS"] = m_vectorOfServiceMakespans[inputStorageIndex];
+            dataPacketContents["serviceOutput"] = m_vectorOfServiceInputs[inputStorageIndex];
+            NS_LOG_DEBUG("OrchestratorB_APP - Sending Data packet with JSON data packet contents: " << dataPacketContents);
+            std::string dataPacketString;
+            dataPacketString = dataPacketContents.dump();
+            if (strlen(dataPacketString.c_str())+1 > 1024) // string length plus NULL terminating character
+            {
+              NS_LOG_ERROR("OrchestratorB_APP ERROR!! The data packet size is larger than 1024!!!");
+            }
+            memcpy(myBuffer, dataPacketString.c_str(), strlen(dataPacketString.c_str())+1);
+            new_data->setContent(myBuffer, strlen(dataPacketString.c_str())+1); // make the data just big enough to fit the json object
+
             // write to the buffer
-            myBuffer[0] = m_vectorOfServiceInputs[inputStorageIndex];
-            new_data->setContent(myBuffer, 1024);
+            //myBuffer[0] = m_vectorOfServiceInputs[inputStorageIndex];
+            //new_data->setContent(myBuffer, 1024);
             ndn::StackHelper::getKeyChain().sign(*new_data);
             // Call trace (for logging purposes)
             m_transmittedDatas(new_data, this, m_face);
@@ -412,7 +427,9 @@ DagOrchestratorB_App::OnData(std::shared_ptr<const ndn::Data> data)
 
   //std::cout << "Storing the received result at m_vectorOfServiceInputs[" << std::to_string(m_serviceInputIndex) << "]\n";
   // store the received result, so we can later send it to downstream services
-  // TODO: this is a HACK. I need a better way to get to the first byte of the content. Right now, I'm just incrementing the pointer past the TLV type, and size.
+
+/*
+  // this is a HACK. I need a better way to get to the first byte of the content. Right now, I'm just incrementing the pointer past the TLV type, and size.
   // and then getting to the first byte (which is all I'm using for data)
   //unsigned char serviceOutput = 0;
   uint8_t *pServiceInput = 0;
@@ -424,6 +441,20 @@ DagOrchestratorB_App::OnData(std::shared_ptr<const ndn::Data> data)
   //m_mapOfServiceInputs[rxedDataName] = (*pServiceInput);
   m_vectorOfServiceInputs.push_back(*pServiceInput); // add it at the end (should be same as putting it at index m_serviceInputIndex)
   //m_vectorOfServiceInputs[m_serviceInputIndex] = (unsigned char)(*pServiceInput);
+*/
+
+  //NS_LOG_DEBUG("Now reading it into string...");
+  std::string dataPacketString;
+  dataPacketString = (const char *)data->getContent().value();
+  NS_LOG_DEBUG("OrchestratorB_APP - Data string received: " << dataPacketString);
+
+  //NS_LOG_DEBUG("Now parsing it into JSON...");
+  json dataPacketContents = json::parse(dataPacketString);
+  //NS_LOG_DEBUG("Data received: " << dataPacketContents);
+
+  m_vectorOfServiceInputs.push_back(dataPacketContents["serviceOutput"]);
+  m_vectorOfServiceMakespans.push_back(dataPacketContents["makespanNS"]);
+
 
 
   ndn::time::milliseconds data_freshnessPeriod = data->getFreshnessPeriod();
@@ -554,6 +585,7 @@ DagOrchestratorB_App::OnData(std::shared_ptr<const ndn::Data> data)
         m_dagOrchTracker.clear();
         //m_dagObject.clear(); // can't delete here, as we are still using it for iteration. No need to delete anyways, as we overwrite the old one when a workflow interest comes in from the user.
         m_vectorOfServiceInputs.erase(m_vectorOfServiceInputs.begin(), m_vectorOfServiceInputs.end());
+        m_vectorOfServiceMakespans.erase(m_vectorOfServiceMakespans.begin(), m_vectorOfServiceMakespans.end());
         m_listOfServicesWithInputs.clear();
         m_listOfRootServices.clear();
         //m_listOfSinkNodes.clear(); // can't delete here, as we are still using it for iteration. Delete above when we receive the workflow request from the user.

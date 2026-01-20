@@ -71,6 +71,7 @@ private:
   ndn::Name m_name;
   ndn::Name m_prefix;
   ndn::Name m_service;
+  uint64_t m_makespan;
   int m_freshnessPeriod;
   int m_uniformFreshness;
   int m_freshnessMin;

@@ -24,12 +24,12 @@ print("")
 
 # Count interest packets coming from application face
 keyword1 = 'CABEEE'
-keyword2 = 'onIncomingInterestFromApp'
+keyword2 = 'onIncomingWFInterestFromApp'
 count = count_specific_lines(output_file_path, keyword1, keyword2)
 print(f"Interest Packets Generated: {count} interests")
 # Count data packets going to application face
 keyword1 = 'CABEEE'
-keyword2 = 'onOutgoingDataToApp'
+keyword2 = 'onOutgoingWFDataToApp'
 count = count_specific_lines(output_file_path, keyword1, keyword2)
 print(f"Data Packets Generated: {count} data")
 
@@ -38,12 +38,12 @@ print("")
 # we can't trust the transmitted packets in ndnSIM because it uses an older version of NFD, which seems to end up with a higher count of transmitted packets than the real NFD
 # Count interest packets coming from any face
 keyword1 = 'CABEEE'
-keyword2 = 'onIncomingInterestFromFace'
+keyword2 = 'onIncomingWFInterestFromFace'
 count = count_specific_lines(output_file_path, keyword1, keyword2)
 print(f"Interest Packets Transmitted: {count} interests")
 # Count data packets going to any face
 keyword1 = 'CABEEE'
-keyword2 = 'onOutgoingDataToFace'
+keyword2 = 'onOutgoingWFDataToFace'
 count = count_specific_lines(output_file_path, keyword1, keyword2)
 print(f"Data Packets Transmitted: {count} data")
 

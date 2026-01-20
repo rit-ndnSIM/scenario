@@ -84,7 +84,8 @@ private:
   ////std::map <std::string, std::vector<ndn::Block> > m_mapOfRxedBlocks;
   //std::map <std::string, std::vector<std::string> > m_mapOfRxedBlocks;
   //std::map <std::string, unsigned char> m_mapOfServiceInputs;
-  std::vector <unsigned char> m_vectorOfServiceInputs;   // keeps a vector of ALL received results (to feed downstream service inputs)
+  std::vector <unsigned char> m_vectorOfServiceInputs;   // keeps a vector of ALL received results   (to feed downstream service inputs)
+  std::vector <unsigned char> m_vectorOfServiceMakespans;// keeps a vector of ALL received makespans (to feed downstream service inputs)
   unsigned char m_serviceInputIndex;
   std::list <std::string> m_listOfServicesWithInputs;   // keeps track of which services have inputs
   std::list <std::string> m_listOfRootServices;         // keeps track of which services don't have any inputs
