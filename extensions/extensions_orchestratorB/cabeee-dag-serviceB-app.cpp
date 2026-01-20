@@ -306,10 +306,13 @@ DagServiceB_App::OnInterest(std::shared_ptr<const ndn::Interest> interest)
     {
       if (serviceInput.value() == 0)
       {
-        NS_LOG_DEBUG("    ServiceB: ERROR! We should have already received this input, but somehow haven't: " << serviceInput.key());
+        NS_LOG_DEBUG("    ServiceB: ERROR! We should have already received this input, but somehow haven't: " << serviceInput.key() << ". Waiting 1us and trying again (scheduling OnInterest() to run again later).");
         // generate the interest for this input
-        std::string dagString = m_dagObject.dump();
-        DagServiceB_App::SendInterest(serviceInput.key(), dagString);
+        //std::string dagString = m_dagObject.dump();
+        //DagServiceB_App::SendInterest(serviceInput.key(), dagString);
+
+        // instead of sending another interest, schedule for "onInterest" to run again in a little bit, to allow time for the input to arrive.
+        Simulator::Schedule(MicroSeconds(1), &DagServiceB_App::OnInterest, this, interest);
       }
     }
 
@@ -391,7 +394,7 @@ std::cout << "        DOES THIS EVER HAPPEN?? " << m_service << " received DATA 
   //NS_LOG_DEBUG("Now reading it into string...");
   std::string dataPacketString;
   dataPacketString = (const char *)data->getContent().value();
-  //NS_LOG_DEBUG("Data string received: " << dataPacketString);
+  NS_LOG_DEBUG("ServiceB_APP - Data string received: " << dataPacketString);
 
   //NS_LOG_DEBUG("Now parsing it into JSON...");
   json dataPacketContents = json::parse(dataPacketString);

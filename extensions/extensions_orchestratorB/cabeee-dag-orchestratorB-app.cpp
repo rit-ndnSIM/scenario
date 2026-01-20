@@ -318,13 +318,13 @@ DagOrchestratorB_App::OnInterest(std::shared_ptr<const ndn::Interest> interest)
     {
       if (service.key() == requestorService)
       {
-        NS_LOG_DEBUG("Found requestor service!");
+        NS_LOG_DEBUG("Found requestor service!" << requestorService);
         for (auto& serviceInput : m_dagOrchTracker[(std::string)service.key()]["inputsRxed"].items())
         {
           if (serviceInput.key() == requestedService) // there might be more than one service that uses this input, but we already matched to the requestor above.
           {
-            NS_LOG_DEBUG("Found requested service result!");
             unsigned char inputStorageIndex = serviceInput.value();
+            NS_LOG_DEBUG("Found requested service result! inputStorageIndex = " << inputStorageIndex);
 
             // send that data at that index as a response for this interest
             NS_LOG_DEBUG("Generating data packet for: " << nameAndDigest.ndn::Name::toUri());
@@ -336,7 +336,7 @@ DagOrchestratorB_App::OnInterest(std::shared_ptr<const ndn::Interest> interest)
             unsigned char myBuffer[1024];
             json dataPacketContents;
             dataPacketContents.clear();
-            dataPacketContents["makespanNS"] = m_vectorOfServiceMakespans[inputStorageIndex];
+            dataPacketContents["makespanNS"] = 0; // here the makespan is reported as zero because we are not running the service in the orchestrator node, we are just replying with the stored results
             dataPacketContents["serviceOutput"] = m_vectorOfServiceInputs[inputStorageIndex];
             NS_LOG_DEBUG("OrchestratorB_APP - Sending Data packet with JSON data packet contents: " << dataPacketContents);
             std::string dataPacketString;
@@ -387,7 +387,9 @@ DagOrchestratorB_App::OnInterest(std::shared_ptr<const ndn::Interest> interest)
         {
           // generate the interest request for the data inputs for this service, and mark it down as generated
           std::string dagString = m_dagObject.dump();
-          DagOrchestratorB_App::SendInterest(service.key(), dagString);
+          //DagOrchestratorB_App::SendInterest(service.key(), dagString);
+          // schedule it to be sent just a little big AFTER the data is sent, so that the data gets there before the service request
+          Simulator::Schedule(MicroSeconds(1), &DagOrchestratorB_App::SendInterest, this, service.key(), dagString);
           service.value()["interestGenerated"] = 1;
         }
       }
@@ -453,7 +455,6 @@ DagOrchestratorB_App::OnData(std::shared_ptr<const ndn::Data> data)
   //NS_LOG_DEBUG("Data received: " << dataPacketContents);
 
   m_vectorOfServiceInputs.push_back(dataPacketContents["serviceOutput"]);
-  m_vectorOfServiceMakespans.push_back(dataPacketContents["makespanNS"]);
 
 
 
@@ -585,7 +586,6 @@ DagOrchestratorB_App::OnData(std::shared_ptr<const ndn::Data> data)
         m_dagOrchTracker.clear();
         //m_dagObject.clear(); // can't delete here, as we are still using it for iteration. No need to delete anyways, as we overwrite the old one when a workflow interest comes in from the user.
         m_vectorOfServiceInputs.erase(m_vectorOfServiceInputs.begin(), m_vectorOfServiceInputs.end());
-        m_vectorOfServiceMakespans.erase(m_vectorOfServiceMakespans.begin(), m_vectorOfServiceMakespans.end());
         m_listOfServicesWithInputs.clear();
         m_listOfRootServices.clear();
         //m_listOfSinkNodes.clear(); // can't delete here, as we are still using it for iteration. Delete above when we receive the workflow request from the user.

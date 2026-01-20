@@ -188,7 +188,7 @@ DagServiceA_App::OnInterest(std::shared_ptr<const ndn::Interest> interest)
     unsigned char myBuffer[1024];
     json dataPacketContents;
     dataPacketContents.clear();
-    dataPacketContents["makespanNS"] = m_makespan;
+    dataPacketContents["makespanNS"] = 0; // here the makespan is reported as zero because we are not running the service again, we are replying with the stored results
     dataPacketContents["serviceOutput"] = m_serviceOutput;
     NS_LOG_DEBUG("ServiceA_APP - Sending Data packet with JSON data packet contents: " << dataPacketContents);
     std::string dataPacketString;
