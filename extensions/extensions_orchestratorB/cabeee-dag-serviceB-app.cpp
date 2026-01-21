@@ -349,7 +349,7 @@ DagServiceB_App::OnData(std::shared_ptr<const ndn::Data> data)
   //std::string firstTwo = nameAndDigest.getSubName(0,2).toUri(); // extract 2 components starting from component 0, and then convert to Uri string
   std::string firstTwo = nameAndDigest.getSubName(1,2).toUri(); // extract 2 components starting from component 1 (skip /interCACHE prefix), and then convert to Uri string
 
-  std::string inputNumString;
+  std::string inputNumString = "-2";
   std::string requestedService;
   std::string requestorService;
   unsigned char inputNum;
