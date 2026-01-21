@@ -1,11 +1,11 @@
 {
   "prefix": "nesco",
   "topofile": "/home/cabeee/ndnSIM/scenario/topologies/topo-cabeee-3node.txt",
-  "serviceDiscovery": 1,
+  "serviceDiscovery": 0,
   "resourceAllocation": 0,
   "allocationReuse": 0,
   "scheduleCompaction": 0,
-  "startTimeSD": 1,
+  "startTimeSD": 0,
   "startTimeWF": 2,
   "simulationEndTime": 20,
   "router": [
@@ -144,67 +144,83 @@
   "routerHosting": [
     {
       "router": "sensor",
-      "service": "/sensor"
+      "service": "/sensor",
+      "makespanNS": 1000000
     },
     {
       "router": "rtr-1",
-      "service": "/sensor"
+      "service": "/sensor",
+      "makespanNS": 1000000
     },
     {
       "router": "rtr-3",
-      "service": "/sensor"
+      "service": "/sensor",
+      "makespanNS": 1000000
     },
     {
       "router": "rtr-3",
-      "service": "/service1"
+      "service": "/service1",
+      "makespanNS": 1000000
     },
     {
       "router": "sensor",
-      "service": "/service1"
+      "service": "/service1",
+      "makespanNS": 1000000
     },
     {
       "router": "rtr-1",
-      "service": "/service2"
+      "service": "/service2",
+      "makespanNS": 1000000
     },
     {
       "router": "rtr-3",
-      "service": "/service2"
+      "service": "/service2",
+      "makespanNS": 1000000
     },
     {
       "router": "rtr-1",
-      "service": "/service3"
+      "service": "/service3",
+      "makespanNS": 1000000
     },
     {
       "router": "rtr-2",
-      "service": "/service3"
+      "service": "/service3",
+      "makespanNS": 1000000
     },
     {
       "router": "rtr-2",
-      "service": "/service4"
+      "service": "/service4",
+      "makespanNS": 1000000
     },
     {
       "router": "rtr-3",
-      "service": "/service5"
+      "service": "/service5",
+      "makespanNS": 1000000
     },
     {
       "router": "rtr-1",
-      "service": "/service6"
+      "service": "/service6",
+      "makespanNS": 1000000
     },
     {
       "router": "sensor",
-      "service": "/service6"
+      "service": "/service6",
+      "makespanNS": 1000000
     },
     {
       "router": "rtr-1",
-      "service": "/service7"
+      "service": "/service7",
+      "makespanNS": 1000000
     },
     {
       "router": "rtr-1",
-      "service": "/service8"
+      "service": "/service8",
+      "makespanNS": 1000000
     },
     {
       "router": "rtr-2",
-      "service": "/service8"
+      "service": "/service8",
+      "makespanNS": 1000000
     },
     {
       "router": "user",

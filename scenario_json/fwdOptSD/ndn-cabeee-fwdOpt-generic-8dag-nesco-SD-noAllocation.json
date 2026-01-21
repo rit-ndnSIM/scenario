@@ -1,10 +1,10 @@
 {
   "prefix": "nesco",
-  "topofile": "/home/cabeee/ndnSIM/scenario/topologies/topo-cabeee-3node-fwdOpt.txt",
+  "topofile": "/home/cabeee/ndnSIM/scenario/topologies/topo-cabeee-3node.txt",
   "serviceDiscovery": 1,
-  "resourceAllocation": 1,
-  "allocationReuse": 1,
-  "scheduleCompaction": 1,
+  "resourceAllocation": 0,
+  "allocationReuse": 0,
+  "scheduleCompaction": 0,
   "startTimeSD": 1,
   "startTimeWF": 2,
   "simulationEndTime": 20,
@@ -56,20 +56,12 @@
       "to": "rtr-1",
       "capacity": "100Mbps",
       "metric": "1",
-      "delay": "2ms",
-      "queue": "100"
-    },
-    {
-      "from": "sensor",
-      "to": "rtr-2",
-      "capacity": "100Mbps",
-      "metric": "1",
       "delay": "1ms",
       "queue": "100"
     },
     {
       "from": "rtr-1",
-      "to": "rtr-3",
+      "to": "rtr-2",
       "capacity": "100Mbps",
       "metric": "1",
       "delay": "1ms",
@@ -80,7 +72,7 @@
       "to": "rtr-3",
       "capacity": "100Mbps",
       "metric": "1",
-      "delay": "3ms",
+      "delay": "1ms",
       "queue": "100"
     },
     {
@@ -124,6 +116,26 @@
       "strategy": "/localhost/nfd/strategy/best-route"
     },
     {
+      "name": "/service5",
+      "type": "service",
+      "strategy": "/localhost/nfd/strategy/best-route"
+    },
+    {
+      "name": "/service6",
+      "type": "service",
+      "strategy": "/localhost/nfd/strategy/best-route"
+    },
+    {
+      "name": "/service7",
+      "type": "service",
+      "strategy": "/localhost/nfd/strategy/best-route"
+    },
+    {
+      "name": "/service8",
+      "type": "service",
+      "strategy": "/localhost/nfd/strategy/best-route"
+    },
+    {
       "name": "/serviceDiscovery",
       "type": "service",
       "strategy": "/localhost/nfd/strategy/best-route"
@@ -132,36 +144,88 @@
   "routerHosting": [
     {
       "router": "sensor",
-      "service": "/sensor"
+      "service": "/sensor",
+      "makespanNS": 1000000
+    },
+    {
+      "router": "rtr-1",
+      "service": "/sensor",
+      "makespanNS": 1000000
     },
     {
       "router": "rtr-3",
-      "service": "/service1"
+      "service": "/sensor",
+      "makespanNS": 1000000
+    },
+    {
+      "router": "rtr-3",
+      "service": "/service1",
+      "makespanNS": 1000000
     },
     {
       "router": "sensor",
-      "service": "/service1"
+      "service": "/service1",
+      "makespanNS": 1000000
     },
     {
       "router": "rtr-1",
-      "service": "/service2"
+      "service": "/service2",
+      "makespanNS": 1000000
+    },
+    {
+      "router": "rtr-3",
+      "service": "/service2",
+      "makespanNS": 1000000
     },
     {
       "router": "rtr-1",
-      "service": "/service3"
+      "service": "/service3",
+      "makespanNS": 1000000
     },
     {
       "router": "rtr-2",
-      "service": "/service3"
+      "service": "/service3",
+      "makespanNS": 1000000
     },
     {
       "router": "rtr-2",
-      "service": "/service4"
+      "service": "/service4",
+      "makespanNS": 1000000
+    },
+    {
+      "router": "rtr-3",
+      "service": "/service5",
+      "makespanNS": 1000000
+    },
+    {
+      "router": "rtr-1",
+      "service": "/service6",
+      "makespanNS": 1000000
+    },
+    {
+      "router": "sensor",
+      "service": "/service6",
+      "makespanNS": 1000000
+    },
+    {
+      "router": "rtr-1",
+      "service": "/service7",
+      "makespanNS": 1000000
+    },
+    {
+      "router": "rtr-1",
+      "service": "/service8",
+      "makespanNS": 1000000
+    },
+    {
+      "router": "rtr-2",
+      "service": "/service8",
+      "makespanNS": 1000000
     },
     {
       "router": "user",
       "service": "/consumer",
-      "workflowFile": "/home/cabeee/ndnSIM/scenario/workflows/4dag.json",
+      "workflowFile": "/home/cabeee/ndnSIM/scenario/workflows/8dag.json",
       "dag": "dag1",
       "start": 0,
       "end": -1
@@ -169,20 +233,27 @@
   ],
   "dag": {
     "dag1": {
+
       "/sensor": {
         "/service1": 0
       },
       "/service1": {
-        "/service2": 0,
-        "/service3": 0
-      },
-      "/service2": {
-        "/service4": 0
+        "/service3": 0,
+        "/service5": 0
       },
       "/service3": {
-        "/service4": 1
+        "/service6": 0
       },
-      "/service4": {
+      "/service5": {
+        "/service7": 0
+      },
+      "/service6": {
+        "/service8": 0
+      },
+      "/service7": {
+        "/service8": 1
+      },
+      "/service8": {
         "/consumer": 0
       }
     }

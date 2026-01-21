@@ -88,7 +88,7 @@ main(int argc, char* argv[])
     int8_t scheduleCompactionFlag = scenario_json.at("scheduleCompaction");
     int8_t startTimeSD;
     int8_t startTimeWF;
-    int8_t simulationEndTime = scenario_json.at("simulationEndTime");
+    float simulationEndTime = scenario_json.at("simulationEndTime");
     if (serviceDiscoveryFlag == 1) {
         startTimeSD = scenario_json.at("startTimeSD");
         startTimeWF = scenario_json.at("startTimeWF");

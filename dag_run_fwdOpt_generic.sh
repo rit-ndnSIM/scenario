@@ -35,14 +35,16 @@ NDNSIM_HOME="$HOME/ndnSIM"
 SCENARIO_DIR="$HOME/ndnSIM/scenario"
 WORKFLOW_DIR="$HOME/ndnSIM/scenario/workflows"
 TOPOLOGY_DIR="$HOME/ndnSIM/scenario/topologies"
-SCENARIO_JSON_DIR="$SCENARIO_DIR/scenario_json"
 USAGE_ALLOCATION_GRAPHS_DIR="$HOME/ndnSIM/scenario/usage_allocation_graphs"
 
-mkdir -p "$SCENARIO_JSON_DIR"
+#mkdir -p "$SCENARIO_JSON_DIR"
 
+#TYPE="cascon_main"
+#TYPE="cascon_cpm"
+TYPE="fwdOptSD"
 
-
-csv_out="$SCENARIO_DIR/perf-results-simulation-fwdOpt_generic.csv"
+SCENARIO_JSON_DIR="$SCENARIO_DIR/scenario_json/$TYPE"
+csv_out="$SCENARIO_DIR/perf-results-simulation-${TYPE}_generic.csv"
 
 header="Example, SD Interest Packets Generated, SD Data Packets Generated, SD Interest Packets Transmitted, SD Data Packets Transmitted, WF Interest Packets Generated, WF Data Packets Generated, WF Interest Packets Transmitted, WF Data Packets Transmitted, Critical-Path-Metric, CPM-t_exec(ns), SD Latency (us), SD Estimated WF Service Latency (us), WF Service Latency (us), Total Node Usage Time (us), Average Node Utilization (%), Coefficient of Variation (load distribution), Final Result, Time, ns-3 commit, pybindgen commit, scenario commit, ndnSIM commit"
 

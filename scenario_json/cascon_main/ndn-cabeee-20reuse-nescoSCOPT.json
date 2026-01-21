@@ -1,9 +1,17 @@
 {
   "prefix": "nescoSCOPT",
   "topofile": "/home/cabeee/ndnSIM/scenario/topologies/topo-cabeee-3node.txt",
+  "serviceDiscovery": 0,
+  "resourceAllocation": 0,
+  "allocationReuse": 0,
+  "scheduleCompaction": 0,
+  "startTimeSD": 0,
+  "startTimeWF": 2,
+  "simulationEndTime": 2.0,
   "router": [
     {
       "node": "sensor",
+      "cs-size": 0,
       "comment": "NA",
       "y": "80",
       "x": "0",
@@ -11,6 +19,7 @@
     },
     {
       "node": "rtr-1",
+      "cs-size": 100,
       "comment": "NA",
       "y": "60",
       "x": "20",
@@ -18,6 +27,7 @@
     },
     {
       "node": "rtr-2",
+      "cs-size": 100,
       "comment": "NA",
       "y": "60",
       "x": "-20",
@@ -25,6 +35,7 @@
     },
     {
       "node": "rtr-3",
+      "cs-size": 100,
       "comment": "NA",
       "y": "40",
       "x": "0",
@@ -32,6 +43,7 @@
     },
     {
       "node": "user",
+      "cs-size": 0,
       "comment": "NA",
       "y": "10",
       "x": "0",
@@ -75,217 +87,270 @@
   "services": [
     {
       "name": "/serviceL9",
-      "type": "service"
+      "type": "service",
+      "strategy": "/localhost/nfd/strategy/multicast"
     },
     {
       "name": "/serviceP3",
-      "type": "service"
+      "type": "service",
+      "strategy": "/localhost/nfd/strategy/multicast"
     },
     {
       "name": "/serviceL6",
-      "type": "service"
+      "type": "service",
+      "strategy": "/localhost/nfd/strategy/multicast"
     },
     {
       "name": "/serviceL4",
-      "type": "service"
+      "type": "service",
+      "strategy": "/localhost/nfd/strategy/multicast"
     },
     {
       "name": "/serviceL10",
-      "type": "service"
+      "type": "service",
+      "strategy": "/localhost/nfd/strategy/multicast"
     },
     {
       "name": "/sensor2",
-      "type": "producer"
+      "type": "producer",
+      "strategy": "/localhost/nfd/strategy/multicast"
     },
     {
       "name": "/sensorL",
-      "type": "producer"
+      "type": "producer",
+      "strategy": "/localhost/nfd/strategy/multicast"
     },
     {
       "name": "/serviceP2",
-      "type": "service"
+      "type": "service",
+      "strategy": "/localhost/nfd/strategy/multicast"
     },
     {
       "name": "/serviceL7",
-      "type": "service"
+      "type": "service",
+      "strategy": "/localhost/nfd/strategy/multicast"
     },
     {
       "name": "/serviceP5",
-      "type": "service"
+      "type": "service",
+      "strategy": "/localhost/nfd/strategy/multicast"
     },
     {
       "name": "/sensor1",
-      "type": "producer"
+      "type": "producer",
+      "strategy": "/localhost/nfd/strategy/multicast"
     },
     {
       "name": "/serviceP22",
-      "type": "service"
+      "type": "service",
+      "strategy": "/localhost/nfd/strategy/multicast"
     },
     {
       "name": "/serviceL8",
-      "type": "service"
+      "type": "service",
+      "strategy": "/localhost/nfd/strategy/multicast"
     },
     {
       "name": "/serviceP4",
-      "type": "service"
+      "type": "service",
+      "strategy": "/localhost/nfd/strategy/multicast"
     },
     {
       "name": "/sensor4",
-      "type": "producer"
+      "type": "producer",
+      "strategy": "/localhost/nfd/strategy/multicast"
     },
     {
       "name": "/serviceP6",
-      "type": "service"
+      "type": "service",
+      "strategy": "/localhost/nfd/strategy/multicast"
     },
     {
       "name": "/serviceL2",
-      "type": "service"
+      "type": "service",
+      "strategy": "/localhost/nfd/strategy/multicast"
     },
     {
       "name": "/serviceP23",
-      "type": "service"
+      "type": "service",
+      "strategy": "/localhost/nfd/strategy/multicast"
     },
     {
       "name": "/sensor3",
-      "type": "producer"
+      "type": "producer",
+      "strategy": "/localhost/nfd/strategy/multicast"
     },
     {
       "name": "/serviceR1",
-      "type": "service"
+      "type": "service",
+      "strategy": "/localhost/nfd/strategy/multicast"
     },
     {
       "name": "/serviceL5",
-      "type": "service"
+      "type": "service",
+      "strategy": "/localhost/nfd/strategy/multicast"
     },
     {
       "name": "/sensor5",
-      "type": "producer"
+      "type": "producer",
+      "strategy": "/localhost/nfd/strategy/multicast"
     },
     {
       "name": "/serviceL1",
-      "type": "service"
+      "type": "service",
+      "strategy": "/localhost/nfd/strategy/multicast"
     },
     {
       "name": "/consumer",
-      "type": "consumer"
+      "type": "consumer",
+      "strategy": "/localhost/nfd/strategy/multicast"
     },
     {
       "name": "/serviceL3",
-      "type": "service"
+      "type": "service",
+      "strategy": "/localhost/nfd/strategy/multicast"
     },
     {
       "name": "/sensor6",
-      "type": "producer"
+      "type": "producer",
+      "strategy": "/localhost/nfd/strategy/multicast"
     },
     {
       "name": "/serviceP1",
-      "type": "service"
+      "type": "service",
+      "strategy": "/localhost/nfd/strategy/multicast"
     }
   ],
   "routerHosting": [
     {
       "router": "sensor",
-      "service": "/sensor1"
+      "service": "/sensor1",
+      "makespanNS": 0
     },
     {
       "router": "sensor",
-      "service": "/sensor2"
+      "service": "/sensor2",
+      "makespanNS": 0
     },
     {
       "router": "sensor",
-      "service": "/sensor3"
+      "service": "/sensor3",
+      "makespanNS": 0
     },
     {
       "router": "sensor",
-      "service": "/sensor4"
+      "service": "/sensor4",
+      "makespanNS": 0
     },
     {
       "router": "sensor",
-      "service": "/sensor5"
+      "service": "/sensor5",
+      "makespanNS": 0
     },
     {
       "router": "sensor",
-      "service": "/sensor6"
+      "service": "/sensor6",
+      "makespanNS": 0
     },
     {
       "router": "sensor",
-      "service": "/sensorL"
+      "service": "/sensorL",
+      "makespanNS": 0
     },
     {
       "router": "rtr-1",
-      "service": "/serviceL10"
+      "service": "/serviceL10",
+      "makespanNS": 0
     },
     {
       "router": "rtr-1",
-      "service": "/serviceL6"
+      "service": "/serviceL6",
+      "makespanNS": 0
     },
     {
       "router": "rtr-1",
-      "service": "/serviceL2"
+      "service": "/serviceL2",
+      "makespanNS": 0
     },
     {
       "router": "rtr-2",
-      "service": "/serviceL9"
+      "service": "/serviceL9",
+      "makespanNS": 0
     },
     {
       "router": "rtr-2",
-      "service": "/serviceL7"
+      "service": "/serviceL7",
+      "makespanNS": 0
     },
     {
       "router": "rtr-2",
-      "service": "/serviceL5"
+      "service": "/serviceL5",
+      "makespanNS": 0
     },
     {
       "router": "rtr-2",
-      "service": "/serviceL3"
+      "service": "/serviceL3",
+      "makespanNS": 0
     },
     {
       "router": "rtr-2",
-      "service": "/serviceL1"
+      "service": "/serviceL1",
+      "makespanNS": 0
     },
     {
       "router": "rtr-2",
-      "service": "/serviceP1"
+      "service": "/serviceP1",
+      "makespanNS": 0
     },
     {
       "router": "rtr-2",
-      "service": "/serviceP2"
+      "service": "/serviceP2",
+      "makespanNS": 0
     },
     {
       "router": "rtr-2",
-      "service": "/serviceP3"
+      "service": "/serviceP3",
+      "makespanNS": 0
     },
     {
       "router": "rtr-2",
-      "service": "/serviceP4"
+      "service": "/serviceP4",
+      "makespanNS": 0
     },
     {
       "router": "rtr-2",
-      "service": "/serviceP5"
+      "service": "/serviceP5",
+      "makespanNS": 0
     },
     {
       "router": "rtr-2",
-      "service": "/serviceP6"
+      "service": "/serviceP6",
+      "makespanNS": 0
     },
     {
       "router": "rtr-3",
-      "service": "/serviceL8"
+      "service": "/serviceL8",
+      "makespanNS": 0
     },
     {
       "router": "rtr-3",
-      "service": "/serviceL4"
+      "service": "/serviceL4",
+      "makespanNS": 0
     },
     {
       "router": "rtr-3",
-      "service": "/serviceP22"
+      "service": "/serviceP22",
+      "makespanNS": 0
     },
     {
       "router": "rtr-3",
-      "service": "/serviceP23"
+      "service": "/serviceP23",
+      "makespanNS": 0
     },
     {
       "router": "rtr-3",
-      "service": "/serviceR1"
+      "service": "/serviceR1",
+      "makespanNS": 0
     },
     {
       "router": "user",

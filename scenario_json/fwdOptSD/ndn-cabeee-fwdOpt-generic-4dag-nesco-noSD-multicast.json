@@ -1,17 +1,17 @@
 {
   "prefix": "nesco",
   "topofile": "/home/cabeee/ndnSIM/scenario/topologies/topo-cabeee-3node-fwdOpt.txt",
-  "serviceDiscovery": 1,
-  "resourceAllocation": 1,
-  "allocationReuse": 1,
-  "scheduleCompaction": 1,
-  "startTimeSD": 1,
+  "serviceDiscovery": 0,
+  "resourceAllocation": 0,
+  "allocationReuse": 0,
+  "scheduleCompaction": 0,
+  "startTimeSD": 0,
   "startTimeWF": 2,
   "simulationEndTime": 20,
   "router": [
     {
       "node": "sensor",
-      "cs-size": 1000,
+      "cs-size": 0,
       "comment": "NA",
       "y": "80",
       "x": "0",
@@ -19,7 +19,7 @@
     },
     {
       "node": "rtr-1",
-      "cs-size": 1000,
+      "cs-size": 0,
       "comment": "NA",
       "y": "60",
       "x": "20",
@@ -27,7 +27,7 @@
     },
     {
       "node": "rtr-2",
-      "cs-size": 1000,
+      "cs-size": 0,
       "comment": "NA",
       "y": "60",
       "x": "-20",
@@ -35,7 +35,7 @@
     },
     {
       "node": "rtr-3",
-      "cs-size": 1000,
+      "cs-size": 0,
       "comment": "NA",
       "y": "40",
       "x": "0",
@@ -96,67 +96,74 @@
     {
       "name": "/consumer",
       "type": "consumer",
-      "strategy": "/localhost/nfd/strategy/best-route"
+      "strategy": "/localhost/nfd/strategy/multicast"
     },
     {
       "name": "/service4",
       "type": "service",
-      "strategy": "/localhost/nfd/strategy/best-route"
+      "strategy": "/localhost/nfd/strategy/multicast"
     },
     {
       "name": "/service3",
       "type": "service",
-      "strategy": "/localhost/nfd/strategy/best-route"
+      "strategy": "/localhost/nfd/strategy/multicast"
     },
     {
       "name": "/sensor",
       "type": "producer",
-      "strategy": "/localhost/nfd/strategy/best-route"
+      "strategy": "/localhost/nfd/strategy/multicast"
     },
     {
       "name": "/service1",
       "type": "service",
-      "strategy": "/localhost/nfd/strategy/best-route"
+      "strategy": "/localhost/nfd/strategy/multicast"
     },
     {
       "name": "/service2",
       "type": "service",
-      "strategy": "/localhost/nfd/strategy/best-route"
+      "strategy": "/localhost/nfd/strategy/multicast"
     },
     {
       "name": "/serviceDiscovery",
       "type": "service",
-      "strategy": "/localhost/nfd/strategy/best-route"
+      "strategy": "/localhost/nfd/strategy/multicast"
     }
   ],
   "routerHosting": [
     {
       "router": "sensor",
-      "service": "/sensor"
+      "service": "/sensor",
+      "makespanNS": 1000000
     },
     {
       "router": "rtr-3",
-      "service": "/service1"
+      "service": "/service1",
+      "makespanNS": 1000000
     },
     {
       "router": "sensor",
-      "service": "/service1"
+      "service": "/service1",
+      "makespanNS": 1000000
     },
     {
       "router": "rtr-1",
-      "service": "/service2"
+      "service": "/service2",
+      "makespanNS": 1000000
     },
     {
       "router": "rtr-1",
-      "service": "/service3"
+      "service": "/service3",
+      "makespanNS": 1000000
     },
     {
       "router": "rtr-2",
-      "service": "/service3"
+      "service": "/service3",
+      "makespanNS": 1000000
     },
     {
       "router": "rtr-2",
-      "service": "/service4"
+      "service": "/service4",
+      "makespanNS": 1000000
     },
     {
       "router": "user",

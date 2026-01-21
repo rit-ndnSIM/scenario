@@ -1,13 +1,13 @@
 {
-  "prefix": "nesco",
-  "topofile": "/home/cabeee/ndnSIM/scenario/topologies/topo-cabeee-3node-fwdOpt.txt",
-  "serviceDiscovery": 1,
+  "prefix": "nescoSCOPT",
+  "topofile": "/home/cabeee/ndnSIM/scenario/topologies/topo-cabeee-3node.txt",
+  "serviceDiscovery": 0,
   "resourceAllocation": 0,
   "allocationReuse": 0,
   "scheduleCompaction": 0,
-  "startTimeSD": 1,
+  "startTimeSD": 0,
   "startTimeWF": 2,
-  "simulationEndTime": 20,
+  "simulationEndTime": 1.1,
   "router": [
     {
       "node": "sensor",
@@ -19,7 +19,7 @@
     },
     {
       "node": "rtr-1",
-      "cs-size": 0,
+      "cs-size": 100,
       "comment": "NA",
       "y": "60",
       "x": "20",
@@ -27,7 +27,7 @@
     },
     {
       "node": "rtr-2",
-      "cs-size": 0,
+      "cs-size": 100,
       "comment": "NA",
       "y": "60",
       "x": "-20",
@@ -35,7 +35,7 @@
     },
     {
       "node": "rtr-3",
-      "cs-size": 0,
+      "cs-size": 100,
       "comment": "NA",
       "y": "40",
       "x": "0",
@@ -56,20 +56,12 @@
       "to": "rtr-1",
       "capacity": "100Mbps",
       "metric": "1",
-      "delay": "2ms",
-      "queue": "100"
-    },
-    {
-      "from": "sensor",
-      "to": "rtr-2",
-      "capacity": "100Mbps",
-      "metric": "1",
       "delay": "1ms",
       "queue": "100"
     },
     {
       "from": "rtr-1",
-      "to": "rtr-3",
+      "to": "rtr-2",
       "capacity": "100Mbps",
       "metric": "1",
       "delay": "1ms",
@@ -80,7 +72,7 @@
       "to": "rtr-3",
       "capacity": "100Mbps",
       "metric": "1",
-      "delay": "3ms",
+      "delay": "1ms",
       "queue": "100"
     },
     {
@@ -94,69 +86,61 @@
   ],
   "services": [
     {
-      "name": "/consumer",
-      "type": "consumer",
-      "strategy": "/localhost/nfd/strategy/best-route"
-    },
-    {
-      "name": "/service4",
-      "type": "service",
-      "strategy": "/localhost/nfd/strategy/best-route"
-    },
-    {
-      "name": "/service3",
-      "type": "service",
-      "strategy": "/localhost/nfd/strategy/best-route"
-    },
-    {
       "name": "/sensor",
       "type": "producer",
-      "strategy": "/localhost/nfd/strategy/best-route"
+      "strategy": "/localhost/nfd/strategy/multicast"
     },
     {
       "name": "/service1",
       "type": "service",
-      "strategy": "/localhost/nfd/strategy/best-route"
+      "strategy": "/localhost/nfd/strategy/multicast"
     },
     {
       "name": "/service2",
       "type": "service",
-      "strategy": "/localhost/nfd/strategy/best-route"
+      "strategy": "/localhost/nfd/strategy/multicast"
     },
     {
-      "name": "/serviceDiscovery",
+      "name": "/service3",
       "type": "service",
-      "strategy": "/localhost/nfd/strategy/best-route"
+      "strategy": "/localhost/nfd/strategy/multicast"
+    },
+    {
+      "name": "/service4",
+      "type": "service",
+      "strategy": "/localhost/nfd/strategy/multicast"
+    },
+    {
+      "name": "/consumer",
+      "type": "consumer",
+      "strategy": "/localhost/nfd/strategy/multicast"
     }
   ],
   "routerHosting": [
     {
       "router": "sensor",
-      "service": "/sensor"
+      "service": "/sensor",
+      "makespanNS": 0
     },
     {
       "router": "rtr-3",
-      "service": "/service1"
-    },
-    {
-      "router": "sensor",
-      "service": "/service1"
+      "service": "/service1",
+      "makespanNS": 0
     },
     {
       "router": "rtr-1",
-      "service": "/service2"
-    },
-    {
-      "router": "rtr-1",
-      "service": "/service3"
+      "service": "/service2",
+      "makespanNS": 0
     },
     {
       "router": "rtr-2",
-      "service": "/service3"
+      "service": "/service3",
+      "makespanNS": 0
     },
     {
       "router": "rtr-2",
-      "service": "/service4"
+      "service": "/service4",
+      "makespanNS": 0
     },
     {
       "router": "user",

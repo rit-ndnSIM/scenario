@@ -1,17 +1,17 @@
 {
   "prefix": "nesco",
   "topofile": "/home/cabeee/ndnSIM/scenario/topologies/topo-cabeee-3node.txt",
-  "serviceDiscovery": 1,
-  "resourceAllocation": 1,
-  "allocationReuse": 1,
-  "scheduleCompaction": 1,
-  "startTimeSD": 1,
+  "serviceDiscovery": 0,
+  "resourceAllocation": 0,
+  "allocationReuse": 0,
+  "scheduleCompaction": 0,
+  "startTimeSD": 0,
   "startTimeWF": 2,
-  "simulationEndTime": 20,
+  "simulationEndTime": 20.0,
   "router": [
     {
       "node": "sensor",
-      "cs-size": 1000,
+      "cs-size": 0,
       "comment": "NA",
       "y": "80",
       "x": "0",
@@ -19,7 +19,7 @@
     },
     {
       "node": "rtr-1",
-      "cs-size": 1000,
+      "cs-size": 100,
       "comment": "NA",
       "y": "60",
       "x": "20",
@@ -27,7 +27,7 @@
     },
     {
       "node": "rtr-2",
-      "cs-size": 1000,
+      "cs-size": 100,
       "comment": "NA",
       "y": "60",
       "x": "-20",
@@ -35,7 +35,7 @@
     },
     {
       "node": "rtr-3",
-      "cs-size": 1000,
+      "cs-size": 100,
       "comment": "NA",
       "y": "40",
       "x": "0",
@@ -86,138 +86,153 @@
   ],
   "services": [
     {
-      "name": "/consumer",
-      "type": "consumer",
-      "strategy": "/localhost/nfd/strategy/best-route"
-    },
-    {
-      "name": "/service4",
-      "type": "service",
-      "strategy": "/localhost/nfd/strategy/best-route"
-    },
-    {
-      "name": "/service3",
-      "type": "service",
-      "strategy": "/localhost/nfd/strategy/best-route"
-    },
-    {
       "name": "/sensor",
       "type": "producer",
-      "strategy": "/localhost/nfd/strategy/best-route"
+      "strategy": "/localhost/nfd/strategy/multicast"
     },
     {
       "name": "/service1",
       "type": "service",
-      "strategy": "/localhost/nfd/strategy/best-route"
+      "strategy": "/localhost/nfd/strategy/multicast"
     },
     {
       "name": "/service2",
       "type": "service",
-      "strategy": "/localhost/nfd/strategy/best-route"
+      "strategy": "/localhost/nfd/strategy/multicast"
+    },
+    {
+      "name": "/service3",
+      "type": "service",
+      "strategy": "/localhost/nfd/strategy/multicast"
+    },
+    {
+      "name": "/service4",
+      "type": "service",
+      "strategy": "/localhost/nfd/strategy/multicast"
     },
     {
       "name": "/service5",
       "type": "service",
-      "strategy": "/localhost/nfd/strategy/best-route"
+      "strategy": "/localhost/nfd/strategy/multicast"
     },
     {
       "name": "/service6",
       "type": "service",
-      "strategy": "/localhost/nfd/strategy/best-route"
+      "strategy": "/localhost/nfd/strategy/multicast"
     },
     {
       "name": "/service7",
       "type": "service",
-      "strategy": "/localhost/nfd/strategy/best-route"
+      "strategy": "/localhost/nfd/strategy/multicast"
     },
     {
       "name": "/service8",
       "type": "service",
-      "strategy": "/localhost/nfd/strategy/best-route"
+      "strategy": "/localhost/nfd/strategy/multicast"
     },
     {
-      "name": "/serviceDiscovery",
-      "type": "service",
-      "strategy": "/localhost/nfd/strategy/best-route"
+      "name": "/consumer",
+      "type": "consumer",
+      "strategy": "/localhost/nfd/strategy/multicast"
+    },
+    {
+      "name": "/consumer2",
+      "type": "consumer2",
+      "strategy": "/localhost/nfd/strategy/multicast"
     }
   ],
   "routerHosting": [
     {
       "router": "sensor",
-      "service": "/sensor"
-    },
-    {
-      "router": "rtr-1",
-      "service": "/sensor"
-    },
-    {
-      "router": "rtr-3",
-      "service": "/sensor"
+      "service": "/sensor",
+      "makespanNS": 0,
+      "start": 0
     },
     {
       "router": "rtr-3",
-      "service": "/service1"
-    },
-    {
-      "router": "sensor",
-      "service": "/service1"
-    },
-    {
-      "router": "rtr-1",
-      "service": "/service2"
+      "service": "/service1",
+      "makespanNS": 0,
+      "start": 0
     },
     {
       "router": "rtr-3",
-      "service": "/service2"
+      "service": "/service5",
+      "makespanNS": 0,
+      "start": 0
     },
     {
       "router": "rtr-1",
-      "service": "/service3"
+      "service": "/service2",
+      "makespanNS": 0,
+      "start": 0
+    },
+    {
+      "router": "rtr-1",
+      "service": "/service6",
+      "makespanNS": 0,
+      "start": 0
     },
     {
       "router": "rtr-2",
-      "service": "/service3"
+      "service": "/service3",
+      "makespanNS": 0,
+      "start": 0
     },
     {
       "router": "rtr-2",
-      "service": "/service4"
-    },
-    {
-      "router": "rtr-3",
-      "service": "/service5"
-    },
-    {
-      "router": "rtr-1",
-      "service": "/service6"
-    },
-    {
-      "router": "sensor",
-      "service": "/service6"
-    },
-    {
-      "router": "rtr-1",
-      "service": "/service7"
-    },
-    {
-      "router": "rtr-1",
-      "service": "/service8"
+      "service": "/service4",
+      "makespanNS": 0,
+      "start": 0
     },
     {
       "router": "rtr-2",
-      "service": "/service8"
+      "service": "/service7",
+      "makespanNS": 0,
+      "start": 0
+    },
+    {
+      "router": "rtr-2",
+      "service": "/service8",
+      "makespanNS": 0,
+      "start": 0
+    },
+    {
+      "router": "user",
+      "service": "/consumer2",
+      "workflowFile": "/home/cabeee/ndnSIM/scenario/workflows/4dag-cache.json",
+      "dag": "dag1",
+      "start": 0,
+      "end": -1
     },
     {
       "router": "user",
       "service": "/consumer",
       "workflowFile": "/home/cabeee/ndnSIM/scenario/workflows/8dag.json",
-      "dag": "dag1",
-      "start": 0,
+      "dag": "dag2",
+      "start": 4,
       "end": -1
     }
   ],
   "dag": {
     "dag1": {
-
+      "/sensor": {
+        "/service1": 0
+      },
+      "/service1": {
+        "/service2": 0,
+        "/service3": 0
+      },
+      "/service2": {
+        "/service4": 0
+      },
+      "/service3": {
+        "/service4": 1
+      },
+      "/service4": {
+        "/consumer2": 0
+      }
+    },
+    "dag2": {
       "/sensor": {
         "/service1": 0
       },

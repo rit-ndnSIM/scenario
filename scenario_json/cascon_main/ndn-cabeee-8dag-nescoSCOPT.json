@@ -1,9 +1,17 @@
 {
-  "prefix": "nesco",
+  "prefix": "nescoSCOPT",
   "topofile": "/home/cabeee/ndnSIM/scenario/topologies/topo-cabeee-3node.txt",
+  "serviceDiscovery": 0,
+  "resourceAllocation": 0,
+  "allocationReuse": 0,
+  "scheduleCompaction": 0,
+  "startTimeSD": 0,
+  "startTimeWF": 2,
+  "simulationEndTime": 8.0,
   "router": [
     {
       "node": "sensor",
+      "cs-size": 0,
       "comment": "NA",
       "y": "80",
       "x": "0",
@@ -11,6 +19,7 @@
     },
     {
       "node": "rtr-1",
+      "cs-size": 100,
       "comment": "NA",
       "y": "60",
       "x": "20",
@@ -18,6 +27,7 @@
     },
     {
       "node": "rtr-2",
+      "cs-size": 100,
       "comment": "NA",
       "y": "60",
       "x": "-20",
@@ -25,6 +35,7 @@
     },
     {
       "node": "rtr-3",
+      "cs-size": 100,
       "comment": "NA",
       "y": "40",
       "x": "0",
@@ -32,6 +43,7 @@
     },
     {
       "node": "user",
+      "cs-size": 0,
       "comment": "NA",
       "y": "10",
       "x": "0",
@@ -74,82 +86,115 @@
   ],
   "services": [
     {
-      "name": "/service6",
-      "type": "service"
-    },
-    {
-      "name": "/service8",
-      "type": "service"
-    },
-    {
-      "name": "/service2",
-      "type": "service"
-    },
-    {
-      "name": "/service4",
-      "type": "service"
-    },
-    {
-      "name": "/consumer",
-      "type": "consumer"
+      "name": "/sensor",
+      "type": "producer",
+      "strategy": "/localhost/nfd/strategy/multicast"
     },
     {
       "name": "/service1",
-      "type": "service"
+      "type": "service",
+      "strategy": "/localhost/nfd/strategy/multicast"
     },
     {
-      "name": "/sensor",
-      "type": "producer"
+      "name": "/service2",
+      "type": "service",
+      "strategy": "/localhost/nfd/strategy/multicast"
     },
     {
       "name": "/service3",
-      "type": "service"
+      "type": "service",
+      "strategy": "/localhost/nfd/strategy/multicast"
     },
     {
-      "name": "/service7",
-      "type": "service"
+      "name": "/service4",
+      "type": "service",
+      "strategy": "/localhost/nfd/strategy/multicast"
     },
     {
       "name": "/service5",
-      "type": "service"
+      "type": "service",
+      "strategy": "/localhost/nfd/strategy/multicast"
+    },
+    {
+      "name": "/service6",
+      "type": "service",
+      "strategy": "/localhost/nfd/strategy/multicast"
+    },
+    {
+      "name": "/service7",
+      "type": "service",
+      "strategy": "/localhost/nfd/strategy/multicast"
+    },
+    {
+      "name": "/service8",
+      "type": "service",
+      "strategy": "/localhost/nfd/strategy/multicast"
+    },
+    {
+      "name": "/consumer",
+      "type": "consumer",
+      "strategy": "/localhost/nfd/strategy/multicast"
+    },
+    {
+      "name": "/consumer2",
+      "type": "consumer2",
+      "strategy": "/localhost/nfd/strategy/multicast"
     }
   ],
   "routerHosting": [
     {
       "router": "sensor",
-      "service": "/sensor"
+      "service": "/sensor",
+      "makespanNS": 0,
+      "start": 0
     },
     {
       "router": "rtr-3",
-      "service": "/service1"
+      "service": "/service1",
+      "makespanNS": 0,
+      "start": 0
     },
     {
       "router": "rtr-3",
-      "service": "/service5"
+      "service": "/service5",
+      "makespanNS": 0,
+      "start": 0
     },
     {
       "router": "rtr-1",
-      "service": "/service2"
+      "service": "/service2",
+      "makespanNS": 0,
+      "start": 0
     },
     {
       "router": "rtr-1",
-      "service": "/service6"
+      "service": "/service6",
+      "makespanNS": 0,
+      "start": 0
     },
     {
       "router": "rtr-2",
-      "service": "/service3"
+      "service": "/service3",
+      "makespanNS": 0,
+      "start": 0
     },
     {
       "router": "rtr-2",
-      "service": "/service4"
+      "service": "/service4",
+      "makespanNS": 0,
+      "start": 0
     },
     {
       "router": "rtr-2",
-      "service": "/service7"
+      "service": "/service7",
+      "makespanNS": 0,
+      "start": 0
     },
     {
       "router": "rtr-2",
-      "service": "/service8"
+      "service": "/service8",
+      "makespanNS": 0,
+      "start": 0
     },
     {
       "router": "user",
