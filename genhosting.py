@@ -17,7 +17,22 @@ def uniform(args):
     with open(args.topology) as f:
         topology = graph.Topology.from_dict(json.load(f))
 
+    if len(args.start_times) != len(args.stop_times):
+        raise Exception("length start times and stop times must match")
+
     hosting = gen_uniform_hosting(workflow, topology, args.sensors, args.users, args.min_hosts, args.max_hosts)
+    services = workflow.get_services()
+    consumers = workflow.get_consumers()
+    producers = workflow.get_producers()
+
+    for item in hosting:
+        if item['service'] in services:
+            start, stop = random.choice(tuple(zip(args.start_times, args.stop_times)))
+            item.update({'start': start, 'end': stop})
+        elif item['service'] in consumers:
+            item.update({"workflowFile": str(args.workflow), "dag": "dag1", "start": 0, "end": -1 })
+        elif item['service'] in producers:
+            item.update({"start": 0, "end": -1 })
 
     return { "routerHosting": hosting }
 
@@ -42,11 +57,11 @@ def gen_uniform_hosting(workflow, topology, sensors=["sensor"], users=["user"], 
     hosting = []
 
     for user, consumer in zip(users, consumers):
-        hosting.append({ "router": user, "service": consumer})
+        hosting.append({ "router": user, "service": consumer })
         routers.remove(user)
 
     for sensor, producer in zip(sensors, producers):
-        hosting.append({ "router": sensor, "service": producer})
+        hosting.append({ "router": sensor, "service": producer })
         routers.remove(sensor)
 
     if max_hosts is None or max_hosts > len(routers):
@@ -85,6 +100,8 @@ def main():
     uni_parser.add_argument('-u', '--users', nargs='+', type=str, default=['user'], help="list of user routers")
     uni_parser.add_argument('-n', '--min-hosts', type=int, default=1, help='min number of hosts per service')
     uni_parser.add_argument('-m', '--max-hosts', type=int, default=1, help='max number of hosts per service')
+    uni_parser.add_argument('--start-times', nargs='+', type=int, default=[0], help="list of start time choices, paired with --stop-times")
+    uni_parser.add_argument('--stop-times', nargs='+', type=int, default=[-1], help="list of stop time choices, paired with --start-times")
 
     comb_parser = subparsers.add_parser('combine', help="combine two hosting files")
     comb_parser.set_defaults(algorithm=combine)

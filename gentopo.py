@@ -24,7 +24,7 @@ def spanning_tree(args):
             if user in args.routers:
                 args.routers.remove(user)
     else:
-        args.routers = [f"rtr-{i}" for i in range(args.num_nodes)]
+        args.routers = [f"rtr-{i}" for i in range(args.num_routers)]
 
     topo = gen_spanning_tree(args.routers, args.num_edges, args.sensors, args.users)
 
