@@ -30,7 +30,7 @@ class Scenario(object):
             current_branch = branches.pop()
             router, interest_service, time = current_branch
 
-            if not self.hosting.is_hosting(router, interest_service): 
+            if not self.hosting.is_hosting(router, interest_service):
                 # if not hosting, take a hop
                 next_router = self.next_hop(router, interest_service)
                 next_branch = Branch(next_router, interest_service, time+1)
@@ -180,9 +180,9 @@ class Scenario(object):
 
     def __str__(self):
         return '{}({}, {}, {})'.format(self.__class__.__name__, self.workflow, self.topology, self.hosting)
-        
 
-# https://stackoverflow.com/questions/19472530/representing-graphs-data-structure-in-python  
+
+# https://stackoverflow.com/questions/19472530/representing-graphs-data-structure-in-python
 class Graph(object):
     """ Graph data structure, undirected by default. """
 
@@ -191,19 +191,19 @@ class Graph(object):
         self._metadata = defaultdict(dict)
         self._edge_metadata = defaultdict(dict)
         self._directed = directed
-        
+
         if metadata:
             self._metadata.update(metadata)
         if edge_metadata:
             self._edge_metadata.update(edge_metadata)
-            
+
         self.add_connections(connections)
 
     def clone(self):
         """ Create a clone of the object """
 
         return self.__class__(
-            [(node, service) for node, services in self._graph.items() for service in services], 
+            [(node, service) for node, services in self._graph.items() for service in services],
             self._directed, 
             copy.deepcopy(self._metadata),
             copy.deepcopy(self._edge_metadata)
@@ -347,6 +347,21 @@ class Graph(object):
         # if a node is in the graph but has no outgoing connections, self._graph[node] will not exist
         return self.get_outgoing() | self.get_incoming()
 
+    def get_connections(self):
+        """ Get all connections in a graph, as tuples """
+
+        if self._directed:
+            return set((n, m) for n, m in self._graph.items())
+
+        cxns = set()
+        for n, m_set in self._graph.items():
+            for m in m_set:
+                if (n, m) in cxns or (m, n) in cxns:
+                    continue
+                cxns.add((n, m))
+
+        return cxns
+
     def get_contiguous_nodes(self, nodes):
         fringe = nodes
         closed = set()
@@ -426,6 +441,58 @@ class Workflow(Graph):
 
         return self.__class__([(node, service) for node, services in self._graph.items() for service in services], metadata=copy.deepcopy(self._metadata))
 
+    def get_services_json(self):
+        services = []
+
+        dag_producers = self.get_producers()
+        dag_consumers = self.get_consumers()
+        dag_services = self.get_services()
+        dag_nodes = self.get_nodes()
+
+        for node in dag_nodes:
+            if node in dag_producers:
+                typ = "producer"
+            elif node in dag_consumers:
+                typ = "consumer"
+            elif node in dag_services:
+                typ = "service"
+            else:
+                raise ValueError("Node {node} is neither a producer, consumer, nor service (should be impossible, bug in Workflow(Graph))")
+
+            service = { "name": node, "type": typ }
+            services.append(service)
+
+        return services
+
+    def get_dag_json(self):
+        counts = defaultdict(int)
+
+        dag = {}
+
+        for upstream, rtr_set in self._graph.items():
+            routers = {}
+            for rtr in rtr_set:
+                routers[rtr] = counts[rtr]
+                counts[rtr] += 1
+            dag[upstream] = routers
+
+        return dag
+
+    def get_dict(self):
+        """ Returns a dictionary representation of the class """
+
+        dag = self.get_dag_json()
+        services = self.get_services_json()
+
+        return {"dag": dag, "services": services}
+
+    @classmethod
+    def from_dict(cls, dag):
+        """ Constructs a Workflow from a dictionary/JSON """
+        cxns = [(parent, child) for parent, child_dict in dag['dag'].items() for child in child_dict.keys()]
+
+        return cls(cxns)
+
     def prune_downstream(self, service):
         if not self.contains(service):
             return None
@@ -478,15 +545,11 @@ class Topology(Graph):
             meta["node"] = n
             routers.append(meta)
 
-            for m in self.get_outgoing(n):
-                # Check for existing link in reverse direction to avoid duplicates
-                if any((link["from"] == m and link["to"] == n) or (link["from"] == n and link["to"] == m) for link in links):
-                    continue
-
-                edge_meta = self.get_edge_metadata(n, m)
-                edge_meta["from"] = n
-                edge_meta["to"] = m
-                links.append(edge_meta)
+        for n, m in self.get_connections():
+            edge_meta = self.get_edge_metadata(n, m)
+            edge_meta["from"] = n
+            edge_meta["to"] = m
+            links.append(edge_meta)
 
         return {"router": routers, "link": links}
 
@@ -506,7 +569,7 @@ class Topology(Graph):
                 if field not in self.get_metadata(node):
                     break
 
-                file.write(self.get_metadata(node)[field])
+                file.write(str(self.get_metadata(node)[field]))
                 file.write('\t')
 
             file.write('\n')
@@ -518,25 +581,19 @@ class Topology(Graph):
         file.write("# ")
         file.write('\t'.join(["from", "to"] + link_fields))
         file.write('\n')
-        links = []
 
-        for n in self.get_nodes():
-            for m in self.get_outgoing(n):
-                if any((link[0] == n and link[1] == m) or (link[0] == m and link[1] == n) for link in links):
-                    continue
-                links.append((n, m))
+        for n, m in self.get_connections():
+            file.write(n)
+            file.write('\t')
+            file.write(m)
+            file.write('\t')
 
-                file.write(n)
+            for field in link_fields:
+                if field not in self.get_edge_metadata(n, m):
+                    break
+
+                file.write(str(self.get_edge_metadata(n, m)[field]))
                 file.write('\t')
-                file.write(m)
-                file.write('\t')
-
-                for field in link_fields:
-                    if field not in self.get_edge_metadata(n, m):
-                        break
-
-                    file.write(self.get_edge_metadata(n, m)[field])
-                    file.write('\t')
 
             file.write('\n')
 

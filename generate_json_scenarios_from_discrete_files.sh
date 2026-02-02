@@ -200,8 +200,8 @@ do
 
     # keep this commented out if you don't want the json files overwritten.
     "$SCENARIO_DIR/build_scenario.py" \
-        --topo "$topo.txt" --topo-out "$topo.json" \
-        --dag "$wf" --hosting "$hosting" --prefix "$type" | jq > "$scenario_json"
+        --topo-txt "$topo.txt" --topo-json "$topo.json" \
+        --workflow "$wf" --hosting "$hosting" --prefix "$type" | jq > "$scenario_json"
 done
 
 

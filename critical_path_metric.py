@@ -68,7 +68,7 @@ def main():
 
     #tree = scenario.build_interest_tree("user", "/consumer")
 
-    #print(tree)
+    print(json.dumps(scenario.workflow.get_dict()))
 
     #metric = scenario.critical_path_metric("user", "/consumer")
 
