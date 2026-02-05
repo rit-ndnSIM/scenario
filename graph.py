@@ -610,6 +610,7 @@ class Topology(Graph):
         for router in routers:
             if cs_size:
                 link["cs-size"] = cs_size
+            # TODO: fix this shouldn't pop but metadata doesn't need extra
             node = router.pop("node")
             topo.update_metadata(node, **router)
 

@@ -15,18 +15,25 @@ def bottleneck(args):
 
 
 def spanning_tree(args):
-    if args.routers:
-        for user in args.users:
-            if user in args.routers:
-                args.routers.remove(user)
+    if args.num_sensors:
+        args.sensor_list = [f"sensor{i}" for i in range(args.num_sensors)]
 
-        for sensor in args.sensors:
-            if user in args.routers:
-                args.routers.remove(user)
+    if args.num_users:
+        args.user_list = [f"user{i}" for i in range(args.num_users)]
+
+    # ignore sensors and users passed on the router list
+    if args.router_list:
+        for user in args.user_list:
+            if user in args.router_list:
+                args.router_list.remove(user)
+
+        for sensor in args.sensor_list:
+            if user in args.router_list:
+                args.router_list.remove(user)
     else:
-        args.routers = [f"rtr-{i}" for i in range(args.num_routers)]
+        args.router_list = [f"rtr{i}" for i in range(args.num_routers)]
 
-    topo = gen_spanning_tree(args.routers, args.num_edges, args.sensors, args.users)
+    topo = gen_spanning_tree(args.router_list, args.num_edges, args.sensor_list, args.user_list)
 
     for node in topo.get_nodes():
         topo.update_metadata(node, **{
@@ -105,12 +112,20 @@ def main():
 
     st_parser = subparsers.add_parser('spanning_tree', help="use spanning tree algorithm")
     st_parser.set_defaults(algorithm=spanning_tree)
-    routers_group = st_parser.add_mutually_exclusive_group(required=True)
     st_parser.add_argument('-e', '--num-edges', type=int, required=True, help='number of edges to generate')
+
+    routers_group = st_parser.add_mutually_exclusive_group(required=True)
+    routers_group.add_argument('-r', '--router-list', nargs='+', type=str, help='routers to use')
     routers_group.add_argument('-n', '--num-routers', type=int, help='number of routers to generate')
-    routers_group.add_argument('-r', '--routers', nargs='+', type=str, help='routers to use')
-    st_parser.add_argument('-u', '--users', nargs='+', type=str, default=["user"], help='name of the user node(s)')
-    st_parser.add_argument('-s', '--sensors', nargs='+', type=str, default=["sensor"], help='name of the sensor node(s)')
+
+    sensors_group = st_parser.add_mutually_exclusive_group()
+    sensors_group.add_argument('--sensor-list', nargs='+', type=str, default=['sensor'], help="list of sensor routers")
+    sensors_group.add_argument('-s', '--num-sensors', type=int, help="number of sensor routers with standard names")
+
+    users_group = st_parser.add_mutually_exclusive_group()
+    users_group.add_argument('--user-list', nargs='+', type=str, default=['user'], help="list of user routers")
+    users_group.add_argument('-u', '--num-users', type=int, help="number of user routers with standard names")
+
     st_parser.add_argument('--comment', type=str, default="NA", help='default router comment')
     st_parser.add_argument('--ypos', type=int, default=0, help='default router y-position')
     st_parser.add_argument('--xpos', type=int, default=0, help='default router x-position')

@@ -11,6 +11,12 @@ from itertools import combinations
 
 
 def uniform(args):
+    if args.num_sensors:
+        args.sensor_list = [f"sensor{i}" for i in range(args.num_sensors)]
+
+    if args.num_users:
+        args.user_list = [f"user{i}" for i in range(args.num_users)]
+
     with open(args.workflow) as f:
         workflow = graph.Workflow.from_dict(json.load(f))
 
@@ -20,7 +26,7 @@ def uniform(args):
     if len(args.start_times) != len(args.stop_times):
         raise Exception("length start times and stop times must match")
 
-    hosting = gen_uniform_hosting(workflow, topology, args.sensors, args.users, args.min_hosts, args.max_hosts)
+    hosting = gen_uniform_hosting(workflow, topology, args.sensor_list, args.user_list, args.min_hosts, args.max_hosts)
     services = workflow.get_services()
     consumers = workflow.get_consumers()
     producers = workflow.get_producers()
@@ -30,6 +36,7 @@ def uniform(args):
             start, stop = random.choice(tuple(zip(args.start_times, args.stop_times)))
             item.update({'start': start, 'end': stop})
         elif item['service'] in consumers:
+            # TODO: this may need to be configurable
             item.update({"workflowFile": str(args.workflow), "dag": "dag1", "start": 0, "end": -1 })
         elif item['service'] in producers:
             item.update({"start": 0, "end": -1 })
@@ -48,11 +55,12 @@ def gen_uniform_hosting(workflow, topology, sensors=["sensor"], users=["user"], 
     consumers = list(workflow.get_consumers())
     producers = list(workflow.get_producers())
 
+    # TODO: this should be relaxed
     if len(consumers) != len(users):
         raise ValueError("length of users and consumers must match")
 
     if len(producers) != len(sensors):
-        raise ValueError("length of users and consumers must match")
+        raise ValueError("length of sensors and producers must match")
 
     hosting = []
 
@@ -94,10 +102,17 @@ def main():
 
     uni_parser = subparsers.add_parser('uniform', help="distribute services uniformly")
     uni_parser.set_defaults(algorithm=uniform)
-    uni_parser.add_argument('-t', '--topology', type=Path, help="topology json file input")
-    uni_parser.add_argument('-w', '--workflow', type=Path, help="workflow json file input")
-    uni_parser.add_argument('-s', '--sensors', nargs='+', type=str, default=['sensor'], help="list of sensor routers")
-    uni_parser.add_argument('-u', '--users', nargs='+', type=str, default=['user'], help="list of user routers")
+    uni_parser.add_argument('-t', '--topology', type=Path, required=True, help="topology json file input")
+    uni_parser.add_argument('-w', '--workflow', type=Path, required=True, help="workflow json file input")
+
+    sensors_group = uni_parser.add_mutually_exclusive_group()
+    sensors_group.add_argument('--sensor-list', nargs='+', type=str, default=['sensor'], help="list of sensor routers")
+    sensors_group.add_argument('-s', '--num-sensors', type=int, help="number of sensor routers with standard names")
+
+    users_group = uni_parser.add_mutually_exclusive_group()
+    users_group.add_argument('--user-list', nargs='+', type=str, default=['user'], help="list of user routers")
+    users_group.add_argument('-u', '--num-users', type=int, help="number of user routers with standard names")
+
     uni_parser.add_argument('-n', '--min-hosts', type=int, default=1, help='min number of hosts per service')
     uni_parser.add_argument('-m', '--max-hosts', type=int, default=1, help='max number of hosts per service')
     uni_parser.add_argument('--start-times', nargs='+', type=int, default=[0], help="list of start time choices, paired with --stop-times")
