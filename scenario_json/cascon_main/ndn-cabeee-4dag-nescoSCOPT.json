@@ -7,7 +7,7 @@
   "scheduleCompaction": 0,
   "startTimeSD": 0,
   "startTimeWF": 2,
-  "simulationEndTime": 1.1,
+  "simulationEndTime": 2.1,
   "router": [
     {
       "node": "sensor",

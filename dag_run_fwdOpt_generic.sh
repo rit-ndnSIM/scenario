@@ -39,9 +39,9 @@ USAGE_ALLOCATION_GRAPHS_DIR="$HOME/ndnSIM/scenario/usage_allocation_graphs"
 
 #mkdir -p "$SCENARIO_JSON_DIR"
 
-#TYPE="cascon_main"
+TYPE="cascon_main"
 #TYPE="cascon_cpm"
-TYPE="fwdOptSD"
+#TYPE="fwdOptSD"
 
 SCENARIO_JSON_DIR="$SCENARIO_DIR/scenario_json/$TYPE"
 csv_out="$SCENARIO_DIR/perf-results-simulation-${TYPE}_generic.csv"
