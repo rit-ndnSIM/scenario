@@ -371,6 +371,10 @@ DagForwarderApp::OnInterest(std::shared_ptr<const ndn::Interest> interest)
   // generate interests for inputs into hosted services early (shortcut optimization to parallelize workflow)
   if (rxedInterestName == "/shortcutOPT")
   {
+    if (m_dagObject.empty())  // if we received a shortcutOPT interest before the very first regular interest, the data structure won't exist. We simply create it with the received pDAG.
+    {
+      m_dagObject = json::parse(dagString);
+    }
     if (m_service.toUri() != dagObject["head"])
     {
       // only if we haven't already received a request for the service
@@ -589,6 +593,7 @@ DagForwarderApp::OnData(std::shared_ptr<const ndn::Data> data)
   if (index < 0)
   {
     std::cout << "  ERROR!! index for m_vectorOfServiceInputs cannot be negative! Something went wrong!!" << '\n';
+    NS_LOG_DEBUG("\n\nERROR. index for m_vectorOfServiceInputs cannot be negative. rxedDataName: " << rxedDataName << ", m_nameUri: " << m_nameUri << ". Full m_dagObject: " << std::setw(2) << m_dagObject << '\n');
   }
   else
   {
