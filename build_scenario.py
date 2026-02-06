@@ -35,7 +35,6 @@ def main():
     if args.topo_json is not None:
         with open(args.topo_json) as f:
             topology = json.load(f)
-        print(topology, file=sys.stderr)
 
         if not os.path.exists(args.topo_txt) or args.force:
             with open(args.topo_txt, 'w') as f:
@@ -49,7 +48,6 @@ def main():
     prefix = args.prefix
     services = workflow['services']
     dag = workflow['dag']
-    print(topology, file=sys.stderr)
 
     # TODO: should support multiple workflows for multiple consumers? the bones are there but little extra work
     # is single workflow with multiple consumers acceptable?
@@ -64,7 +62,6 @@ def main():
             'dag1': workflow['dag'],
         }
     }
-    print(scenario, file=sys.stderr)
 
     if not os.path.exists(args.output) or args.force:
         with open(args.output, "w") as f:
