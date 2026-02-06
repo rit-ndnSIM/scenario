@@ -68,7 +68,7 @@ generate_hs() {
 }
 
 wf="$(generate_parallel_wf_1 18)"
-tp="$(generate_tp 3 2 18 1)"
-hs="$(generate_hs "$wf" "$tp" 18 1)"
+tp="$(generate_tp 3 2 1 1)"
+hs="$(generate_hs "$wf" "$tp" 1 1)"
 
 ./build_scenario.py -f --workflow "$workdir/$wf" --topo-json "$workdir/$tp" --topo-txt "$workdir/${tp%.json}.txt" --hosting "$workdir/$hs" --output "$workdir/sn-${hs#hs-}"

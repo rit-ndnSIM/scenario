@@ -47,6 +47,9 @@ def uniform(args):
 def gen_uniform_hosting(workflow, topology, sensors=["sensor"], users=["user"], min_hosts=1, max_hosts=None):
     routers = topology.get_nodes()
 
+    if not all(node in routers for node in (*sensors, *users)):
+        raise ValueError("all sensors and users must be in the topology")
+
     if min_hosts < 1:
         raise ValueError("min_hosts must be at least 1")
     if max_hosts is not None and min_hosts > max_hosts:
@@ -55,22 +58,25 @@ def gen_uniform_hosting(workflow, topology, sensors=["sensor"], users=["user"], 
     consumers = list(workflow.get_consumers())
     producers = list(workflow.get_producers())
 
-    # TODO: this should be relaxed
-    if len(consumers) != len(users):
-        raise ValueError("length of users and consumers must match")
+    if len(consumers) < len(users):
+        raise ValueError("cannot have more users than consumers")
 
-    if len(producers) != len(sensors):
-        raise ValueError("length of sensors and producers must match")
+    if len(producers) < len(sensors):
+        raise ValueError("cannot have more sensors than producers")
 
     hosting = []
 
-    for user, consumer in zip(users, consumers):
-        hosting.append({ "router": user, "service": consumer })
-        routers.remove(user)
+    for user in users:
+        hosting.append({ "router": user, "service": consumers.pop()})
 
-    for sensor, producer in zip(sensors, producers):
-        hosting.append({ "router": sensor, "service": producer })
-        routers.remove(sensor)
+    for consumer in consumers:
+        hosting.append({ "router": random.choice(users), "service": consumer})
+
+    for sensor in sensors:
+        hosting.append({ "router": sensor, "service": producers.pop()})
+
+    for producer in producers:
+        hosting.append({ "router": random.choice(sensors), "service": producer})
 
     if max_hosts is None or max_hosts > len(routers):
         max_hosts = len(routers) # cap at total available routers
