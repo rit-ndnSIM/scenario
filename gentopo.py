@@ -107,6 +107,7 @@ def main():
     parser = argparse.ArgumentParser("gentopo")
     parser.add_argument('-o', '--output-json', type=pathlib.Path, help="topology json file output")
     parser.add_argument('-t', '--output-txt', type=pathlib.Path, help="topology txt file output")
+    parser.add_argument('-c', '--compact-output', action='store_true', default=False, help="print compact json")
     parser.set_defaults(algorithm=None)
     subparsers = parser.add_subparsers(title='algorithm', description='algorithm to use for graph generation')
 

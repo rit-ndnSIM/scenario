@@ -65,7 +65,7 @@ def main():
 
     if not os.path.exists(args.output) or args.force:
         with open(args.output, "w") as f:
-            f.write(json.dumps(scenario))
+            json.dump(scenario, f, indent=2)
     else:
         raise FileExistsError(args.output)
 

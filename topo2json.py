@@ -18,7 +18,7 @@ def main():
         with open(filename, "r") as topo_file:
             with open(json_name, "w") as json_file:
                 topo = graph.Topology.from_txt(topo_file)
-                json_file.write(json.dumps(topo.get_dict()))
+                json.dump(topo.get_dict(), f)
 
 
 if __name__ == '__main__':

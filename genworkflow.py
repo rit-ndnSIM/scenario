@@ -36,7 +36,7 @@ def layered(args):
     workflow = gen_layered_dag(args.num_services, args.num_producers, args.num_consumers, args.num_layers, args.num_skips, args.aggregate, args.split)
 
     with open(args.output, "w") as f:
-        f.write(json.dumps(workflow.get_dict()))
+        json.dump(workflow.get_dict(), f, indent=None if args.compact_output else 4)
 
 
 def separate(args):
@@ -51,7 +51,7 @@ def separate(args):
         workflow  = parent_workflow.clone().prune_downstream(consumer)
 
         with open(output, 'w') as f:
-            f.write(json.dumps(workflow.get_dict()))
+            json.dump(workflow.get_dict(), f, indent=None if args.compact_output else 4)
 
 
 def gen_layered_dag(num_services, num_producers=1, num_consumers=1, num_layers=5, num_skips=0, aggregate=False, split=False):
@@ -144,7 +144,7 @@ def metadata():
             raise Exception("malformed workflow json, bad service type")
 
     with open(args.output, "w") as f:
-        f.write(json.dumps(workflow.get_dict()))
+        json.dump(workflow.get_dict(), f, indent=None if args.compact_output else 4)
 
     return
 
@@ -170,6 +170,7 @@ def kv_parse(kv_str):
 
 def main():
     parser = argparse.ArgumentParser("genworkflow")
+    parser.add_argument('-c', '--compact-output', action='store_true', default=False, help="print compact json")
     parser.set_defaults(algorithm=None)
     subparsers = parser.add_subparsers(title='algorithm', description='algorithm to use for hosting generation')
 

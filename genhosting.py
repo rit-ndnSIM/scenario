@@ -103,6 +103,7 @@ def combine(args):
 def main():
     parser = argparse.ArgumentParser("genhosting")
     parser.add_argument('-o', '--output', type=Path, default='/dev/stdout', help="hosting json file output")
+    parser.add_argument('-c', '--compact-output', action='store_true', default=False, help="print compact json")
     parser.set_defaults(algorithm=None)
     subparsers = parser.add_subparsers(title='algorithm', description='algorithm to use for hosting generation')
 
@@ -137,8 +138,13 @@ def main():
 
     hosting = args.algorithm(args)
 
+    if args.compact_output:
+        indent = None
+    else:
+        indent = 4
+
     with open(args.output, "w") as f:
-        f.write(json.dumps(hosting))
+        json.dump(hosting, f, indent=indent)
 
 
 if __name__ == '__main__':
