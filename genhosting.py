@@ -83,7 +83,7 @@ def gen_uniform_hosting(workflow, topology, sensors=["sensor"], users=["user"], 
 
     for service in workflow.get_services():
         num_hosts = random.randint(min_hosts, max_hosts)
-        chosen_routers = random.sample(routers, num_hosts)
+        chosen_routers = random.sample(sorted(routers), num_hosts)
 
         for router in chosen_routers:
             hosting.append({ "router": router, "service": service })
