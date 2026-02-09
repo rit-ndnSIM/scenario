@@ -42,6 +42,7 @@ USAGE_ALLOCATION_GRAPHS_DIR="$HOME/ndnSIM/scenario/usage_allocation_graphs"
 TYPE="cascon_main"
 #TYPE="cascon_cpm"
 #TYPE="fwdOptSD"
+TYPE="cascon_random_test"
 
 SCENARIO_JSON_DIR="$SCENARIO_DIR/scenario_json/$TYPE"
 csv_out="$SCENARIO_DIR/perf-results-simulation-${TYPE}_generic.csv"
@@ -101,7 +102,7 @@ do
     
         # 3. Service Latency
         WFlatency=$(grep "Service Latency:" "$scenario_log" | sed -n 's/^\s*Service Latency: \([0-9\.]*\) microseconds.$/\1/p')
-        WFlatency="${WFlatency:-N.A.}"
+        WFlatency="${WFlatency:-Error_WFLatency}"
     
         # 4. Final Result
         result=$(grep "The final answer is:" "$scenario_log" | tail -n 1 | sed -n 's/^\s*The final answer is: \([0-9]*\)$/\1/p')

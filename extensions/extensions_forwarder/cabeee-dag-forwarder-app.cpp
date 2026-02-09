@@ -630,6 +630,12 @@ DagForwarderApp::OnData(std::shared_ptr<const ndn::Data> data)
 
     // TODO7: we should use function pointers here, and have each service be a function defined in a separate file. Figure out how to deal with potentially different num of inputs.
 
+    for (auto input : m_vectorOfServiceInputs) // for (each input)
+    {
+      serviceOutput += input;
+    }
+
+/*
     if (m_service.ndn::Name::toUri() == "/service1"){
       serviceOutput = (m_vectorOfServiceInputs[0])*2;
     }
@@ -732,6 +738,8 @@ DagForwarderApp::OnData(std::shared_ptr<const ndn::Data> data)
             (m_vectorOfServiceInputs[1])+
             (m_vectorOfServiceInputs[2]);
     }
+
+*/
     
     NS_LOG_DEBUG("Service " << m_service.ndn::Name::toUri() << " has output: " << (int)serviceOutput);
   

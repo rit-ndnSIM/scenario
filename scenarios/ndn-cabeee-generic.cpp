@@ -82,13 +82,31 @@ main(int argc, char* argv[])
     }
 
     std::string Prefix = scenario_json.at("prefix");
-    int8_t serviceDiscoveryFlag = scenario_json.at("serviceDiscovery");
-    int8_t resourceAllocationFlag = scenario_json.at("resourceAllocation");
-    int8_t allocationReuseFlag = scenario_json.at("allocationReuse");
-    int8_t scheduleCompactionFlag = scenario_json.at("scheduleCompaction");
-    int8_t startTimeSD;
-    int8_t startTimeWF;
-    float simulationEndTime = scenario_json.at("simulationEndTime");
+
+    int8_t serviceDiscoveryFlag = 0;
+    int8_t resourceAllocationFlag = 0;
+    int8_t allocationReuseFlag = 0;
+    int8_t scheduleCompactionFlag = 0;
+    if (scenario_json.contains("serviceDiscovery")) {
+        serviceDiscoveryFlag = scenario_json.at("serviceDiscovery");
+    }
+    if (scenario_json.contains("resourceAllocation")) {
+        resourceAllocationFlag = scenario_json.at("resourceAllocation");
+    }
+    if (scenario_json.contains("allocationReuse")) {
+        allocationReuseFlag = scenario_json.at("allocationReuse");
+    }
+    if (scenario_json.contains("scheduleCompaction")) {
+        scheduleCompactionFlag = scenario_json.at("scheduleCompaction");
+    }
+
+    float simulationEndTime = 20;
+    if (scenario_json.contains("scheduleCompaction")) {
+        simulationEndTime = scenario_json.at("simulationEndTime");
+    }
+    
+    int8_t startTimeSD = 0;
+    int8_t startTimeWF = 2;
     if (serviceDiscoveryFlag == 1) {
         startTimeSD = scenario_json.at("startTimeSD");
         startTimeWF = scenario_json.at("startTimeWF");
@@ -111,7 +129,7 @@ main(int argc, char* argv[])
     ndnGlobalRoutingHelper.InstallAll();
 
     // Installing applications
-    uint64_t makespanNS;
+    uint64_t makespanNS = 0;
     for (const auto& hosting : scenario_json.at("routerHosting")) {
         std::string rtr_name{ hosting.at("router") };
         std::string srv_name{ hosting.at("service") };
