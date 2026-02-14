@@ -134,7 +134,7 @@ def main():
     st_parser.add_argument('--bandwidth', type=str, default="10Mbps", help='default link bandwidth')
     st_parser.add_argument('--metric', type=int, default=1, help='default link metric')
     st_parser.add_argument('--delay', type=str, default="10ms", help='default link delay')
-    st_parser.add_argument('--queue', type=int, default=20, help='default link queue')
+    st_parser.add_argument('--queue', type=int, default=100, help='default link queue')
     # TODO: more options to generate metadata, such as mean and stddev
 
     bn_parser = subparsers.add_parser('bottleneck', help="combine two topologies via a bottleneck, topologies MUST NOT share routers")
