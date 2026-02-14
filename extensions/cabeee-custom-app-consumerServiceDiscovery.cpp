@@ -96,6 +96,7 @@ CustomAppConsumerServiceDiscovery::StartApplication()
   ndn::App::StartApplication();
   m_isRunning = true;
   m_SDrunning = false;
+  m_appStartTime = Simulator::Now();
 
   // Add entry to FIB for `/prefix/sub`
   //ndn::FibHelper::AddRoute(GetNode(), "/prefix/sub", m_face, 0); //cabeee took this out, let the global router figure it out.
@@ -448,7 +449,7 @@ CustomAppConsumerServiceDiscovery::OnData(std::shared_ptr<const ndn::Data> data)
 
     // if we have already started the workflow, report an error. (if current time is past the workflow start time)
     Time timeNow = Simulator::Now();
-    if (timeNow > m_WFstartTime)
+    if (timeNow > (m_WFstartTime + m_appStartTime))
     {
       //NS_LOG_ERROR("\n\n  ERROR!!! Workflow started before Service Discovery process finished!" << "\n\n");
       NS_LOG_ERROR("\n\n  ERROR!!! Workflow started before Service Discovery process finished! Current time: " << Simulator::Now().GetSeconds() << ", WF start time: " << m_WFstartTime.ToInteger(ns3::Time::S) << " seconds." << "\n\n");
@@ -463,7 +464,7 @@ CustomAppConsumerServiceDiscovery::OnData(std::shared_ptr<const ndn::Data> data)
     NS_LOG_INFO("\n\n      CONSUMER: DATA received for name " << data->getName() << std::endl << "\n\n");
 
     m_WFendTime = Simulator::Now();
-    Time serviceLatency = m_WFendTime - m_WFstartTime;
+    Time serviceLatency = m_WFendTime - m_WFstartTime - m_appStartTime;
     NS_LOG_INFO("\n  Service Latency: " <<  serviceLatency.GetMilliSeconds() << " milliseconds." << std::endl);
     NS_LOG_INFO("\n  Service Latency: " <<  serviceLatency.GetMicroSeconds() << " microseconds." << std::endl);
     NS_LOG_INFO("\n  Service Latency: " <<  serviceLatency.GetNanoSeconds() << " nanoseconds." << std::endl);

@@ -78,6 +78,7 @@ private:
   uint16_t m_allocationReuse;
   uint16_t m_scheduleCompaction;
   std::string m_dagPath;
+  Time m_appStartTime;
   bool m_SDrunning;
   Time m_SDstartTime;
   Time m_SDendTime;
