@@ -18,7 +18,7 @@ generate_linear_wf() {
 }
 
 generate_parallel_wf_1() {
-    # generate parallel workflow with 12 sensors, intermediate services, into aggregator, into consumer
+    # generate parallel workflow with multiple sensors, intermediate services, into aggregator, into consumer
     width="$1"
     output="${TIMESTAMP}-wf-parallel-${width}prod-${width}srv.json"
     ./genworkflow.py layered --num-services 0 --num-layers 2 --aggregate --split --num-producers "$width" --num-consumers 1 --output "$workdir/$output"
@@ -27,7 +27,7 @@ generate_parallel_wf_1() {
 }
 
 generate_parallel_wf_2() {
-    # generate parallel workflow with 1 sensors, intermediate services, into aggregator, into consumer
+    # generate parallel workflow with 1 sensor, intermediate services, into aggregator, into consumer
     width="$1"
     output="${TIMESTAMP}-wf-parallel-1prod-${width}srv.json"
     ./genworkflow.py layered --num-services "$width" --num-layers 3 --aggregate --num-producers 1 --num-consumers 1 --output "$workdir/$output"
@@ -88,12 +88,23 @@ generate_hs() {
     echo "$output"
 }
 
-wf="$(generate_parallel_wf_1 18)"
-tp="$(generate_tp 3 2 1 1)"
-hs="$(generate_hs "$wf" "$tp" 1 1 0 0)"
-#wf="$(generate_parallel_wf_1 8)"
-#tp="$(generate_tp 3 2 1 1)"
-#hs="$(generate_hs "$wf" "$tp" 1 1 0 0)"
+length=5
+#wf="$(generate_linear_wf ${length})"
+width=18
+wf="$(generate_parallel_wf_1 ${width})"
+#wf="$(generate_parallel_wf_2 ${width})"
+#wf="$(generate_messy_wf ${width})"
+
+nodes=3
+edges=2
+sensors=1
+users=1
+tp="$(generate_tp ${nodes} ${edges} ${sensors} ${users})"
+
+makespanMin=0
+makespanMax=0
+hs="$(generate_hs "$wf" "$tp" ${sensors} ${users} ${makespanMin} ${makespanMax})"
+
 
 # Clean the hs name for the final scenario folder
 hs_clean=${hs#*-}
@@ -114,3 +125,5 @@ hs_clean=${hs_clean#*-}
     --startTimeOffsetSD 0 \
     --startTimeOffsetWF 0 \
     --simulationEndTime 200
+
+cp $workdir/${TIMESTAMP}-sn-${hs_clean#hs-} ../cascon_random_test/
