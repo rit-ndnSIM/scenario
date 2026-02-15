@@ -34,7 +34,8 @@ def uniform(args):
     for item in hosting:
         if item['service'] in services:
             start, stop = random.choice(tuple(zip(args.start_times, args.stop_times)))
-            item.update({'start': start, 'end': stop})
+            makespan = random.randint(args.makespan_min, args.makespan_max)
+            item.update({'start': start, 'end': stop, 'makespanNS': makespan})
         elif item['service'] in consumers:
             # TODO: this may need to be configurable
             item.update({"workflowFile": str(args.workflow), "dag": "dag1", "start": 0, "end": -1 })
@@ -124,6 +125,8 @@ def main():
     uni_parser.add_argument('-m', '--max-hosts', type=int, default=1, help='max number of hosts per service')
     uni_parser.add_argument('--start-times', nargs='+', type=int, default=[0], help="list of start time choices, paired with --stop-times")
     uni_parser.add_argument('--stop-times', nargs='+', type=int, default=[-1], help="list of stop time choices, paired with --start-times")
+    uni_parser.add_argument('-msmin', '--makespan-min', type=int, default=0, help='minimum service makespan in NS')
+    uni_parser.add_argument('-msmax', '--makespan-max', type=int, default=0, help='maximum service makespan in NS')
 
     comb_parser = subparsers.add_parser('combine', help="combine two hosting files")
     comb_parser.set_defaults(algorithm=combine)

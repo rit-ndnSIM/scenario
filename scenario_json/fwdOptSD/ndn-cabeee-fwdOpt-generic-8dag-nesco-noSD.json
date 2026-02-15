@@ -5,8 +5,8 @@
   "resourceAllocation": 0,
   "allocationReuse": 0,
   "scheduleCompaction": 0,
-  "startTimeSD": 0,
-  "startTimeWF": 2,
+  "startTimeOffsetSD": 0,
+  "startTimeOffsetWF": 2,
   "simulationEndTime": 20,
   "router": [
     {

@@ -105,11 +105,11 @@ main(int argc, char* argv[])
         simulationEndTime = scenario_json.at("simulationEndTime");
     }
     
-    int8_t startTimeSD = 0;
-    int8_t startTimeWF = 2;
+    int8_t startTimeOffsetSD = 0;
+    int8_t startTimeOffsetWF = 2;
     if (serviceDiscoveryFlag == 1) {
-        startTimeSD = scenario_json.at("startTimeSD");
-        startTimeWF = scenario_json.at("startTimeWF");
+        startTimeOffsetSD = scenario_json.at("startTimeOffsetSD");
+        startTimeOffsetWF = scenario_json.at("startTimeOffsetWF");
     }
 
     for (const auto& srv : scenario_json.at("services")) {
@@ -233,8 +233,8 @@ main(int argc, char* argv[])
                     appHelper.SetAttribute("ResourceAllocation", UintegerValue(resourceAllocationFlag));
                     appHelper.SetAttribute("AllocationReuse", UintegerValue(allocationReuseFlag));
                     appHelper.SetAttribute("ScheduleCompaction", UintegerValue(scheduleCompactionFlag));
-                    appHelper.SetAttribute("SDstartTime", TimeValue(Seconds(startTimeSD)));
-                    appHelper.SetAttribute("WFstartTime", TimeValue(Seconds(startTimeWF)));
+                    appHelper.SetAttribute("SDstartTimeOffset", TimeValue(Seconds(startTimeOffsetSD)));
+                    appHelper.SetAttribute("WFstartTimeOffset", TimeValue(Seconds(startTimeOffsetWF)));
                 }
             }
             if (Prefix == "orchA") {

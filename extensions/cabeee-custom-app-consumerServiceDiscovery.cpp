@@ -76,10 +76,10 @@ CustomAppConsumerServiceDiscovery::GetTypeId()
                     MakeUintegerAccessor(&CustomAppConsumerServiceDiscovery::m_allocationReuse), MakeUintegerChecker<uint16_t>())
     .AddAttribute("ScheduleCompaction", "Requested forwarding optimization", UintegerValue(0),
                     MakeUintegerAccessor(&CustomAppConsumerServiceDiscovery::m_scheduleCompaction), MakeUintegerChecker<uint16_t>())
-    .AddAttribute("SDstartTime", "Requested forwarding optimization", TimeValue(Seconds(1)),
-                    MakeTimeAccessor(&CustomAppConsumerServiceDiscovery::m_SDstartTime), MakeTimeChecker())
-    .AddAttribute("WFstartTime", "Requested forwarding optimization", TimeValue(Seconds(2)),
-                    MakeTimeAccessor(&CustomAppConsumerServiceDiscovery::m_WFstartTime), MakeTimeChecker());
+    .AddAttribute("SDstartTimeOffset", "Requested forwarding optimization", TimeValue(Seconds(1)),
+                    MakeTimeAccessor(&CustomAppConsumerServiceDiscovery::m_SDstartTimeOffset), MakeTimeChecker())
+    .AddAttribute("WFstartTimeOffset", "Requested forwarding optimization", TimeValue(Seconds(2)),
+                    MakeTimeAccessor(&CustomAppConsumerServiceDiscovery::m_WFstartTimeOffset), MakeTimeChecker());
   return tid;
 }
 
@@ -105,17 +105,17 @@ CustomAppConsumerServiceDiscovery::StartApplication()
   // This is why we must remove the line, otherwise the interest is simply fowarded back into the app???
   // Although I don't see the log entry for receiving an interest.
 
-    NS_LOG_INFO("\n\n  - workflow start: " << m_WFstartTime.ToInteger(ns3::Time::NS) << " nanoseconds\n\n");
+    NS_LOG_INFO("\n\n  - workflow start: " << m_WFstartTimeOffset.ToInteger(ns3::Time::NS) << " nanoseconds\n\n");
 
   // Schedule send of first interest
   if (m_serviceDiscovery == 0) // no service discovery
   {
-    Simulator::Schedule(m_WFstartTime, &CustomAppConsumerServiceDiscovery::SendInterest, this);
+    Simulator::Schedule(m_WFstartTimeOffset, &CustomAppConsumerServiceDiscovery::SendInterest, this);
   }
   if (m_serviceDiscovery == 1) // perform service discovery
   {
-    Simulator::Schedule(m_SDstartTime, &CustomAppConsumerServiceDiscovery::SendSDInterest, this);
-    Simulator::Schedule(m_WFstartTime, &CustomAppConsumerServiceDiscovery::SendInterest, this);
+    Simulator::Schedule(m_SDstartTimeOffset, &CustomAppConsumerServiceDiscovery::SendSDInterest, this);
+    Simulator::Schedule(m_WFstartTimeOffset, &CustomAppConsumerServiceDiscovery::SendInterest, this);
   }
   //Simulator::Schedule(Seconds(2.0), &CustomAppConsumerServiceDiscovery::SendInterest, this);
   //Simulator::Schedule(Seconds(3.0), &CustomAppConsumerServiceDiscovery::SendInterest, this);
@@ -178,23 +178,23 @@ CustomAppConsumerServiceDiscovery::SendSDInterest()
     }
   }
 
-  //m_SDstartTime = Simulator::Now();
+  //m_SDstartTimeOffset = Simulator::Now();
   // Convert to integer in milliseconds and then to string
-  int64_t SDstartTimeNS = m_SDstartTime.ToInteger(ns3::Time::NS);
+  int64_t SDstartTimeOffsetNS = m_SDstartTimeOffset.ToInteger(ns3::Time::NS);
   //std::stringstream ssSD_ns;
-  //ssSD_ns << SDstartTimeNS << " ns";
-  //ssSD_ns << SDstartTimeNS;
-  dagObject["serviceDiscoveryStartTimeNS"] = SDstartTimeNS;
+  //ssSD_ns << SDstartTimeOffsetNS << " ns";
+  //ssSD_ns << SDstartTimeOffsetNS;
+  dagObject["serviceDiscoveryStartTimeNS"] = SDstartTimeOffsetNS;
 
-  //m_WFstartTime = Seconds(2.0);
+  //m_WFstartTimeOffset = Seconds(2.0);
   // Convert to integer in milliseconds and then to string
-  int64_t WFstartTimeNS = m_WFstartTime.ToInteger(ns3::Time::NS);
+  int64_t WFstartTimeOffsetNS = m_WFstartTimeOffset.ToInteger(ns3::Time::NS);
   //std::stringstream ssWF_ns;
-  //ssWF_ns << WFstartTimeNS << " ns";
-  //ssWF_ns << WFstartTimeNS;
+  //ssWF_ns << WFstartTimeOffsetNS << " ns";
+  //ssWF_ns << WFstartTimeOffsetNS;
   //std::string timeStringNS = ssWF_ns.str();
   //std::cout << "SD Start Time in milliseconds: " << timeStringNS << std::endl;
-  dagObject["workflowStartTimeNS"] = WFstartTimeNS;
+  dagObject["workflowStartTimeNS"] = WFstartTimeOffsetNS;
   dagObject["serviceDiscovery"] = m_serviceDiscovery;
   dagObject["resourceAllocation"] = m_resourceAllocation;
   dagObject["allocationReuse"] = m_allocationReuse;
@@ -284,7 +284,7 @@ CustomAppConsumerServiceDiscovery::SendInterest()
   if(m_SDrunning == true)
   {
     //NS_LOG_ERROR("\n\n  ERROR!!! Workflow started before Service Discovery process finished!" << "\n\n");
-    NS_LOG_ERROR("\n\n  ERROR!!! Workflow started before Service Discovery process finished! Current time: " << Simulator::Now().GetNanoSeconds() << " nanoseconds, WF start time: " << m_WFstartTime.ToInteger(ns3::Time::NS) << " nanoseconds." << "\n\n");
+    NS_LOG_ERROR("\n\n  ERROR!!! Workflow started before Service Discovery process finished! Current time: " << Simulator::Now().GetNanoSeconds() << " nanoseconds, WF start time: " << m_WFstartTimeOffset.ToInteger(ns3::Time::NS) << " nanoseconds." << "\n\n");
     NS_LOG_ERROR("\n\n  TO FIX ERROR: change the worflow start time for this scenario to be a little later, to allow SD to finish." << "\n\n");
     return;
   }
@@ -430,7 +430,7 @@ CustomAppConsumerServiceDiscovery::OnData(std::shared_ptr<const ndn::Data> data)
   {
     NS_LOG_INFO("\n\n      CONSUMER: Service Discovery DATA received for name " << data->getName() << std::endl << "\n\n");
     m_SDendTime = Simulator::Now();
-    Time serviceDiscoveryLatency = m_SDendTime - m_SDstartTime;
+    Time serviceDiscoveryLatency = m_SDendTime - m_SDstartTimeOffset;
     NS_LOG_INFO("\n  Service Discovery Latency: " <<  serviceDiscoveryLatency.GetMilliSeconds() << " milliseconds." << std::endl);
     NS_LOG_INFO("\n  Service Discovery Latency: " <<  serviceDiscoveryLatency.GetMicroSeconds() << " microseconds." << std::endl);
     NS_LOG_INFO("\n  Service Discovery Latency: " <<  serviceDiscoveryLatency.GetNanoSeconds() << " nanoseconds." << std::endl);
@@ -439,7 +439,7 @@ CustomAppConsumerServiceDiscovery::OnData(std::shared_ptr<const ndn::Data> data)
     dataPacketString = (const char *)data->getContent().value();
     json dataPacketContents = json::parse(dataPacketString);
     NS_LOG_INFO("\n\nData received - absolute EFT:   " << dataPacketContents["EFT"] << " nanoseconds\n");
-    int64_t workflowLatency_ns = dataPacketContents["EFT"].get<int64_t>() - m_WFstartTime.ToInteger(ns3::Time::NS);
+    int64_t workflowLatency_ns = dataPacketContents["EFT"].get<int64_t>() - m_WFstartTimeOffset.ToInteger(ns3::Time::NS);
     NS_LOG_INFO("\n\n  Service Latency estimated by SD: " << workflowLatency_ns/1000 << " microseconds.\n\n");
 
     // IF this is an SD data packet, then begin the normal consumer workflow request (call CustomAppConsumerServiceDiscovery::SendInterest())
@@ -449,10 +449,10 @@ CustomAppConsumerServiceDiscovery::OnData(std::shared_ptr<const ndn::Data> data)
 
     // if we have already started the workflow, report an error. (if current time is past the workflow start time)
     Time timeNow = Simulator::Now();
-    if (timeNow > (m_WFstartTime + m_appStartTime))
+    if (timeNow > (m_WFstartTimeOffset + m_appStartTime))
     {
       //NS_LOG_ERROR("\n\n  ERROR!!! Workflow started before Service Discovery process finished!" << "\n\n");
-      NS_LOG_ERROR("\n\n  ERROR!!! Workflow started before Service Discovery process finished! Current time: " << Simulator::Now().GetSeconds() << ", WF start time: " << m_WFstartTime.ToInteger(ns3::Time::S) << " seconds." << "\n\n");
+      NS_LOG_ERROR("\n\n  ERROR!!! Workflow started before Service Discovery process finished! Current time: " << Simulator::Now().GetSeconds() << ", WF start time: " << m_WFstartTimeOffset.ToInteger(ns3::Time::S) << " seconds." << "\n\n");
       NS_LOG_ERROR("\n\n  TO FIX ERROR: change the worflow start time for this scenario to be a little later, to allow SD to finish." << "\n\n");
     }
 
@@ -464,7 +464,7 @@ CustomAppConsumerServiceDiscovery::OnData(std::shared_ptr<const ndn::Data> data)
     NS_LOG_INFO("\n\n      CONSUMER: DATA received for name " << data->getName() << std::endl << "\n\n");
 
     m_WFendTime = Simulator::Now();
-    Time serviceLatency = m_WFendTime - m_WFstartTime - m_appStartTime;
+    Time serviceLatency = m_WFendTime - m_WFstartTimeOffset - m_appStartTime;
     NS_LOG_INFO("\n  Service Latency: " <<  serviceLatency.GetMilliSeconds() << " milliseconds." << std::endl);
     NS_LOG_INFO("\n  Service Latency: " <<  serviceLatency.GetMicroSeconds() << " microseconds." << std::endl);
     NS_LOG_INFO("\n  Service Latency: " <<  serviceLatency.GetNanoSeconds() << " nanoseconds." << std::endl);

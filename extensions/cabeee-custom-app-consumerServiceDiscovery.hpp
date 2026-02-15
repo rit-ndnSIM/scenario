@@ -80,9 +80,9 @@ private:
   std::string m_dagPath;
   Time m_appStartTime;
   bool m_SDrunning;
-  Time m_SDstartTime;
+  Time m_SDstartTimeOffset;
   Time m_SDendTime;
-  Time m_WFstartTime;
+  Time m_WFstartTimeOffset;
   Time m_WFendTime;
 };
 
