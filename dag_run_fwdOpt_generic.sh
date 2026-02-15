@@ -35,6 +35,7 @@ NDNSIM_HOME="$HOME/ndnSIM"
 SCENARIO_DIR="$HOME/ndnSIM/scenario"
 WORKFLOW_DIR="$HOME/ndnSIM/scenario/workflows"
 TOPOLOGY_DIR="$HOME/ndnSIM/scenario/topologies"
+CPM_DIR="$HOME/ndnSIM/CPM"
 USAGE_ALLOCATION_GRAPHS_DIR="$HOME/ndnSIM/scenario/usage_allocation_graphs"
 
 #mkdir -p "$SCENARIO_JSON_DIR"
@@ -142,7 +143,7 @@ do
 
         set +e
         # cpm now determines type, wf, hosting, and topo information from the full json, and somehow pass it into the cpm program cleanly
-        cpm_output=$(../CPM/cpm --scenarioJSON "${scenario_json}" 2>&1)
+        cpm_output=$(${CPM_DIR}/cpm --scenarioJSON "${scenario_json}" 2>&1)
         cpm_status=$?
         set -e
 
