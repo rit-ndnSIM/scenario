@@ -124,6 +124,10 @@ main(int argc, char* argv[])
         ndn::StrategyChoiceHelper::InstallAll(Prefix + name, strategy);
     }
 
+    if (Prefix == "orchA" || Prefix == "orchB") {
+        ndn::StrategyChoiceHelper::InstallAll(Prefix + "/serviceOrchestration", "/localhost/nfd/strategy/multicast");
+    }
+
     // Installing global routing interface on all nodes
     ndn::GlobalRoutingHelper ndnGlobalRoutingHelper;
     ndnGlobalRoutingHelper.InstallAll();
