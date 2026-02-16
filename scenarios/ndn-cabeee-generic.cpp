@@ -23,6 +23,7 @@
 #include "ns3/network-module.h"
 #include "ns3/ndnSIM-module.h"
 #include "ns3/string.h"
+//#include "ns3/point-to-point-module.h" // added for pCap generation
 
 #include <nlohmann/json.hpp>
 
@@ -30,6 +31,30 @@ using json = nlohmann::json;
 
 
 namespace ns3 {
+
+/*
+class PcapWriter {
+public:
+  PcapWriter(const std::string& file)
+  {
+    PcapHelper helper;
+    m_pcap = helper.CreateFile(file, std::ios::out, PcapHelper::DLT_PPP);
+  }
+
+  void
+  TracePacket(Ptr<const Packet> packet)
+  {
+    static PppHeader pppHeader;
+    pppHeader.SetProtocol(0x0077);
+
+    m_pcap->Write(Simulator::Now(), pppHeader, packet);
+  }
+
+private:
+  Ptr<PcapFileWrapper> m_pcap;
+};
+*/
+
 
 int
 main(int argc, char* argv[])
@@ -100,7 +125,7 @@ main(int argc, char* argv[])
         scheduleCompactionFlag = scenario_json.at("scheduleCompaction");
     }
 
-    float simulationEndTime = 20;
+    float simulationEndTime = 1000; // set default end time (in case json doesn't specify)
     if (scenario_json.contains("scheduleCompaction")) {
         simulationEndTime = scenario_json.at("simulationEndTime");
     }
@@ -316,7 +341,13 @@ main(int argc, char* argv[])
     // Calculate and install FIBs
     ndn::GlobalRoutingHelper::CalculateRoutes();
 
+    //PcapWriter trace("ndn-cabeee-4dag-nesco-trace.pcap");
+    //Config::ConnectWithoutContext("/NodeList/*/DeviceList/*/$ns3::PointToPointNetDevice/MacTx", MakeCallback(&PcapWriter::TracePacket, &trace));
+
     Simulator::Stop(Seconds(simulationEndTime));
+
+    //ndn::L3RateTracer::InstallAll("rate-trace_cabeee-generic.txt", Seconds(0.05));
+    //ndn::CsTracer::InstallAll("cs-trace_cabeee-generic.txt", Seconds(0.0005));
 
     Simulator::Run();
     Simulator::Destroy();

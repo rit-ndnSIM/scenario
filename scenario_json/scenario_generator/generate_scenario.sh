@@ -105,25 +105,29 @@ makespanMin=0
 makespanMax=0
 hs="$(generate_hs "$wf" "$tp" ${sensors} ${users} ${makespanMin} ${makespanMax})"
 
-
 # Clean the hs name for the final scenario folder
 hs_clean=${hs#*-}
 hs_clean=${hs_clean#*-}
-    #--output "$workdir/${TIMESTAMP}-sn-${hs#hs-}" \
 
-./build_scenario.py -f \
-    --workflow "$workdir/$wf" \
-    --topo-json "$workdir/$tp" \
-    --topo-txt "$workdir/${tp%.json}.txt" \
-    --hosting "$workdir/$hs" \
-    --output "$workdir/${TIMESTAMP}-sn-${hs_clean#hs-}" \
-    --prefix "nescoSCOPT" \
-    --serviceDiscovery 0 \
-    --resourceAllocation 0 \
-    --allocationReuse 0 \
-    --scheduleCompaction 0 \
-    --startTimeOffsetSD 0 \
-    --startTimeOffsetWF 0 \
-    --simulationEndTime 200
+prefixes="nescoSCOPT orchA orchB"
 
-cp $workdir/${TIMESTAMP}-sn-${hs_clean#hs-} ../cascon_random_test/
+for prefix in $prefixes; do
+    echo "Generating scenario for prefix: $prefix"
+
+    ./build_scenario.py -f \
+        --workflow "$workdir/$wf" \
+        --topo-json "$workdir/$tp" \
+        --topo-txt "$workdir/${tp%.json}.txt" \
+        --hosting "$workdir/$hs" \
+        --output "$workdir/${TIMESTAMP}-sn-${prefix}-${hs_clean#hs-}" \
+        --prefix ${prefix} \
+        --serviceDiscovery 0 \
+        --resourceAllocation 0 \
+        --allocationReuse 0 \
+        --scheduleCompaction 0 \
+        --startTimeOffsetSD 0 \
+        --startTimeOffsetWF 0 \
+        --simulationEndTime 200
+
+    cp $workdir/${TIMESTAMP}-sn-${prefix}-${hs_clean#hs-} ../cascon_random_test/
+done

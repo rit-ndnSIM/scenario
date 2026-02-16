@@ -79,6 +79,7 @@ DagServiceB_App::StartApplication()
   // initialize ndn::App
   ndn::App::StartApplication();
   m_isRunning = true;
+  int64_t m_serviceOutput = 0;
 
   m_name = m_prefix.ndn::Name::toUri() + m_service.ndn::Name::toUri();
 
@@ -470,6 +471,12 @@ std::cout << "        DOES THIS EVER HAPPEN?? " << m_service << " received DATA 
 
     // TODO: we should use function pointers here, and have each service be a function defined in a separate file. Figure out how to deal with potentially different num of inputs.
 
+    m_serviceOutput = 0;  // set it back to zero for the next scenario (if any)
+    for (auto input : m_vectorOfServiceInputs) // for (each input)
+    {
+      m_serviceOutput += input;
+    }
+/*
     if (m_service.ndn::Name::toUri() == "/service1"){
       m_serviceOutput = (m_vectorOfServiceInputs[0])*2;
     }
@@ -572,6 +579,7 @@ std::cout << "        DOES THIS EVER HAPPEN?? " << m_service << " received DATA 
             (m_vectorOfServiceInputs[1])+
             (m_vectorOfServiceInputs[2]);
     }
+*/
     
     // we stored the result so we can respond later when the main service interest comes in!!
 

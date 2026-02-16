@@ -630,6 +630,7 @@ DagForwarderApp::OnData(std::shared_ptr<const ndn::Data> data)
 
     // TODO7: we should use function pointers here, and have each service be a function defined in a separate file. Figure out how to deal with potentially different num of inputs.
 
+    serviceOutput = 0;
     for (auto input : m_vectorOfServiceInputs) // for (each input)
     {
       serviceOutput += input;
