@@ -108,7 +108,8 @@ wf="$(generate_messy_wf ${services} ${producers} ${consumers} ${layers} ${skips}
 #pick nodes to match CPM number of nodes (1:5 to 5:1 ratios vs num of services)
 nodes=5
 #pick edges to determine how connected the topology is
-edges=$((nodes-1))
+#edges=$((nodes-1))
+edges=$(( ((nodes*( nodes-1 ))/2 + (nodes-1))  / 2  ))
 #edges=$(( (nodes*( nodes-1 ))/2  ))
 sensors=1
 users=1
@@ -148,4 +149,5 @@ for prefix in $prefixes; do
 done
 
 #./genvisuals_circle.py ${output_filename}
-./genvisuals_top_down.py ${output_filename}
+#./genvisuals_top_down.py ${output_filename}
+./genvisuals_top_down_hosting_colors.py ${output_filename}
