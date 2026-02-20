@@ -1,0 +1,174 @@
+{
+  "prefix": "orchA",
+  "topofile": "/home/cabeee/ndnSIM/scenario/topologies/topo-cabeee-3node.txt",
+  "serviceDiscovery": 0,
+  "resourceAllocation": 0,
+  "allocationReuse": 0,
+  "scheduleCompaction": 0,
+  "startTimeOffsetSD": 0,
+  "startTimeOffsetWF": 2,
+  "simulationEndTime": 20,
+  "router": [
+    {
+      "node": "sensor",
+      "cs-size": 0,
+      "comment": "NA",
+      "y": "80",
+      "x": "0",
+      "mpi-partition": "1"
+    },
+    {
+      "node": "rtr-1",
+      "cs-size": 100,
+      "comment": "NA",
+      "y": "60",
+      "x": "20",
+      "mpi-partition": "1"
+    },
+    {
+      "node": "rtr-2",
+      "cs-size": 100,
+      "comment": "NA",
+      "y": "60",
+      "x": "-20",
+      "mpi-partition": "2"
+    },
+    {
+      "node": "rtr-3",
+      "cs-size": 100,
+      "comment": "NA",
+      "y": "40",
+      "x": "0",
+      "mpi-partition": "3"
+    },
+    {
+      "node": "user",
+      "cs-size": 0,
+      "comment": "NA",
+      "y": "10",
+      "x": "0",
+      "mpi-partition": "0"
+    }
+  ],
+  "link": [
+    {
+      "from": "sensor",
+      "to": "rtr-1",
+      "capacity": "100Mbps",
+      "metric": "1",
+      "delay": "1ms",
+      "queue": "100"
+    },
+    {
+      "from": "rtr-1",
+      "to": "rtr-2",
+      "capacity": "100Mbps",
+      "metric": "1",
+      "delay": "1ms",
+      "queue": "100"
+    },
+    {
+      "from": "rtr-2",
+      "to": "rtr-3",
+      "capacity": "100Mbps",
+      "metric": "1",
+      "delay": "1ms",
+      "queue": "100"
+    },
+    {
+      "from": "rtr-3",
+      "to": "user",
+      "capacity": "100Mbps",
+      "metric": "1",
+      "delay": "1ms",
+      "queue": "100"
+    }
+  ],
+  "services": [
+    {
+      "name": "/sensor",
+      "type": "producer",
+      "strategy": "/localhost/nfd/strategy/multicast"
+    },
+    {
+      "name": "/service1",
+      "type": "service",
+      "strategy": "/localhost/nfd/strategy/multicast"
+    },
+    {
+      "name": "/service2",
+      "type": "service",
+      "strategy": "/localhost/nfd/strategy/multicast"
+    },
+    {
+      "name": "/service3",
+      "type": "service",
+      "strategy": "/localhost/nfd/strategy/multicast"
+    },
+    {
+      "name": "/service4",
+      "type": "service",
+      "strategy": "/localhost/nfd/strategy/multicast"
+    },
+    {
+      "name": "/consumer",
+      "type": "consumer",
+      "strategy": "/localhost/nfd/strategy/multicast"
+    }
+  ],
+  "routerHosting": [
+    {
+      "router": "sensor",
+      "service": "/sensor",
+      "makespanNS": 0
+    },
+    {
+      "router": "rtr-3",
+      "service": "/service1",
+      "makespanNS": 0
+    },
+    {
+      "router": "rtr-1",
+      "service": "/service2",
+      "makespanNS": 0
+    },
+    {
+      "router": "rtr-2",
+      "service": "/service3",
+      "makespanNS": 0
+    },
+    {
+      "router": "rtr-2",
+      "service": "/service4",
+      "makespanNS": 0
+    },
+    {
+      "router": "user",
+      "service": "/consumer",
+      "workflowFile": "/home/cabeee/ndnSIM/scenario/workflows/4dag.json",
+      "dag": "dag1",
+      "start": 0,
+      "end": -1
+    }
+  ],
+  "dag": {
+    "dag1": {
+      "/sensor": {
+        "/service1": 0
+      },
+      "/service1": {
+        "/service2": 0,
+        "/service3": 0
+      },
+      "/service2": {
+        "/service4": 0
+      },
+      "/service3": {
+        "/service4": 1
+      },
+      "/service4": {
+        "/consumer": 0
+      }
+    }
+  }
+}

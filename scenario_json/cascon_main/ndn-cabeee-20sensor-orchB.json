@@ -1,0 +1,641 @@
+{
+  "prefix": "orchB",
+  "topofile": "/home/cabeee/ndnSIM/scenario/topologies/topo-cabeee-3node.txt",
+  "serviceDiscovery": 0,
+  "resourceAllocation": 0,
+  "allocationReuse": 0,
+  "scheduleCompaction": 0,
+  "startTimeOffsetSD": 0,
+  "startTimeOffsetWF": 2,
+  "simulationEndTime": 3.0,
+  "router": [
+    {
+      "node": "sensor",
+      "cs-size": 0,
+      "comment": "NA",
+      "y": "80",
+      "x": "0",
+      "mpi-partition": "1"
+    },
+    {
+      "node": "rtr-1",
+      "cs-size": 100,
+      "comment": "NA",
+      "y": "60",
+      "x": "20",
+      "mpi-partition": "1"
+    },
+    {
+      "node": "rtr-2",
+      "cs-size": 100,
+      "comment": "NA",
+      "y": "60",
+      "x": "-20",
+      "mpi-partition": "2"
+    },
+    {
+      "node": "rtr-3",
+      "cs-size": 100,
+      "comment": "NA",
+      "y": "40",
+      "x": "0",
+      "mpi-partition": "3"
+    },
+    {
+      "node": "user",
+      "cs-size": 0,
+      "comment": "NA",
+      "y": "10",
+      "x": "0",
+      "mpi-partition": "0"
+    }
+  ],
+  "link": [
+    {
+      "from": "sensor",
+      "to": "rtr-1",
+      "capacity": "100Mbps",
+      "metric": "1",
+      "delay": "1ms",
+      "queue": "100"
+    },
+    {
+      "from": "rtr-1",
+      "to": "rtr-2",
+      "capacity": "100Mbps",
+      "metric": "1",
+      "delay": "1ms",
+      "queue": "100"
+    },
+    {
+      "from": "rtr-2",
+      "to": "rtr-3",
+      "capacity": "100Mbps",
+      "metric": "1",
+      "delay": "1ms",
+      "queue": "100"
+    },
+    {
+      "from": "rtr-3",
+      "to": "user",
+      "capacity": "100Mbps",
+      "metric": "1",
+      "delay": "1ms",
+      "queue": "100"
+    }
+  ],
+  "services": [
+    {
+      "name": "/serviceP8",
+      "type": "service",
+      "strategy": "/localhost/nfd/strategy/multicast"
+    },
+    {
+      "name": "/serviceP6",
+      "type": "service",
+      "strategy": "/localhost/nfd/strategy/multicast"
+    },
+    {
+      "name": "/sensor9",
+      "type": "producer",
+      "strategy": "/localhost/nfd/strategy/multicast"
+    },
+    {
+      "name": "/serviceP16",
+      "type": "service",
+      "strategy": "/localhost/nfd/strategy/multicast"
+    },
+    {
+      "name": "/sensor2",
+      "type": "producer",
+      "strategy": "/localhost/nfd/strategy/multicast"
+    },
+    {
+      "name": "/sensor18",
+      "type": "producer",
+      "strategy": "/localhost/nfd/strategy/multicast"
+    },
+    {
+      "name": "/sensor13",
+      "type": "producer",
+      "strategy": "/localhost/nfd/strategy/multicast"
+    },
+    {
+      "name": "/sensor8",
+      "type": "producer",
+      "strategy": "/localhost/nfd/strategy/multicast"
+    },
+    {
+      "name": "/serviceP5",
+      "type": "service",
+      "strategy": "/localhost/nfd/strategy/multicast"
+    },
+    {
+      "name": "/serviceP7",
+      "type": "service",
+      "strategy": "/localhost/nfd/strategy/multicast"
+    },
+    {
+      "name": "/sensor5",
+      "type": "producer",
+      "strategy": "/localhost/nfd/strategy/multicast"
+    },
+    {
+      "name": "/sensor16",
+      "type": "producer",
+      "strategy": "/localhost/nfd/strategy/multicast"
+    },
+    {
+      "name": "/serviceP20",
+      "type": "service",
+      "strategy": "/localhost/nfd/strategy/multicast"
+    },
+    {
+      "name": "/serviceP2",
+      "type": "service",
+      "strategy": "/localhost/nfd/strategy/multicast"
+    },
+    {
+      "name": "/serviceP18",
+      "type": "service",
+      "strategy": "/localhost/nfd/strategy/multicast"
+    },
+    {
+      "name": "/serviceP21",
+      "type": "service",
+      "strategy": "/localhost/nfd/strategy/multicast"
+    },
+    {
+      "name": "/sensor15",
+      "type": "producer",
+      "strategy": "/localhost/nfd/strategy/multicast"
+    },
+    {
+      "name": "/serviceP17",
+      "type": "service",
+      "strategy": "/localhost/nfd/strategy/multicast"
+    },
+    {
+      "name": "/sensor4",
+      "type": "producer",
+      "strategy": "/localhost/nfd/strategy/multicast"
+    },
+    {
+      "name": "/sensor19",
+      "type": "producer",
+      "strategy": "/localhost/nfd/strategy/multicast"
+    },
+    {
+      "name": "/consumer",
+      "type": "consumer",
+      "strategy": "/localhost/nfd/strategy/multicast"
+    },
+    {
+      "name": "/sensor3",
+      "type": "producer",
+      "strategy": "/localhost/nfd/strategy/multicast"
+    },
+    {
+      "name": "/sensor6",
+      "type": "producer",
+      "strategy": "/localhost/nfd/strategy/multicast"
+    },
+    {
+      "name": "/sensor11",
+      "type": "producer",
+      "strategy": "/localhost/nfd/strategy/multicast"
+    },
+    {
+      "name": "/serviceP19",
+      "type": "service",
+      "strategy": "/localhost/nfd/strategy/multicast"
+    },
+    {
+      "name": "/serviceP12",
+      "type": "service",
+      "strategy": "/localhost/nfd/strategy/multicast"
+    },
+    {
+      "name": "/sensor12",
+      "type": "producer",
+      "strategy": "/localhost/nfd/strategy/multicast"
+    },
+    {
+      "name": "/sensor1",
+      "type": "producer",
+      "strategy": "/localhost/nfd/strategy/multicast"
+    },
+    {
+      "name": "/serviceP9",
+      "type": "service",
+      "strategy": "/localhost/nfd/strategy/multicast"
+    },
+    {
+      "name": "/serviceP13",
+      "type": "service",
+      "strategy": "/localhost/nfd/strategy/multicast"
+    },
+    {
+      "name": "/serviceP3",
+      "type": "service",
+      "strategy": "/localhost/nfd/strategy/multicast"
+    },
+    {
+      "name": "/sensor20",
+      "type": "producer",
+      "strategy": "/localhost/nfd/strategy/multicast"
+    },
+    {
+      "name": "/serviceP11",
+      "type": "service",
+      "strategy": "/localhost/nfd/strategy/multicast"
+    },
+    {
+      "name": "/sensor17",
+      "type": "producer",
+      "strategy": "/localhost/nfd/strategy/multicast"
+    },
+    {
+      "name": "/sensor10",
+      "type": "producer",
+      "strategy": "/localhost/nfd/strategy/multicast"
+    },
+    {
+      "name": "/sensor14",
+      "type": "producer",
+      "strategy": "/localhost/nfd/strategy/multicast"
+    },
+    {
+      "name": "/serviceP14",
+      "type": "service",
+      "strategy": "/localhost/nfd/strategy/multicast"
+    },
+    {
+      "name": "/serviceP10",
+      "type": "service",
+      "strategy": "/localhost/nfd/strategy/multicast"
+    },
+    {
+      "name": "/serviceP1",
+      "type": "service",
+      "strategy": "/localhost/nfd/strategy/multicast"
+    },
+    {
+      "name": "/sensor7",
+      "type": "producer",
+      "strategy": "/localhost/nfd/strategy/multicast"
+    },
+    {
+      "name": "/serviceP15",
+      "type": "service",
+      "strategy": "/localhost/nfd/strategy/multicast"
+    },
+    {
+      "name": "/serviceP4",
+      "type": "service",
+      "strategy": "/localhost/nfd/strategy/multicast"
+    }
+  ],
+  "routerHosting": [
+    {
+      "router": "sensor",
+      "service": "/sensor1",
+      "makespanNS": 0
+    },
+    {
+      "router": "sensor",
+      "service": "/sensor2",
+      "makespanNS": 0
+    },
+    {
+      "router": "sensor",
+      "service": "/sensor3",
+      "makespanNS": 0
+    },
+    {
+      "router": "sensor",
+      "service": "/sensor4",
+      "makespanNS": 0
+    },
+    {
+      "router": "sensor",
+      "service": "/sensor5",
+      "makespanNS": 0
+    },
+    {
+      "router": "sensor",
+      "service": "/sensor6",
+      "makespanNS": 0
+    },
+    {
+      "router": "sensor",
+      "service": "/sensor7",
+      "makespanNS": 0
+    },
+    {
+      "router": "sensor",
+      "service": "/sensor8",
+      "makespanNS": 0
+    },
+    {
+      "router": "sensor",
+      "service": "/sensor9",
+      "makespanNS": 0
+    },
+    {
+      "router": "sensor",
+      "service": "/sensor10",
+      "makespanNS": 0
+    },
+    {
+      "router": "sensor",
+      "service": "/sensor11",
+      "makespanNS": 0
+    },
+    {
+      "router": "sensor",
+      "service": "/sensor12",
+      "makespanNS": 0
+    },
+    {
+      "router": "sensor",
+      "service": "/sensor13",
+      "makespanNS": 0
+    },
+    {
+      "router": "sensor",
+      "service": "/sensor14",
+      "makespanNS": 0
+    },
+    {
+      "router": "sensor",
+      "service": "/sensor15",
+      "makespanNS": 0
+    },
+    {
+      "router": "sensor",
+      "service": "/sensor16",
+      "makespanNS": 0
+    },
+    {
+      "router": "sensor",
+      "service": "/sensor17",
+      "makespanNS": 0
+    },
+    {
+      "router": "sensor",
+      "service": "/sensor18",
+      "makespanNS": 0
+    },
+    {
+      "router": "sensor",
+      "service": "/sensor19",
+      "makespanNS": 0
+    },
+    {
+      "router": "sensor",
+      "service": "/sensor20",
+      "makespanNS": 0
+    },
+    {
+      "router": "rtr-2",
+      "service": "/serviceP1",
+      "makespanNS": 0
+    },
+    {
+      "router": "rtr-2",
+      "service": "/serviceP2",
+      "makespanNS": 0
+    },
+    {
+      "router": "rtr-2",
+      "service": "/serviceP3",
+      "makespanNS": 0
+    },
+    {
+      "router": "rtr-2",
+      "service": "/serviceP4",
+      "makespanNS": 0
+    },
+    {
+      "router": "rtr-2",
+      "service": "/serviceP5",
+      "makespanNS": 0
+    },
+    {
+      "router": "rtr-2",
+      "service": "/serviceP6",
+      "makespanNS": 0
+    },
+    {
+      "router": "rtr-2",
+      "service": "/serviceP7",
+      "makespanNS": 0
+    },
+    {
+      "router": "rtr-2",
+      "service": "/serviceP8",
+      "makespanNS": 0
+    },
+    {
+      "router": "rtr-2",
+      "service": "/serviceP9",
+      "makespanNS": 0
+    },
+    {
+      "router": "rtr-2",
+      "service": "/serviceP10",
+      "makespanNS": 0
+    },
+    {
+      "router": "rtr-2",
+      "service": "/serviceP11",
+      "makespanNS": 0
+    },
+    {
+      "router": "rtr-2",
+      "service": "/serviceP12",
+      "makespanNS": 0
+    },
+    {
+      "router": "rtr-2",
+      "service": "/serviceP13",
+      "makespanNS": 0
+    },
+    {
+      "router": "rtr-2",
+      "service": "/serviceP14",
+      "makespanNS": 0
+    },
+    {
+      "router": "rtr-2",
+      "service": "/serviceP15",
+      "makespanNS": 0
+    },
+    {
+      "router": "rtr-2",
+      "service": "/serviceP16",
+      "makespanNS": 0
+    },
+    {
+      "router": "rtr-2",
+      "service": "/serviceP17",
+      "makespanNS": 0
+    },
+    {
+      "router": "rtr-2",
+      "service": "/serviceP18",
+      "makespanNS": 0
+    },
+    {
+      "router": "rtr-2",
+      "service": "/serviceP19",
+      "makespanNS": 0
+    },
+    {
+      "router": "rtr-2",
+      "service": "/serviceP20",
+      "makespanNS": 0
+    },
+    {
+      "router": "rtr-3",
+      "service": "/serviceP21",
+      "makespanNS": 0
+    },
+    {
+      "router": "user",
+      "service": "/consumer",
+      "workflowFile": "/home/cabeee/ndnSIM/scenario/workflows/20-sensor.json",
+      "dag": "dag1",
+      "start": 0,
+      "end": -1
+    }
+  ],
+  "dag": {
+    "dag1": {
+      "/sensor1": {
+        "/serviceP1": 0
+      },
+      "/sensor2": {
+        "/serviceP2": 0
+      },
+      "/sensor3": {
+        "/serviceP3": 0
+      },
+      "/sensor4": {
+        "/serviceP4": 0
+      },
+      "/sensor5": {
+        "/serviceP5": 0
+      },
+      "/sensor6": {
+        "/serviceP6": 0
+      },
+      "/sensor7": {
+        "/serviceP7": 0
+      },
+      "/sensor8": {
+        "/serviceP8": 0
+      },
+      "/sensor9": {
+        "/serviceP9": 0
+      },
+      "/sensor10": {
+        "/serviceP10": 0
+      },
+      "/sensor11": {
+        "/serviceP11": 0
+      },
+      "/sensor12": {
+        "/serviceP12": 0
+      },
+      "/sensor13": {
+        "/serviceP13": 0
+      },
+      "/sensor14": {
+        "/serviceP14": 0
+      },
+      "/sensor15": {
+        "/serviceP15": 0
+      },
+      "/sensor16": {
+        "/serviceP16": 0
+      },
+      "/sensor17": {
+        "/serviceP17": 0
+      },
+      "/sensor18": {
+        "/serviceP18": 0
+      },
+      "/sensor19": {
+        "/serviceP19": 0
+      },
+      "/sensor20": {
+        "/serviceP20": 0
+      },
+      "/serviceP1": {
+        "/serviceP21": 0
+      },
+      "/serviceP2": {
+        "/serviceP21": 1
+      },
+      "/serviceP3": {
+        "/serviceP21": 2
+      },
+      "/serviceP4": {
+        "/serviceP21": 3
+      },
+      "/serviceP5": {
+        "/serviceP21": 4
+      },
+      "/serviceP6": {
+        "/serviceP21": 5
+      },
+      "/serviceP7": {
+        "/serviceP21": 6
+      },
+      "/serviceP8": {
+        "/serviceP21": 7
+      },
+      "/serviceP9": {
+        "/serviceP21": 8
+      },
+      "/serviceP10": {
+        "/serviceP21": 9
+      },
+      "/serviceP11": {
+        "/serviceP21": 10
+      },
+      "/serviceP12": {
+        "/serviceP21": 11
+      },
+      "/serviceP13": {
+        "/serviceP21": 12
+      },
+      "/serviceP14": {
+        "/serviceP21": 13
+      },
+      "/serviceP15": {
+        "/serviceP21": 14
+      },
+      "/serviceP16": {
+        "/serviceP21": 15
+      },
+      "/serviceP17": {
+        "/serviceP21": 16
+      },
+      "/serviceP18": {
+        "/serviceP21": 17
+      },
+      "/serviceP19": {
+        "/serviceP21": 18
+      },
+      "/serviceP20": {
+        "/serviceP21": 19
+      },
+      "/serviceP21": {
+        "/consumer": 0
+      }
+    }
+  }
+}
