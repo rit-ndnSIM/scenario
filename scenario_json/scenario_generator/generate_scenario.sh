@@ -88,15 +88,28 @@ generate_hs() {
     echo "$output"
 }
 
-length=5
+#length=5
 #wf="$(generate_linear_wf ${length})"
-width=18
-wf="$(generate_parallel_wf_1 ${width})"
-#wf="$(generate_parallel_wf_2 ${width})"
-#wf="$(generate_messy_wf ${width})"
 
-nodes=3
-edges=2
+#width=18
+#wf="$(generate_parallel_wf_1 ${width})"
+#wf="$(generate_parallel_wf_2 ${width})"
+
+#pick services to match CPM number of services (10,20,50,100)
+services=10
+#producers=$(((services/5)+1))
+producers=3
+consumers=1
+#layers=$(echo "scale=0; sqrt($number)" | bc -l)
+layers=6
+skips=5
+wf="$(generate_messy_wf ${services} ${producers} ${consumers} ${layers} ${skips})"
+
+#pick nodes to match CPM number of nodes (1:5 to 5:1 ratios vs num of services)
+nodes=5
+#pick edges to determine how connected the topology is
+edges=$((nodes-1))
+#edges=$(( (nodes*( nodes-1 ))/2  ))
 sensors=1
 users=1
 tp="$(generate_tp ${nodes} ${edges} ${sensors} ${users})"
@@ -114,12 +127,13 @@ prefixes="nescoSCOPT orchA orchB"
 for prefix in $prefixes; do
     echo "Generating scenario for prefix: $prefix"
 
+    output_filename="$workdir/${TIMESTAMP}-sn-${prefix}-${hs_clean#hs-}"
     ./build_scenario.py -f \
         --workflow "$workdir/$wf" \
         --topo-json "$workdir/$tp" \
         --topo-txt "$workdir/${tp%.json}.txt" \
         --hosting "$workdir/$hs" \
-        --output "$workdir/${TIMESTAMP}-sn-${prefix}-${hs_clean#hs-}" \
+        --output  ${output_filename} \
         --prefix ${prefix} \
         --serviceDiscovery 0 \
         --resourceAllocation 0 \
@@ -129,5 +143,9 @@ for prefix in $prefixes; do
         --startTimeOffsetWF 0 \
         --simulationEndTime 200
 
-    cp $workdir/${TIMESTAMP}-sn-${prefix}-${hs_clean#hs-} ../cascon_random_test/
+
+    cp $workdir/${TIMESTAMP}-sn-${prefix}-${hs_clean#hs-} ../cascon_cpm_random/
 done
+
+#./genvisuals_circle.py ${output_filename}
+./genvisuals_top_down.py ${output_filename}

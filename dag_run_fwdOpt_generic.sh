@@ -40,8 +40,10 @@ USAGE_ALLOCATION_GRAPHS_DIR="$HOME/ndnSIM/scenario/usage_allocation_graphs"
 
 #mkdir -p "$SCENARIO_JSON_DIR"
 
-TYPE="cascon_main"
+#TYPE="cascon_main"
 #TYPE="cascon_cpm"
+TYPE="cascon_cpm_random"
+#TYPE="cascon_intervals"
 #TYPE="fwdOptSD"
 #TYPE="cascon_random_test"
 
