@@ -10,8 +10,71 @@ import json
 from itertools import combinations
 
 def bottleneck(args):
-    # TODO
-    raise "not implemented :("
+    # Combines two existing topology JSON files by adding a single link between them.
+    # Load the two topologies
+    with open(args.topo1, 'r') as f:
+        data1 = json.load(f)
+    with open(args.topo2, 'r') as f:
+        data2 = json.load(f)
+
+    topo1 = graph.Topology.from_dict(data1)
+    topo2 = graph.Topology.from_dict(data2)
+
+    # Merge topo2 into topo1
+    # Note: Ensure your graph library supports a merge or handles node name collisions
+    topo1.merge(topo2) 
+
+    # Select routers to connect
+    r1 = args.rtr1 if args.rtr1 else random.choice(topo1.get_nodes())
+    r2 = args.rtr2 if args.rtr2 else random.choice(topo2.get_nodes())
+
+    # Create the bottleneck link
+    topo1.add(r1, r2)
+    topo1.update_edge_metadata(r1, r2, **{
+        'capacity': args.bandwidth,
+        'metric': args.metric,
+        'delay': args.delay,
+        'queue': args.queue,
+    })
+
+    return topo1
+
+def star_of_stars(args):
+    """
+    Creates a hierarchical star topology.
+    - 1 Core Router
+    - N Aggregation Routers (branches from core)
+    - Remaining routers distributed as Edge routers (branches from aggregation)
+    """
+    if args.num_routers < args.branches + 1:
+        raise ValueError("Not enough routers to support the requested number of branches.")
+
+    topo = graph.Topology()
+    
+    # 1. Define the hierarchy
+    routers = [f"rtr{i}" for i in range(args.num_routers)]
+    core = routers[0]
+    agg_routers = routers[1 : args.branches + 1]
+    edge_routers = routers[args.branches + 1 :]
+
+    # 2. Connect Aggregation to Core
+    for agg in agg_routers:
+        topo.add(core, agg)
+
+    # 3. Connect Edge routers to Aggregation (round-robin)
+    for i, edge in enumerate(edge_routers):
+        parent = agg_routers[i % len(agg_routers)]
+        topo.add(parent, edge)
+
+    # 4. Attach Users and Sensors to the Edge routers
+    # (If no edge routers exist, attach to aggregation)
+    leaf_parents = edge_routers if edge_routers else agg_routers
+    
+    for leaf_node in (args.user_list + args.sensor_list):
+        parent = random.choice(leaf_parents)
+        topo.add(parent, leaf_node)
+
+    return topo
 
 
 def spanning_tree(args):
@@ -28,13 +91,14 @@ def spanning_tree(args):
                 args.router_list.remove(user)
 
         for sensor in args.sensor_list:
-            if user in args.router_list:
-                args.router_list.remove(user)
+            if sensor in args.router_list:
+                args.router_list.remove(sensor)
     else:
         args.router_list = [f"rtr{i}" for i in range(args.num_routers)]
 
     topo = gen_spanning_tree(args.router_list, args.num_edges, args.sensor_list, args.user_list)
 
+    '''
     for node in topo.get_nodes():
         topo.update_metadata(node, **{
             'comment': args.comment,
@@ -43,6 +107,17 @@ def spanning_tree(args):
         })
         if args.mpi:
             self.update_metadata(node, **{'mpi-partition': args.mpi})
+    '''
+    # Apply Metadata
+    for node in topo.get_nodes():
+        meta = {
+            'comment': args.comment,
+            'y': args.ypos,
+            'x': args.xpos,
+        }
+        if args.mpi:
+            meta['mpi-partition'] = args.mpi
+        topo.update_metadata(node, **meta)
 
         # TODO: override with random generation
 
@@ -82,6 +157,7 @@ def gen_spanning_tree(routers, num_edges, sensors=["sensor"], users=["user"]):
         remaining.remove(b)
 
     # add additional random edges until we reach num_edges
+    # TODO: The all_possible_edges logic below is checking is_connected(u, v), which can be computationally expensive for large graphs. Swap this to a set-based lookup of existing edges.
     all_possible_edges = [(u, v) for u, v in combinations(routers, 2)
                           if not topo.is_connected(u, v)]
 
@@ -144,6 +220,18 @@ def main():
     bn_parser.add_argument('--rtr1', type=str, help="specify router for topology 1, otherwise choose randomly")
     bn_parser.add_argument('--rtr2', type=str, help="specify router for topology 2, otherwise choose randomly")
     bn_parser.add_argument('--bandwidth', type=str, default="1Mbps", help="bandwidth for bottleneck")
+    bn_parser.add_argument('--metric', type=str, default="1", help='default link metric')
+    bn_parser.add_argument('--delay', type=str, default="10ms", help='default link delay')
+    bn_parser.add_argument('--queue', type=str, default="100000", help='default link queue')
+
+    star_parser = subparsers.add_parser('star_of_stars', help="generate a hierarchical star topology")
+    star_parser.set_defaults(algorithm=star_of_stars)
+    star_parser.add_argument('-n', '--num-routers', type=int, required=True, help='total number of routers')
+    star_parser.add_argument('-b', '--branches', type=int, default=3, help='number of aggregation routers connected to the core')
+    # Re-use our standard metadata/list arguments for consistency
+    star_parser.add_argument('--sensor-list', nargs='+', default=[], help="list of sensors")
+    star_parser.add_argument('--user-list', nargs='+', default=[], help="list of users")
+    star_parser.add_argument('--bandwidth', type=str, default="1Gbps")
 
     args = parser.parse_args()
 
