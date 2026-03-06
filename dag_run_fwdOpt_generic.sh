@@ -37,6 +37,8 @@ WORKFLOW_DIR="$HOME/ndnSIM/scenario/workflows"
 TOPOLOGY_DIR="$HOME/ndnSIM/scenario/topologies"
 CPM_DIR="$HOME/ndnSIM/CPM"
 USAGE_ALLOCATION_GRAPHS_DIR="$HOME/ndnSIM/scenario/usage_allocation_graphs"
+#GEN_ALLOCATION_GRAPHS="true"
+GEN_ALLOCATION_GRAPHS="false"
 
 #mkdir -p "$SCENARIO_JSON_DIR"
 
@@ -112,7 +114,7 @@ do
         result="${result:-N.A.}"
 
         packets=$( \
-            python process_nfd_logs_SD.py $USAGE_ALLOCATION_GRAPHS_DIR/${scenario}.png | sed -n \
+            python process_nfd_logs_SD.py --graph $GEN_ALLOCATION_GRAPHS --output $USAGE_ALLOCATION_GRAPHS_DIR/${scenario}.png | sed -n \
             -e 's/^SD Interest Packets Generated: \([0-9]*\) interests$/\1,/p' \
             -e 's/^SD Data Packets Generated: \([0-9]*\) data$/\1,/p' \
             -e 's/^SD Interest Packets Transmitted: \([0-9]*\) interests$/\1,/p' \

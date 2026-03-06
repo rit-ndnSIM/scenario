@@ -6,6 +6,7 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 import random
+import argparse
 
 
 
@@ -833,29 +834,30 @@ def analyze_and_plot_all(file_path, output_filename_base, stop_time=None):
 
     # --- Generate Plots ---
     
-    # 1. Utilization Plot (Actual)
-    generate_gantt_chart(
-        completed_utilization_runs, 
-        output_filename_base, 
-        #f"Resource Utilization (Actual){' - Stopped at ' + str(stop_time) + 's' if stop_time else ''}", 
-        f"Resource Utilization (Actual) - {output_filename_base}{' - Stopped at ' + str(stop_time) + 's' if stop_time else ''}", 
-        workflow_start_time_ns, 
-        total_simulation_duration_ns
-    )
+    if generate_graph == "true":
+        # 1. Utilization Plot (Actual)
+        generate_gantt_chart(
+            completed_utilization_runs, 
+            output_filename_base, 
+            #f"Resource Utilization (Actual){' - Stopped at ' + str(stop_time) + 's' if stop_time else ''}", 
+            f"Resource Utilization (Actual) - {output_filename_base}{' - Stopped at ' + str(stop_time) + 's' if stop_time else ''}", 
+            workflow_start_time_ns, 
+            total_simulation_duration_ns
+        )
     
-    # 2. Scheduling Plot (Planned)
-    completed_schedule_runs = list(scheduled_items.values())
-    base, ext = os.path.splitext(output_filename_base)
-    sched_filename = f"{base}_scheduling{ext}"
+        # 2. Scheduling Plot (Planned)
+        completed_schedule_runs = list(scheduled_items.values())
+        base, ext = os.path.splitext(output_filename_base)
+        sched_filename = f"{base}_scheduling{ext}"
     
-    generate_gantt_chart(
-        completed_schedule_runs, 
-        sched_filename, 
-        #f"Resource Scheduling (Planned){' - Stopped at ' + str(stop_time) + 's' if stop_time else ''}", 
-        f"Resource Scheduling (Planned) - {output_filename_base}{' - Stopped at ' + str(stop_time) + 's' if stop_time else ''}", 
-        workflow_start_time_ns, 
-        total_simulation_duration_ns
-    )
+        generate_gantt_chart(
+            completed_schedule_runs, 
+            sched_filename, 
+            #f"Resource Scheduling (Planned){' - Stopped at ' + str(stop_time) + 's' if stop_time else ''}", 
+            f"Resource Scheduling (Planned) - {output_filename_base}{' - Stopped at ' + str(stop_time) + 's' if stop_time else ''}", 
+            workflow_start_time_ns, 
+            total_simulation_duration_ns
+        )
 
 
 # --- Execute the Analysis ---
@@ -869,7 +871,7 @@ output_file_path = 'scenario.log'
 
 print("")
 
-
+'''
 # Parse Arguments flexibly
 # Usage: python script.py [image_name] [stop_time_float]
 target_image_name = 'resource_timeline.png'
@@ -889,6 +891,46 @@ if stop_time_limit:
     print(f"Configuration: Output='{target_image_name}', Stop Time={stop_time_limit}s")
 else:
     print(f"Configuration: Output='{target_image_name}', Stop Time=End of File")
+'''
+
+# 1. Initialize the parser
+parser = argparse.ArgumentParser(description="Process NFD logs to count packets, calculate utilization values, and create allocation graphs.")
+
+# 2. Add your arguments
+# '-o' or '--output' for the filename (String)
+parser.add_argument("-o", "--output", type=str, default="default_image.png",
+                    help="The name of the target image file.")
+
+# '-s' or '--stop' for the time limit (Float)
+parser.add_argument("-s", "--stop", type=float, 
+                    help="The stop time limit in seconds.")
+
+# '--graph' flag (Boolean)
+# 'action="store_true"' means if the flag is present, the value is True. 
+# If absent, it's False.
+parser.add_argument("--graph", type=str, default="false",
+                    help="Enable graph generation. Pass true or false.")
+
+# 3. Parse the arguments
+args = parser.parse_args()
+
+# 4. Use the values
+target_image_name = args.output
+generate_graph = args.graph
+
+stop_time_limit = None
+if args.stop:
+    stop_time_limit = args.stop
+    print(f"Configuration: Output='{target_image_name}', Stop Time={stop_time_limit}s")
+else:
+    print(f"Configuration: Output='{target_image_name}', Stop Time=End of File")
+
+
+
+# Logic for printing configuration
+stop_desc = f"{stop_time_limit}s" if stop_time_limit is not None else "End of File"
+print(f"Configuration: Output='{target_image_name}', Stop Time={stop_desc}")
+print(f"Graph Generation: {'Enabled' if generate_graph else 'Disabled'}")
 
 
  ## Count the number of Service Discovery interests
