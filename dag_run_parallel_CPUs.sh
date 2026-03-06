@@ -33,10 +33,13 @@ export NS_LOG="$LOGS"
 
 export NDNSIM_HOME="$HOME/ndnSIM"
 export SCENARIO_DIR="$HOME/ndnSIM/scenario"
+export SCENARIO_LOGS_DIR="$SCENARIO_DIR/scenario_logs"
 export WORKFLOW_DIR="$HOME/ndnSIM/scenario/workflows"
 export TOPOLOGY_DIR="$HOME/ndnSIM/scenario/topologies"
 export CPM_DIR="$HOME/ndnSIM/CPM"
 export USAGE_ALLOCATION_GRAPHS_DIR="$HOME/ndnSIM/scenario/usage_allocation_graphs"
+#export GEN_ALLOCATION_GRAPHS="true"
+export GEN_ALLOCATION_GRAPHS="false"
 
 #TYPE="cascon_main"
 #TYPE="cascon_cpm"
@@ -46,7 +49,7 @@ TYPE="cascon_cpm_random"
 #TYPE="cascon_random_test"
 
 export SCENARIO_JSON_DIR="$SCENARIO_DIR/scenario_json/$TYPE"
-export csv_out="$SCENARIO_DIR/perf-results-simulation-${TYPE}_generic.csv"
+export csv_out="$SCENARIO_DIR/perf-results-simulation-generic_${TYPE}.csv"
 
 # --- 1. Setup CSV Header ---
 header="Example, SD Interest Packets Generated, SD Data Packets Generated, SD Interest Packets Transmitted, SD Data Packets Transmitted, WF Interest Packets Generated, WF Data Packets Generated, WF Interest Packets Transmitted, WF Data Packets Transmitted, Critical-Path-Metric, CPM-t_exec(ns), SD Latency (us), SD Estimated WF Service Latency (us), WF Service Latency (us), Total Node Usage Time (us), Average Node Utilization (%), Coefficient of Variation (load distribution), Final Result, Time, ns-3 commit, pybindgen commit, scenario commit, ndnSIM commit"
@@ -70,7 +73,7 @@ export scenario_hash="$(git -C "$NDNSIM_HOME/scenario" rev-parse HEAD)"
 export ndnsim_hash="$(git -C "$NDNSIM_HOME/ns-3/src/ndnSIM" rev-parse HEAD)"
 
 # --- 3. Define CSV Update Helper ---
-# This function handles the actual file write, designed to be locked by 'sem'
+# This function handles the actual file write, designed to be locking
 update_csv() {
     local scenario="$1"
     local row="$2"
@@ -92,7 +95,7 @@ run_simulation() {
     local filename=$(basename "$filepath")
     local scenario="${filename%.*}"
     local scenario_json="$filepath"
-    local scenario_log="$SCENARIO_DIR/scenario_${scenario}.log"
+    local scenario_log="$SCENARIO_LOGS_DIR/scenario_${scenario}.log"
     local now="$(date -Iseconds)"
 
     echo "Starting Scenario: $scenario"
@@ -114,7 +117,7 @@ run_simulation() {
     result="${result:-N.A.}"
 
     local packets=$( \
-        python "$SCENARIO_DIR/process_nfd_logs_SD.py" "$USAGE_ALLOCATION_GRAPHS_DIR/${scenario}.png" | sed -n \
+        python "$SCENARIO_DIR/process_nfd_logs_SD.py" --graph "$GEN_ALLOCATION_GRAPHS" --output "$USAGE_ALLOCATION_GRAPHS_DIR/${scenario}.png" | sed -n \
         -e 's/^SD Interest Packets Generated: \([0-9]*\) interests$/\1,/p' \
         -e 's/^SD Data Packets Generated: \([0-9]*\) data$/\1,/p' \
         -e 's/^SD Interest Packets Transmitted: \([0-9]*\) interests$/\1,/p' \
@@ -160,8 +163,12 @@ run_simulation() {
     local row="$scenario, $SDinterest_gen, $SDdata_gen, $SDinterest_trans, $SDdata_trans, $WFinterest_gen, $WFdata_gen, $WFinterest_trans, $WFdata_trans, $cpm, $cpm_t, $SDlatency, $estimatedWFLatency, $WFlatency, $totalNodeUsageTime, $avgNodeUsage, $coeffVariation, $result, $now, $ns_3_hash, $pybindgen_hash, $scenario_hash, $ndnsim_hash"
 
     # Lock the CSV file writing process to prevent data corruption
-    sem --id csv_lock update_csv "$scenario" "$row" "$csv_out"
-    
+    #sem --id csv_lock update_csv "$scenario" "$row" "$csv_out"
+    (
+        flock -x 200
+        update_csv "$scenario" "$row" "$csv_out"
+    ) 200> "${csv_out}.lock"
+
     echo "Finished Scenario: $scenario"
 }
 export -f run_simulation
@@ -173,6 +180,6 @@ echo "Dispatching jobs to all available CPU cores..."
 find "$SCENARIO_JSON_DIR" -maxdepth 1 -name "*.json" | parallel --jobs 0 run_simulation {}
 
 # Wait for all semaphores to clear just to be safe
-sem --wait --id csv_lock
+#sem --wait --id csv_lock
 
 echo "All scenarios completed."
