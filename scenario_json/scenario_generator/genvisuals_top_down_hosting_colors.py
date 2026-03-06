@@ -4,6 +4,8 @@ import json
 import sys
 import os
 import networkx as nx
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import matplotlib.colors as mcolors
 
@@ -31,7 +33,7 @@ def visualize_graphs(json_path):
         data = json.load(f)
 
     base_name = os.path.splitext(json_path)[0]
-    output_filename = f"{base_name}_network_viz.png"
+    output_filename = f"{base_name}_network_viz-circular.png"
 
     # --- 1. Topology & Color Map ---
     topo_g = nx.Graph()

@@ -125,8 +125,8 @@ def main():
     uni_parser.add_argument('-m', '--max-hosts', type=int, default=1, help='max number of hosts per service')
     uni_parser.add_argument('--start-times', nargs='+', type=int, default=[0], help="list of start time choices, paired with --stop-times")
     uni_parser.add_argument('--stop-times', nargs='+', type=int, default=[-1], help="list of stop time choices, paired with --start-times")
-    uni_parser.add_argument('-msmin', '--makespan-min', type=int, default=0, help='minimum service makespan in NS')
-    uni_parser.add_argument('-msmax', '--makespan-max', type=int, default=0, help='maximum service makespan in NS')
+    uni_parser.add_argument('--makespan-min', type=int, default=0, help='minimum service makespan in NS')
+    uni_parser.add_argument('--makespan-max', type=int, default=0, help='maximum service makespan in NS')
 
     comb_parser = subparsers.add_parser('combine', help="combine two hosting files")
     comb_parser.set_defaults(algorithm=combine)
