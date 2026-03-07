@@ -867,7 +867,6 @@ def analyze_and_plot_all(file_path, output_filename_base, stop_time=None):
 
 print("Processing NFD logs!")
 
-output_file_path = 'scenario.log'
 
 print("")
 
@@ -897,7 +896,11 @@ else:
 parser = argparse.ArgumentParser(description="Process NFD logs to count packets, calculate utilization values, and create allocation graphs.")
 
 # 2. Add your arguments
-# '-o' or '--output' for the filename (String)
+# '-l' or '--logfile' for the input logfile filename (String)
+parser.add_argument("-l", "--logfile", type=str, default="scenario.log",
+                    help="The name of the input log file.")
+
+# '-o' or '--output' for the output filename (String)
 parser.add_argument("-o", "--output", type=str, default="default_image.png",
                     help="The name of the target image file.")
 
@@ -917,6 +920,9 @@ args = parser.parse_args()
 # 4. Use the values
 target_image_name = args.output
 generate_graph = args.graph
+
+#output_file_path = 'scenario.log'
+output_file_path = args.logfile
 
 stop_time_limit = None
 if args.stop:
