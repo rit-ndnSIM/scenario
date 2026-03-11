@@ -143,7 +143,7 @@ def visualize_graphs(json_path):
     plt.tight_layout()
     plt.savefig(output_filename, dpi=300)
     plt.close(fig)
-    print(f"Final visualization generated: {output_filename}")
+    print(f"            Final visualization generated: {output_filename}")
 
 if __name__ == "__main__":
     if len(sys.argv) > 1: visualize_graphs(sys.argv[1])

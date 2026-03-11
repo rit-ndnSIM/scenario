@@ -94,7 +94,7 @@ def visualize_graphs(json_path):
     # Final Save
     plt.tight_layout()
     plt.savefig(output_filename)
-    print(f"Success! Output saved to: {output_filename}")
+    print(f"            Success! Output saved to: {output_filename}")
     
     # Optional: Close plot to free up memory if running in a loop
     plt.close()

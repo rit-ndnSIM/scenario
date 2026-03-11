@@ -106,7 +106,7 @@ def visualize_graphs(json_path):
 
     plt.tight_layout()
     plt.savefig(output_filename)
-    print(f"Success! Graphs saved to {output_filename}")
+    print(f"            Success! Graphs saved to {output_filename}")
     plt.show()
 
 if __name__ == "__main__":

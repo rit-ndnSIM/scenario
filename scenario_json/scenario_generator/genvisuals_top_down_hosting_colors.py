@@ -107,7 +107,7 @@ def visualize_graphs(json_path):
     nx.draw_networkx_edge_labels(dag_g, pos_dag, edge_labels=edge_labels, font_size=8)
 
     plt.savefig(output_filename)
-    print(f"Success! Output saved to: {output_filename}")
+    print(f"            Success! Output saved to: {output_filename}")
 
 if __name__ == "__main__":
     if len(sys.argv) > 1: visualize_graphs(sys.argv[1])
