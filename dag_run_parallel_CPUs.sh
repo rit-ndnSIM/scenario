@@ -169,7 +169,7 @@ run_simulation() {
         update_csv "$scenario" "$row" "$csv_out"
     ) 200> "${csv_out}.lock"
 
-    echo "Finished Scenario: $scenario"
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] Finished Scenario: $scenario"
 }
 export -f run_simulation
 
