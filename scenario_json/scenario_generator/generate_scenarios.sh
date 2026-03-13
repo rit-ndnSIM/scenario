@@ -284,14 +284,21 @@ for wf_topo_pair in $wf_topo_pairs; do
     workflowCategory=${wf_topo_pair%%:*}
     topoCategory=${wf_topo_pair#*:}
 
+    # Arrays to store filenames for this specific category pair
+    generated_topos=""
+    generated_wfs=""
+
+
+    # Create a zero-padded serial for this iteration (e.g., 0001, 0002)
+    padded_serial=$(printf "%04d" "$SERIAL")
+    # Increment serial for the next service count / node count pair
+    SERIAL=$((SERIAL + 1))
+
+
+    # Generate all topologies
     for num_nodes in $num_nodes_list; do
 
         for edgeratio in $edgeratio_list; do
-
-            # Create a zero-padded serial for this iteration (e.g., 0001, 0002)
-            padded_serial=$(printf "%04d" "$SERIAL")
-            # Increment serial for the next service count / node count pair
-            SERIAL=$((SERIAL + 1))
 
             # Topology Generation
             echo "--- Running TOPO Generation: TopoCat=$topoCategory, WorkflowCat=$workflowCategory, Num_Nodes=$num_nodes, EdgeRatio=$edgeratio ---"
@@ -369,129 +376,142 @@ for wf_topo_pair in $wf_topo_pairs; do
                     ;;
             esac
 
-            for num_services in $num_services_list; do
+            generated_topos="$generated_topos $tp"
 
-            #for service2node in $service2node_list; do
-
-                # Workflow Generation
-                #echo "--- Running WF Generation: TopoCat=$topoCategory, WorkflowCat=$workflowCategory, Services=$num_services, S2N=$service2node, EdgeRatio=$edgeratio ---"
-                echo "---   Running WF Generation: TopoCat=$topoCategory, WorkflowCat=$workflowCategory, Num_Services=$num_services ---"
-
-                case $workflowCategory in
-                    "linear")
-                        producers=1
-                        consumers=1
-                        layers=$num_services # Each service is a layer
-                        skips=0
-                        echo "---         Workflow: producers=$producers, consumers=$consumers, layers=$layers, skips=$skips ---"
-                        wf="$(generate_wf_messy ${num_services} ${producers} ${consumers} ${layers} ${skips} ${padded_serial})"
-                        #length=$num_services
-                        #wf="$(generate_wf_linear ${length})"
-                        ;;
-                    "map_reduce")
-                        # 1/6 of the services will be producers
-                        #producers=$(echo "scale=0; $num_services / 6" | bc -l)
-                        #if [ "$producers" -lt 1 ]; then producers=1; fi
-                        producers=1
-                        consumers=1
-                        layers=3         # Standard Map-Shuffle-Reduce
-                        skips=0
-                        echo "---         Workflow: producers=$producers, consumers=$consumers, layers=$layers, skips=$skips ---"
-                        wf="$(generate_wf_messy ${num_services} ${producers} ${consumers} ${layers} ${skips} ${padded_serial})"
-                        ;;
-                    "wavefront")
-                        # square root of the services will be producers
-                        #producers=$(echo "scale=0; sqrt($num_services)" | bc -l)
-                        #if [ "$producers" -lt 1 ]; then producers=1; fi
-                        producers=1
-                        consumers=1
-                        #layers=$producers
-                        layers=$(echo "scale=0; sqrt($num_services)" | bc -l)
-                        if [ "$layers" -lt 1 ]; then layers=1; fi
-                        skips=$(echo "scale=0; $layers / 3" | bc -l)
-                        if [ "$skips" -lt 1 ]; then skips=1; fi
-                        echo "---         Workflow: producers=$producers, consumers=$consumers, layers=$layers, skips=$skips ---"
-                        wf="$(generate_wf_messy ${num_services} ${producers} ${consumers} ${layers} ${skips} ${padded_serial})"
-                        ;;
-                    "multi_sink")
-                        #producers=2
-                        producers=1
-                        consumers=4
-                        layers=4
-                        layers=$(echo "scale=0; $num_services / 3" | bc -l)
-                        if [ "$layers" -lt 1 ]; then layers=1; fi
-                        skips=2
-                        echo "---         Workflow: producers=$producers, consumers=$consumers, layers=$layers, skips=$skips ---"
-                        wf="$(generate_wf_messy ${num_services} ${producers} ${consumers} ${layers} ${skips} ${padded_serial})"
-                        ;;
-                    *) # Default fallback
-                        echo "--- ERROR, workflowCategory $workflowCategory not found. Skipping... ---"
-                        continue
-                        ;;
-                esac
+        done
+    done
 
 
+    # Generate all workflows
+    for num_services in $num_services_list; do
+
+    #for service2node in $service2node_list; do
+
+        # Workflow Generation
+        #echo "--- Running WF Generation: TopoCat=$topoCategory, WorkflowCat=$workflowCategory, Services=$num_services, S2N=$service2node, EdgeRatio=$edgeratio ---"
+        echo "---   Running WF Generation: TopoCat=$topoCategory, WorkflowCat=$workflowCategory, Num_Services=$num_services ---"
+
+        case $workflowCategory in
+            "linear")
+                producers=1
+                consumers=1
+                layers=$num_services # Each service is a layer
+                skips=0
+                echo "---         Workflow: producers=$producers, consumers=$consumers, layers=$layers, skips=$skips ---"
+                wf="$(generate_wf_messy ${num_services} ${producers} ${consumers} ${layers} ${skips} ${padded_serial})"
+                #length=$num_services
+                #wf="$(generate_wf_linear ${length})"
+                ;;
+            "map_reduce")
+                # 1/6 of the services will be producers
+                #producers=$(echo "scale=0; $num_services / 6" | bc -l)
+                #if [ "$producers" -lt 1 ]; then producers=1; fi
+                producers=1
+                consumers=1
+                layers=3         # Standard Map-Shuffle-Reduce
+                skips=0
+                echo "---         Workflow: producers=$producers, consumers=$consumers, layers=$layers, skips=$skips ---"
+                wf="$(generate_wf_messy ${num_services} ${producers} ${consumers} ${layers} ${skips} ${padded_serial})"
+                ;;
+            "wavefront")
+                # square root of the services will be producers
+                #producers=$(echo "scale=0; sqrt($num_services)" | bc -l)
+                #if [ "$producers" -lt 1 ]; then producers=1; fi
+                producers=1
+                consumers=1
+                #layers=$producers
+                layers=$(echo "scale=0; sqrt($num_services)" | bc -l)
+                if [ "$layers" -lt 1 ]; then layers=1; fi
+                skips=$(echo "scale=0; $layers / 3" | bc -l)
+                if [ "$skips" -lt 1 ]; then skips=1; fi
+                echo "---         Workflow: producers=$producers, consumers=$consumers, layers=$layers, skips=$skips ---"
+                wf="$(generate_wf_messy ${num_services} ${producers} ${consumers} ${layers} ${skips} ${padded_serial})"
+                ;;
+            "multi_sink")
+                #producers=2
+                producers=1
+                consumers=4
+                layers=4
+                layers=$(echo "scale=0; $num_services / 3" | bc -l)
+                if [ "$layers" -lt 1 ]; then layers=1; fi
+                skips=2
+                echo "---         Workflow: producers=$producers, consumers=$consumers, layers=$layers, skips=$skips ---"
+                wf="$(generate_wf_messy ${num_services} ${producers} ${consumers} ${layers} ${skips} ${padded_serial})"
+                ;;
+            *) # Default fallback
+                echo "--- ERROR, workflowCategory $workflowCategory not found. Skipping... ---"
+                continue
+                ;;
+        esac
+
+        generated_wfs="$generated_wfs $wf"
+    done
 
 
+    # Now combine every generated topology with every generated workflow
+    for tp in $generated_topos; do
+        for wf in $generated_wfs; do
+
+            echo "Combining Topo: $tp with Workflow: $wf (Serial: $padded_serial)"
+
+            # Hosting Selection
+
+            sensors=1
+            users=1
+            makespanMin=0
+            makespanMax=0
+            hs="$(generate_hs "$wf" "$tp" ${sensors} ${users} ${makespanMin} ${makespanMax} ${padded_serial})"
+
+            # Clean the hs name
+            #hs_clean=${hs#*-}
+            #hs_clean=${hs_clean#*-}
+            # Strip the Timestamp (Date and Time)
+            # ${hs#*-} removes '20260309-', ${inner#*-} removes '012651-'
+            hs_temp=${hs#*-}
+            hs_temp=${hs_temp#*-}
+            # Strip the Serial Number (e.g., '0001--')
+            # This removes everything from the start up to the double hyphen
+            hs_clean=${hs_temp#*--}
 
 
-                # Hosting Selection
+            # Scenario Building Loop
 
-                makespanMin=0
-                makespanMax=0
-                hs="$(generate_hs "$wf" "$tp" ${sensors} ${users} ${makespanMin} ${makespanMax} ${padded_serial})"
+            #prefixes="nescoSCOPT orchA orchB"
+            prefixes="nescoSCOPT"
+            for prefix in $prefixes; do
+                output_filename="$workdir/${TIMESTAMP}-${padded_serial}--sn-${topoCategory}-${workflowCategory}-${prefix}-${hs_clean#hs-}"
+                
+                ./build_scenario.py -f \
+                    --workflow "$workdir/$wf" \
+                    --topo-json "$workdir/$tp" \
+                    --topo-txt "$workdir/${tp%.json}.txt" \
+                    --hosting "$workdir/$hs" \
+                    --output "${output_filename}" \
+                    --prefix ${prefix} \
+                    --serviceDiscovery 0 \
+                    --resourceAllocation 0 \
+                    --allocationReuse 0 \
+                    --scheduleCompaction 0 \
+                    --startTimeOffsetSD 0 \
+                    --startTimeOffsetWF 0 \
+                    --simulationEndTime 200
 
-                # Clean the hs name
-                #hs_clean=${hs#*-}
-                #hs_clean=${hs_clean#*-}
-
-                # 1. Strip the Timestamp (Date and Time)
-                # ${hs#*-} removes '20260309-', ${inner#*-} removes '012651-'
-                hs_temp=${hs#*-}
-                hs_temp=${hs_temp#*-}
-                # 2. Strip the Serial Number (e.g., '0001--')
-                # This removes everything from the start up to the double hyphen
-                hs_clean=${hs_temp#*--}
-    
-
-                # 4. Scenario Building Loop
-
-                prefixes="nescoSCOPT orchA orchB"
-                for prefix in $prefixes; do
-                    output_filename="$workdir/${TIMESTAMP}-${padded_serial}--sn-${topoCategory}-${workflowCategory}-${prefix}-${hs_clean#hs-}"
-                    
-                    ./build_scenario.py -f \
-                        --workflow "$workdir/$wf" \
-                        --topo-json "$workdir/$tp" \
-                        --topo-txt "$workdir/${tp%.json}.txt" \
-                        --hosting "$workdir/$hs" \
-                        --output "${output_filename}" \
-                        --prefix ${prefix} \
-                        --serviceDiscovery 0 \
-                        --resourceAllocation 0 \
-                        --allocationReuse 0 \
-                        --scheduleCompaction 0 \
-                        --startTimeOffsetSD 0 \
-                        --startTimeOffsetWF 0 \
-                        --simulationEndTime 200
-
-                    cp "${output_filename}" ../cascon_cpm_random/
-                done
-
-                # 5. Visualization
-                if [ "$num_nodes" -lt 9 ] && [ "$num_services" -lt 21 ]; then
-                    ./genvisuals_top_down_hosting_colors.py "${output_filename}"
-                    ./genvisuals_top_down_hosting_colors_hierarchical-topo.py "${output_filename}"
-                else
-                    echo "---         Skipping visualization: too many nodes ($num_nodes) or services ($num_services). We don't visualize if more than 20 ---"
-                fi
-
-                # 6. Delay to ensure file system stability and separation
-                echo "Iteration complete.\n"
-                #echo "Sleeping for 1 second..."
-                #sleep 1
-
+                cp "${output_filename}" ../cascon_cpm_random/
             done
+
+            # 5. Visualization
+            if [ "$num_nodes" -lt 9 ] && [ "$num_services" -lt 21 ]; then
+                ./genvisuals_top_down_hosting_colors.py "${output_filename}"
+                ./genvisuals_top_down_hosting_colors_hierarchical-topo.py "${output_filename}"
+            else
+                echo "---         Skipping visualization: too many nodes ($num_nodes) or services ($num_services). We don't visualize if more than 20 ---"
+            fi
+
+            # 6. Delay to ensure file system stability and separation
+            echo "Iteration complete.\n"
+            #echo "Sleeping for 1 second..."
+            #sleep 1
+
         done
     done
 done
