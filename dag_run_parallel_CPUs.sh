@@ -176,8 +176,12 @@ export -f run_simulation
 # --- 5. Dispatch Jobs ---
 echo "Dispatching jobs to all available CPU cores..."
 
-# Find all JSON files and pipe them into parallel
-find "$SCENARIO_JSON_DIR" -maxdepth 1 -name "*.json" | parallel --jobs 0 run_simulation {}
+# Find all JSON files and pipe them into parallel using all cores
+#find "$SCENARIO_JSON_DIR" -maxdepth 1 -name "*.json" | parallel --jobs 0 run_simulation {}
+# Find all JSON files and pipe them into parallel using 4 cores
+find "$SCENARIO_JSON_DIR" -maxdepth 1 -name "*.json" | parallel --jobs 4 run_simulation {}
+# Find all JSON files and pipe them into parallel using half of the cores
+#find "$SCENARIO_JSON_DIR" -maxdepth 1 -name "*.json" | parallel --jobs 50% run_simulation {}
 
 # Wait for all semaphores to clear just to be safe
 #sem --wait --id csv_lock
