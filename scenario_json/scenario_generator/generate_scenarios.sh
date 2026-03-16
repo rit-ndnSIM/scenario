@@ -506,14 +506,29 @@ for run in $(seq 1 $NUM_RUNS); do
 
                     cp "${output_filename}" ../cascon_cpm_random/
                 done
-
+                
                 # 5. Visualization
                 if [ "$VISUALIZE" = true ]; then
-                    if [ "$num_nodes" -lt 9 ] && [ "$num_services" -lt 21 ]; then
+                    # 1. Extracting Node count (looking for 'NNNrtr')
+                    # This takes the string like '...-004rtr-...', strips 'rtr', and removes leading zeros
+                    current_nodes=$(echo "$tp" | grep -oE '[0-9]{3}rtr' | sed 's/rtr//' | sed 's/^0*//')
+
+                    # 2. Extracting Service count (looking for 'SSSsrv')
+                    # This takes the string like '...-020srv-...', strips 'srv', and removes leading zeros
+                    current_servs=$(echo "$wf" | grep -oE '[0-9]{3}srv' | sed 's/srv//' | sed 's/^0*//')
+
+                    # Handle cases where grep might fail (set to 100 if empty so we skip visualization)
+                    current_nodes=${current_nodes:-100}
+                    current_servs=${current_servs:-100}
+
+                    echo "Detected: $current_nodes nodes, $current_servs services"
+
+                    if [ "$current_nodes" -lt 9 ] && [ "$current_servs" -lt 21 ]; then
+                        echo "---         Visualizing: nodes=$current_nodes,  services=$current_servs. ---"
                         ./genvisuals_top_down_hosting_colors.py "${output_filename}"
                         ./genvisuals_top_down_hosting_colors_hierarchical-topo.py "${output_filename}"
                     else
-                        echo "---         Skipping visualization: too many nodes ($num_nodes) or services ($num_services). We don't visualize if more than 20 ---"
+                        echo "---         Skipping visualization: too many nodes ($current_nodes) or services ($current_servs). We don't visualize if more than 20 ---"
                     fi
                 fi
 
