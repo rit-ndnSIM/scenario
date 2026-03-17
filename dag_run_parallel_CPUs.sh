@@ -176,10 +176,12 @@ export -f run_simulation
 # --- 5. Dispatch Jobs ---
 echo "Dispatching jobs to all available CPU cores..."
 
-# Find all JSON files and pipe them into parallel using all cores
+# Find all JSON files and pipe them into parallel using all system resources (may overload system if too many jobs are started at once)
 #find "$SCENARIO_JSON_DIR" -maxdepth 1 -name "*.json" | parallel --jobs 0 run_simulation {}
-# Find all JSON files and pipe them into parallel using 4 cores
-find "$SCENARIO_JSON_DIR" -maxdepth 1 -name "*.json" | parallel --jobs 4 run_simulation {}
+# Find all JSON files and pipe them into parallel using all cores
+find "$SCENARIO_JSON_DIR" -maxdepth 1 -name "*.json" | parallel --jobs 100% run_simulation {}
+# Find all JSON files and pipe them into parallel using 7 cores
+#find "$SCENARIO_JSON_DIR" -maxdepth 1 -name "*.json" | parallel --jobs 7 run_simulation {}
 # Find all JSON files and pipe them into parallel using half of the cores
 #find "$SCENARIO_JSON_DIR" -maxdepth 1 -name "*.json" | parallel --jobs 50% run_simulation {}
 
