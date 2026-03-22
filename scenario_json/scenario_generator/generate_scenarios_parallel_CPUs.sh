@@ -192,7 +192,7 @@ run_category_task() {
     num_services_list="5 10 20 40"
     num_nodes_list="2 4 8 16 32"
     edgeratio_list="0.5"
-    VISUALIZE=true
+    VISUALIZE=false
 
     workflowCategory=${wf_topo_pair%%:*}
     topoCategory=${wf_topo_pair#*:}
@@ -410,7 +410,7 @@ run_category_task() {
 export -f run_category_task
 
 # --- EXECUTION ---
-NUM_RUNS=20
+NUM_RUNS=100
 # Define specific pairs as "workflow:topology"
 wf_topo_pairs="linear:multi_tiered map_reduce:star_of_stars map_reduce:mesh wavefront:mesh"
 
