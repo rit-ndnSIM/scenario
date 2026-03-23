@@ -25,6 +25,9 @@
 #include "ns3/string.h"
 //#include "ns3/point-to-point-module.h" // added for pCap generation
 
+#include <filesystem>
+#include "cabeee-cs-tools.h"
+
 #include <nlohmann/json.hpp>
 
 using json = nlohmann::json;
@@ -346,8 +349,49 @@ main(int argc, char* argv[])
 
     Simulator::Stop(Seconds(simulationEndTime));
 
-    //ndn::L3RateTracer::InstallAll("rate-trace_cabeee-generic.txt", Seconds(0.05));
-    //ndn::CsTracer::InstallAll("cs-trace_cabeee-generic.txt", Seconds(0.0005));
+
+
+    int8_t rateTraceFlag = 1;
+    int8_t csTraceFlag = 1;
+    int8_t csUsageFlag = 1;
+    if (scenario_json.contains("rateTrace")) {
+        rateTraceFlag = scenario_json.at("rateTrace");
+    }
+    if (scenario_json.contains("csTrace")) {
+        csTraceFlag = scenario_json.at("csTrace");
+    }
+    if (scenario_json.contains("csUsage")) {
+        csUsageFlag = scenario_json.at("csUsage");
+    }
+    std::string baseName = std::filesystem::path(scenario_file).stem().string();
+    if (rateTraceFlag == 1) {
+        std::string rTraceFileName = "trace_results/rate-trace_" + baseName + ".txt";
+        ndn::L3RateTracer::InstallAll(rTraceFileName, Seconds(1.00));
+        std::cout << "Rate Trace Flag IS set. Filename is " << rTraceFileName << std::endl;
+    }
+    else{
+        std::cout << "Rate Trace Flag NOT set" << std::endl;
+    }
+    if (csTraceFlag == 1) {
+        std::string csTraceFileName = "trace_results/cs-trace_" + baseName + ".txt";
+        ndn::CsTracer::InstallAll(csTraceFileName, Seconds(1.00));
+        std::cout << "CS Trace Flag IS set. Filename is " << csTraceFileName << std::endl;
+    }
+    else{
+        std::cout << "CS Trace Flag NOT set" << std::endl;
+    }
+    if (csUsageFlag == 1) {
+        std::string csUsageFileName = "trace_results/cs-usage_" + baseName + ".txt";
+        std::ofstream fout(csUsageFileName);
+        Simulator::Schedule(Seconds(0), &ns3::printCsHeader, ref(fout));
+        Simulator::Schedule(Seconds(0), &ns3::printCsUsage, ref(fout), Seconds(0.5), Prefix); // record CS usage every 0.5 seconds
+        //Simulator::Schedule(Seconds(0), &ns3::printCsHeader, ref(std::cout));
+        //Simulator::Schedule(Seconds(0), &ns3::printCsUsage, ref(std::cout), Seconds(0.5), Prefix);
+        std::cout << "CS Usage Flag IS set. Filename is " << csUsageFileName << std::endl;
+    }
+    else{
+        std::cout << "CS Usage Flag NOT set" << std::endl;
+    }
 
     Simulator::Run();
     Simulator::Destroy();
