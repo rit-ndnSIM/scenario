@@ -351,46 +351,47 @@ main(int argc, char* argv[])
 
 
 
-    int8_t rateTraceFlag = 1;
-    int8_t csTraceFlag = 1;
-    int8_t csUsageFlag = 1;
+    float rateTraceInterval = 0;
+    float csTraceInterval = 0;
+    float csUsageInterval = 0;
     if (scenario_json.contains("rateTrace")) {
-        rateTraceFlag = scenario_json.at("rateTrace");
+        rateTraceInterval = scenario_json.at("rateTrace");
     }
     if (scenario_json.contains("csTrace")) {
-        csTraceFlag = scenario_json.at("csTrace");
+        csTraceInterval = scenario_json.at("csTrace");
     }
     if (scenario_json.contains("csUsage")) {
-        csUsageFlag = scenario_json.at("csUsage");
+        csUsageInterval = scenario_json.at("csUsage");
     }
     std::string baseName = std::filesystem::path(scenario_file).stem().string();
-    if (rateTraceFlag == 1) {
+    if (rateTraceInterval != 0) {
         std::string rTraceFileName = "trace_results/rate-trace_" + baseName + ".txt";
-        ndn::L3RateTracer::InstallAll(rTraceFileName, Seconds(1.00));
-        std::cout << "Rate Trace Flag IS set. Filename is " << rTraceFileName << std::endl;
+        ndn::L3RateTracer::InstallAll(rTraceFileName, Seconds(rateTraceInterval));
+        std::cout << "Rate Trace Interval IS set. Filename is " << rTraceFileName << std::endl;
     }
     else{
-        std::cout << "Rate Trace Flag NOT set" << std::endl;
+        std::cout << "Rate Trace Interval NOT set" << std::endl;
     }
-    if (csTraceFlag == 1) {
+    if (csTraceInterval != 0) {
         std::string csTraceFileName = "trace_results/cs-trace_" + baseName + ".txt";
-        ndn::CsTracer::InstallAll(csTraceFileName, Seconds(1.00));
-        std::cout << "CS Trace Flag IS set. Filename is " << csTraceFileName << std::endl;
+        ndn::CsTracer::InstallAll(csTraceFileName, Seconds(csTraceInterval));
+        std::cout << "CS Trace Interval IS set. Filename is " << csTraceFileName << std::endl;
     }
     else{
-        std::cout << "CS Trace Flag NOT set" << std::endl;
+        std::cout << "CS Trace Interval NOT set" << std::endl;
     }
-    if (csUsageFlag == 1) {
+    if (csUsageInterval != 0) {
         std::string csUsageFileName = "trace_results/cs-usage_" + baseName + ".txt";
         std::ofstream fout(csUsageFileName);
+        fout << "testing" << std::endl;
         Simulator::Schedule(Seconds(0), &ns3::printCsHeader, ref(fout));
-        Simulator::Schedule(Seconds(0), &ns3::printCsUsage, ref(fout), Seconds(0.5), Prefix); // record CS usage every 0.5 seconds
+        Simulator::Schedule(Seconds(0), &ns3::printCsUsage, ref(fout), Seconds(csUsageInterval), Prefix); // record CS usage every 0.5 seconds
         //Simulator::Schedule(Seconds(0), &ns3::printCsHeader, ref(std::cout));
         //Simulator::Schedule(Seconds(0), &ns3::printCsUsage, ref(std::cout), Seconds(0.5), Prefix);
-        std::cout << "CS Usage Flag IS set. Filename is " << csUsageFileName << std::endl;
+        std::cout << "CS Usage Interval IS set. Filename is " << csUsageFileName << std::endl;
     }
     else{
-        std::cout << "CS Usage Flag NOT set" << std::endl;
+        std::cout << "CS Usage Interval NOT set" << std::endl;
     }
 
     Simulator::Run();
