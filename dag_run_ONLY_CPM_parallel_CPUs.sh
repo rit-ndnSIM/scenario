@@ -8,7 +8,13 @@ export NDNSIM_HOME="$HOME/ndnSIM"
 export SCENARIO_DIR="$HOME/ndnSIM/scenario"
 export CPM_DIR="$HOME/ndnSIM/CPM"
 
+#TYPE="cascon_main"
+#TYPE="cascon_cpm"
 TYPE="cascon_cpm_random"
+#TYPE="cascon_intervals"
+#TYPE="fwdOptSD"
+#TYPE="cascon_random_test"
+
 export SCENARIO_JSON_DIR="$SCENARIO_DIR/scenario_json/$TYPE"
 export csv_out="$SCENARIO_DIR/perf-results-simulation-generic_${TYPE}.csv"
 
