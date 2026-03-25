@@ -8,12 +8,10 @@
 			"/service5"
 		],
 		"rtr-1": [
-			"/service2",
 			"/service6"
 		],
 		"rtr-2": [
 			"/service3",
-			"/service4",
 			"/service7",
 			"/service8"
 		],
