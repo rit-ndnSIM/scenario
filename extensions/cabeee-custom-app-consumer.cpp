@@ -428,6 +428,8 @@ CustomAppConsumer::OnData(std::shared_ptr<const ndn::Data> data)
   std::cout << "\n  Service Latency: " <<  serviceLatency.GetMilliSeconds() << " milliseconds." << std::endl;
   std::cout << "\n  Service Latency: " <<  serviceLatency.GetMicroSeconds() << " microseconds." << std::endl;
 
+  Simulator::Stop(Simulator::Now()); // end the simulation as soon as we receive this data packet, no need to keep going.
+
 }
 
 } // namespace ns3
