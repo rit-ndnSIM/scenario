@@ -275,9 +275,26 @@ DagOrchestratorA_App::OnInterest(std::shared_ptr<const ndn::Interest> interest)
     //}
   }
 
+  for (auto sinkNode : m_listOfSinkNodes)
+  {
+    //std::cout << "OrchestratorA looking at sink node: " << sinkNode << '\n';
+    // if it feeds the sink node, it's the last service (sink node is the consumer)
+    for (auto& x : m_dagObject["dag"].items())
+    {
+      //std::cout << "OrchestratorA looking at x: " << x.key() << '\n';
+      for (auto& y : m_dagObject["dag"][x.key()].items())
+      {
+        //std::cout << "OrchestratorA looking at y: " << y.key() << '\n';
+        if (sinkNode == y.key())
+        {
+          m_wf2OrchestratorMap[x.key()] = interest->getName();  // store the interest name with digest as the key and the rootService as the value, so that we can later get the final result data packet, we can respond to it using the same name/digest!
+          //std::cout << "OrchestratorA adding to map: " << x.key() << ", " << interest->getName() << '\n';
+        }
+      }
+    }
+  }
 
-
-  m_nameAndDigest = interest->getName();  // store the name with digest so that we can later generate the final result data packet with the same name/digest!
+  //m_nameAndDigest = interest->getName();  // store the name with digest so that we can later generate the final result data packet with the same name/digest!
 
 
   // Note that Interests send out by the app will not be sent back to the app !
@@ -385,34 +402,68 @@ DagOrchestratorA_App::OnData(std::shared_ptr<const ndn::Data> data)
     {
       if (sinkNode == serviceFeed.key())
       {
-        NS_LOG_DEBUG("Final data packet! Creating data for name: " << m_nameAndDigest);   // m_name doesn't have the sha256 digest, so it doesn't match the original interest!
+        // figure out which element of the m_nameAndDigest list/vector we just received a data packet for.
+        //NS_LOG_DEBUG("Final data packet! Creating data for name: " << m_nameAndDigest);   // m_name doesn't have the sha256 digest, so it doesn't match the original interest!
                                                                                           // We use m_nameAndDigest to store the old name with the digest.
-        auto new_data = std::make_shared<ndn::Data>(m_nameAndDigest);
-        new_data->setFreshnessPeriod(ndn::time::milliseconds(m_lowestFreshness));
+        // Get the name from the incoming data packet
+        ndn::Name incomingName = data->getName();
+        //std::string incomingNameStr = incomingName.toUri();
+        std::string incomingNameStr = incomingName.getPrefix(-1).getSubName(1).toUri();
+        // Find the element that matches the incoming name
+        //auto it = std::find_if(m_nameAndDigestVector.begin(), m_nameAndDigestVector.end(), [&incomingName](const ndn::Name& storedName) {
+        //        // ndn::Name::isPrefixOf or == depending on how specific your match needs to be
+        //        return incomingName.isPrefixOf(storedName); 
+        //    });
 
-        new_data->setContent(data->getContent());
-        ndn::StackHelper::getKeyChain().sign(*new_data);
-        // Call trace (for logging purposes)
-        m_transmittedDatas(new_data, this, m_face);
-        m_appLink->onReceiveData(*new_data);
+        //NS_LOG_INFO("Final data packet received: " << incomingName);
+        //std::cout << "OrchestratorA received final data packet: " << incomingName << '\n';
+        //std::cout << "--- Current m_wf2OrchestratorMap contents (Size: " << m_wf2OrchestratorMap.size() << ") ---" << "\n";
+        //for (const auto& entry : m_wf2OrchestratorMap) {
+          //std::cout << "Stored: " << entry.first << ", " << entry.second << "\n";
+        //}
+        //auto it = std::find(m_nameAndDigestVector.begin(), m_nameAndDigestVector.end(), incomingName);
+        auto it = m_wf2OrchestratorMap.find(incomingNameStr);
+        if (it != m_wf2OrchestratorMap.end()) {
+          ndn::Name originalOrchName = it->second;
+  
+          NS_LOG_INFO("Final data packet! Creating data for name: " << originalOrchName);
+          //std::cout << "    OrchestratorA final data packet matches: " << incomingName << '\n';
+  
+          //auto new_data = std::make_shared<ndn::Data>(m_nameAndDigest);
+          auto new_data = std::make_shared<ndn::Data>(originalOrchName);
+  
+          // Remove the name from the Vector now that it has been processed
+          m_wf2OrchestratorMap.erase(it);
 
-        // now that we have run the service (and sent the result data out - and caching it), we set inputs to "not received"
-        // this is done so when cached results expire due to freshness, any new interests will trigger inputs to be fetched again, and the service will run again.
-        /*
-        for (auto& service : m_dagOrchTracker.items())  // for each service in the tracker
-        {
-          for (auto& serviceInput : m_dagOrchTracker[(std::string)service.key()]["inputsRxed"].items())
+          new_data->setFreshnessPeriod(ndn::time::milliseconds(m_lowestFreshness));
+
+          new_data->setContent(data->getContent());
+          ndn::StackHelper::getKeyChain().sign(*new_data);
+          // Call trace (for logging purposes)
+          m_transmittedDatas(new_data, this, m_face);
+          m_appLink->onReceiveData(*new_data);
+
+          // now that we have run the service (and sent the result data out - and caching it), we set inputs to "not received"
+          // this is done so when cached results expire due to freshness, any new interests will trigger inputs to be fetched again, and the service will run again.
+          /*
+          for (auto& service : m_dagOrchTracker.items())  // for each service in the tracker
           {
-            serviceInput.value() = 0;
+            for (auto& serviceInput : m_dagOrchTracker[(std::string)service.key()]["inputsRxed"].items())
+            {
+              serviceInput.value() = 0;
+            }
+            service.value()["interestGenerated"] = 0;
           }
-          service.value()["interestGenerated"] = 0;
+          */
+          m_dagOrchTracker.clear();
+          m_listOfServicesWithInputs.clear();
+          m_listOfRootServices.clear();
+          m_lowestFreshness = ndn::time::milliseconds(100000); // set to a high value (I know no producer freshness value is higher than 100 seconds)
+          //m_listOfSinkNodes.clear();
+
+        } else {
+            NS_LOG_WARN("Received data for a name not in our pending list: " << incomingName);
         }
-        */
-        m_dagOrchTracker.clear();
-        m_listOfServicesWithInputs.clear();
-        m_listOfRootServices.clear();
-        m_lowestFreshness = ndn::time::milliseconds(100000); // set to a high value (I know no producer freshness value is higher than 100 seconds)
-        //m_listOfSinkNodes.clear();
 
       }
     }

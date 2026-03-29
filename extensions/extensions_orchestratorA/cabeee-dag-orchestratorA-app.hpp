@@ -75,7 +75,9 @@ private:
   bool m_isRunning;
   ndn::Name m_prefix;
   ndn::Name m_name;
-  ndn::Name m_nameAndDigest;
+  //ndn::Name m_nameAndDigest;
+  //std::vector<ndn::Name> m_nameAndDigestVector; // we make it a vector so that we can use a single orchestrator with multiple consumers all requesting different workflows at the same time.
+  std::map<std::string, ndn::Name> m_wf2OrchestratorMap; // we make it a map so that we can use a single orchestrator with multiple consumers all requesting different workflows at the same time.
   ndn::Name m_service;
   json m_dagOrchTracker; // with this data structure, we can keep track of WHICH inputs have arrived, rather than just the NUMBER of inputs. (in case one inputs arrives multiple times)
   json m_dagObject;

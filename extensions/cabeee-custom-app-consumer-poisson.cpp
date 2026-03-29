@@ -435,12 +435,12 @@ CustomAppConsumerPoisson::OnData(std::shared_ptr<const ndn::Data> data)
   finalResult = dataPacketContents["serviceOutput"];
 
   //std::cout << "  Final answer for    " << m_service.ndn::Name::toUri() << " " << m_interestNum << "/" << m_numInterests << ": " <<  (int)(*pContent) << std::endl;
-  std::cout << "  Final answer for    " << m_service.ndn::Name::toUri() << " " << m_interestNum << "/" << m_numInterests << ": " <<  finalResult << std::endl;
+  std::cout << "  Final answer for consumer node    " << GetNode()->GetId() << ", service " << m_service.ndn::Name::toUri() << ", interest # " << m_interestNum << "/" << m_numInterests << ": " <<  finalResult << std::endl;
 
   m_endTime = Simulator::Now();
   Time serviceLatency = m_endTime - m_startTime;
-  std::cout << "  Service Latency for " << m_service.ndn::Name::toUri() << " " << m_interestNum << "/" << m_numInterests << ": " <<  serviceLatency.GetMilliSeconds() << " milliseconds." << std::endl;
-  std::cout << "  Service Latency for " << m_service.ndn::Name::toUri() << " " << m_interestNum << "/" << m_numInterests << ": " <<  serviceLatency.GetMicroSeconds() << " microseconds." << std::endl;
+  std::cout << "  Service Latency for consumer node " << GetNode()->GetId() << ", service " << m_service.ndn::Name::toUri() << ", interest # " << m_interestNum << "/" << m_numInterests << ": " <<  serviceLatency.GetMilliSeconds() << " milliseconds." << std::endl;
+  std::cout << "  Service Latency for consumer node " << GetNode()->GetId() << ", service " << m_service.ndn::Name::toUri() << ", interest # " << m_interestNum << "/" << m_numInterests << ": " <<  serviceLatency.GetMicroSeconds() << " microseconds." << std::endl;
 
   std::cout << std::endl;
 
@@ -456,6 +456,9 @@ CustomAppConsumerPoisson::OnData(std::shared_ptr<const ndn::Data> data)
     randomWaitTime->SetAttribute("Bound", DoubleValue(50 * 1.0 / m_frequency));   // borrowed from ndn-consumer-cbr for exponential wait (Poisson process)
     Simulator::Schedule(Seconds(randomWaitTime->GetValue()), &CustomAppConsumerPoisson::SendInterest, this); // wait random time before starting next interest. Time is relative from the current time, not from 0.
   }
+  //else{
+    //Simulator::Stop(Simulator::Now()); // end the simulation as soon as we receive this data packet, no need to keep going. This only applies if this is the ONLY consumer in our simulation
+  //}
 
 }
 

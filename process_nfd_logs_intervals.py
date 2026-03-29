@@ -1,12 +1,24 @@
 import re
 import numpy as np
 import sys
+from collections import defaultdict
 
 # Function to parse the file and compute the stats
 def process_latency_file(file_path):
     # Regular expression to match the desired lines
-    final_answer_pattern = r"Final answer for\s+/(\w+) \d+/\d+: ([\d\.]+)"
-    latency_pattern = r"Service Latency for /(\w+) \d+/\d+: (\d+) microseconds"
+    #final_answer_pattern = r"Final answer for\s+/(\w+) \d+/\d+: ([\d\.]+)"
+    #latency_pattern = r"Service Latency for /(\w+) \d+/\d+: (\d+) microseconds"
+
+    # Regex for: Final answer for consumer node 21, service /consumerP, interest # 1/100: 100
+    final_answer_pattern = re.compile(
+        r"Final answer for consumer node\s+\d+, service\s+(/[^,]+), interest # \d+/\d+: ([\d\.]+)"
+    )
+    # Regex for: Service Latency for consumer node 21, service /consumerP, interest # 1/100: 158815 microseconds.
+    # Note: We ignore the "milliseconds" line to maintain microsecond precision.
+    latency_pattern = re.compile(
+        r"Service Latency for consumer node\s+\d+, service\s+(/[^,]+), interest # \d+/\d+: (\d+) microseconds"
+    )
+
 
     '''
     # List to store all extracted trial results
@@ -55,27 +67,33 @@ def process_latency_file(file_path):
     '''
 
     # Dictionary to store trial results by type
-    trial_data = {}
+    trial_data = defaultdict(list)
     final_answers = {}
 
     try:
         # Open the file and process line by line
         with open(file_path, 'r') as file:
             for line in file:
-                latency_match = re.search(latency_pattern, line)
+                # Look for latency
+                #latency_match = re.search(latency_pattern, line)
+                latency_match = latency_pattern.search(line)
                 if latency_match:
                     # Extract the type and trial result (z) as a float
-                    trial_type = latency_match.group(1)
+                    trial_type = latency_match.group(1).strip()
                     trial_result = int(latency_match.group(2))
-                    
-                    if trial_type not in trial_data:
-                        trial_data[trial_type] = []
-                    trial_data[trial_type].append(trial_result)
-                
-                final_answer_match = re.search(final_answer_pattern, line)
+                    trial_data[trial_type].append(trial_result)                   
+                    continue
+
+                    #if trial_type not in trial_data:
+                        #trial_data[trial_type] = []
+                    #trial_data[trial_type].append(trial_result)
+
+                # Look for Final Answer 
+                #final_answer_match = re.search(final_answer_pattern, line)
+                final_answer_match = final_answer_pattern.search(line)
                 if final_answer_match:
                     # Extract the type and final result as a float
-                    trial_type = final_answer_match.group(1)
+                    trial_type = final_answer_match.group(1).strip()
                     final_result = int(final_answer_match.group(2))
                     
                     if trial_type in final_answers and final_answers[trial_type] != final_result:
@@ -87,8 +105,10 @@ def process_latency_file(file_path):
             print("No matching lines were found in the file.")
             return
 
+        '''
         # Print statistics for each type
-        for trial_type, trial_results in trial_data.items():
+        #for trial_type, trial_results in trial_data.items():
+        for trial_type, trial_results in sorted(trial_data.items()):
             # Calculate statistics
             total = sum(trial_results)
             minimum = min(trial_results)
@@ -123,6 +143,33 @@ def process_latency_file(file_path):
                 #print(f"  Final answer: {final_answers[trial_type]:.2f} microseconds")
                 print(f"  {trial_type} Final answer: {int(final_answers[trial_type])} numerical")
             print()
+        '''
+
+
+        # Create a flat list of all values in the specific order your shell script expects
+        ordered_types = ['/consumerP', '/consumerL', '/consumerR']
+        all_values = []
+
+        for t_type in ordered_types:
+            if t_type in trial_data:
+                results = trial_data[t_type]
+                # Append in the exact order: min, low, mid, high, max, total, avg, count, final
+                all_values.extend([
+                    int(np.min(results)),
+                    int(np.quantile(results, 0.25)),
+                    int(np.median(results)),
+                    int(np.quantile(results, 0.75)),
+                    int(np.max(results)),
+                    int(np.sum(results)),
+                    int(np.mean(results)),
+                    len(results),
+                    int(final_answers.get(t_type, 0))
+                ])
+
+        # Print everything on one line, comma-separated
+        print(",".join(map(str, all_values)))
+
+
 
     except FileNotFoundError:
         print(f"Error: The file '{file_path}' was not found.")
@@ -131,7 +178,7 @@ def process_latency_file(file_path):
 
 # Example usage
 if __name__ == "__main__":
-    print("Processing intervals log file!")
+    #print("Processing intervals log file!")
     #file_path = "scenario.log"
     file_path = sys.argv[1]
     process_latency_file(file_path)
