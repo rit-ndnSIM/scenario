@@ -79,7 +79,7 @@ DagServiceA_App::StartApplication()
   // initialize ndn::App
   ndn::App::StartApplication();
   m_isRunning = true;
-  int64_t m_serviceOutput = 0;
+  m_serviceOutput = 0;
 
   m_name = m_prefix.ndn::Name::toUri() + m_service.ndn::Name::toUri();
 

@@ -409,7 +409,7 @@ CustomAppConsumerPoisson::OnData(std::shared_ptr<const ndn::Data> data)
 
   //std::cout << "\n\n      CONSUMER: DATA received for name " << data->getName() << std::endl << "\n\n";
 
-  ndn::Block myRxedBlock = data->getContent();
+  //ndn::Block myRxedBlock = data->getContent();
   //std::cout << "\nCONSUMER: result = " << myRxedBlock << std::endl << "\n\n";
 
 /*

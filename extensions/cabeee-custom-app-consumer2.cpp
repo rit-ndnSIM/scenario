@@ -398,7 +398,7 @@ CustomAppConsumer2::OnData(std::shared_ptr<const ndn::Data> data)
 
   std::cout << "\n\n      CONSUMER2: DATA received for name " << data->getName() << std::endl << "\n\n";
 
-  ndn::Block myRxedBlock = data->getContent();
+  //ndn::Block myRxedBlock = data->getContent();
   //std::cout << "\nCONSUMER2: result = " << myRxedBlock << std::endl << "\n\n";
 
 /*

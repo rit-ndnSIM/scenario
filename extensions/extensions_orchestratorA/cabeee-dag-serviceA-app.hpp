@@ -83,7 +83,7 @@ private:
   uint64_t m_makespan;
   //ndn::Data m_data;
   bool m_done;
-  unsigned char m_serviceOutput;
+  int64_t m_serviceOutput;
   json m_dagServTracker; // with this data structure, we can keep track of WHICH inputs have arrived, rather than just the NUMBER of inputs. (in case one inputs arrives multiple times)
   json m_dagObject;
 
