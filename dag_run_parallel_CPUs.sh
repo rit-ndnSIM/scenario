@@ -41,8 +41,8 @@ export USAGE_ALLOCATION_GRAPHS_DIR="$HOME/ndnSIM/scenario/usage_allocation_graph
 #export GEN_ALLOCATION_GRAPHS="true"
 export GEN_ALLOCATION_GRAPHS="false"
 
-#TYPE="cascon_main"
-TYPE="cascon_main_cat"
+TYPE="cascon_main"
+#TYPE="cascon_main_cat"
 #TYPE="cascon_cpm"
 #TYPE="cascon_cpm_random"
 #TYPE="cascon_intervals"
@@ -154,8 +154,8 @@ run_simulation() {
     local cpm cpm_t
     if  [ $cpm_status -ne 0 ]; then
         echo "Warning: cpm failed with exit code $cpm_status on scenario $scenario"
-        cpm=-1
-        cpm_t=-1
+        cpm=""
+        cpm_t=""
     else
         cpm=$(echo "$cpm_output" | sed -n 's/^metric: \([0-9]*\)/\1/p' | tr -d '\n')
         cpm_t=$(echo "$cpm_output" | sed -n 's/^time: \([0-9]*\) ns/\1/p' | tr -d '\n')
