@@ -1,0 +1,102 @@
+# topo-cabeee-Abilene.txt
+# manually created by cabeee
+# February 2025
+
+router
+
+#node		city	y	x	mpi-partition
+rtr-A 		NA		10 	10 	0
+rtr-A1 		NA		11 	10 	1
+rtr-A1a		NA		12 	10 	2
+rtr-A2 		NA		13 	10 	1
+rtr-A2a		NA		14 	10 	2
+rtr-B		NA		15 	10 	0
+rtr-B1		NA		16 	10 	1
+rtr-B1a		NA		17 	10 	2
+rtr-C		NA		18 	10 	0
+rtr-C1		NA		19 	10 	1
+rtr-C1a		NA		20 	10 	2
+rtr-C1b		NA		21 	10 	2
+rtr-D		NA		22 	10 	0
+rtr-D1		NA		23 	10 	1
+rtr-D2		NA		24 	10 	1
+rtr-E		NA		25 	10 	0
+rtr-E1		NA		26 	10 	1
+rtr-E1a		NA		27 	10 	2
+rtr-F		NA		28	10 	0
+rtr-F1		NA		29 	10 	1
+rtr-F2		NA		30 	10 	1
+rtr-F2a		NA		31 	10 	2
+rtr-G		NA		32	10 	0
+rtr-G1		NA		32	10 	1
+rtr-G1a		NA		32	10 	2
+rtr-G1b		NA		32	10 	2
+rtr-H		NA		33 	10 	0
+rtr-H1		NA		34 	10 	1
+rtr-H1a		NA		35 	10 	2
+rtr-I		NA		36	10 	0
+rtr-I1		NA		36	10 	1
+rtr-I1a		NA		36	10 	2
+rtr-I1b		NA		36	10 	2
+rtr-I2		NA		36	10 	1
+rtr-I2a		NA		36	10 	2
+rtr-I2b		NA		36	10 	2
+rtr-J		NA		37	10 	0
+rtr-J1		NA		37	10 	1
+rtr-J1a		NA		37	10 	2
+rtr-K		NA		38 	10 	0
+rtr-K1		NA		38 	10 	1
+rtr-K1a		NA		38 	10 	2
+rtr-K1b		NA		38 	10 	2
+
+link
+
+# from	    to		capacity	metric	delay	queue
+rtr-A	    rtr-B	100Mbps		1	5ms	100
+rtr-A	    rtr-C	100Mbps		1	5ms	100
+rtr-B	    rtr-C	100Mbps		1	5ms	100
+rtr-C	    rtr-E	100Mbps		1	5ms	100
+rtr-E	    rtr-G	100Mbps		1	5ms	100
+rtr-G	    rtr-I	100Mbps		1	5ms	100
+rtr-I	    rtr-K	100Mbps		1	5ms	100
+rtr-K	    rtr-J	100Mbps		1	5ms	100
+rtr-J	    rtr-H	100Mbps		1	5ms	100
+rtr-H	    rtr-F	100Mbps		1	5ms	100
+rtr-F	    rtr-D	100Mbps		1	5ms	100
+rtr-D	    rtr-B	100Mbps		1	5ms	100
+rtr-E	    rtr-F	100Mbps		1	5ms	100
+rtr-G	    rtr-H	100Mbps		1	5ms	100
+
+rtr-A	    rtr-A1	10Mbps		1	2ms	100
+rtr-A	    rtr-A2	10Mbps		1	2ms	100
+rtr-C	    rtr-C1	10Mbps		1	2ms	100
+rtr-E	    rtr-E1	10Mbps		1	2ms	100
+rtr-H	    rtr-H1	10Mbps		1	2ms	100
+rtr-F	    rtr-F1	10Mbps		1	2ms	100
+rtr-F	    rtr-F2	10Mbps		1	2ms	100
+rtr-D	    rtr-D1	10Mbps		1	2ms	100
+rtr-D	    rtr-D2	10Mbps		1	2ms	100
+rtr-B	    rtr-B1	10Mbps		1	2ms	100
+rtr-G	    rtr-G1	10Mbps		1	2ms	100
+rtr-I	    rtr-I1	10Mbps		1	2ms	100
+rtr-I	    rtr-I2	10Mbps		1	2ms	100
+rtr-K	    rtr-K1	10Mbps		1	2ms	100
+rtr-J	    rtr-J1	10Mbps		1	2ms	100
+
+rtr-A1	    rtr-A1a	1Mbps		1	1ms	100
+rtr-A2	    rtr-A2a	1Mbps		1	1ms	100
+rtr-C1	    rtr-C1a	1Mbps		1	1ms	100
+rtr-C1	    rtr-C1b	1Mbps		1	1ms	100
+rtr-E1	    rtr-E1a	1Mbps		1	1ms	100
+rtr-H1	    rtr-H1a	1Mbps		1	1ms	100
+rtr-F2	    rtr-F2a	1Mbps		1	1ms	100
+rtr-B1	    rtr-B1a	1Mbps		1	1ms	100
+rtr-G1	    rtr-G1a	1Mbps		1	1ms	100
+rtr-G1	    rtr-G1b	1Mbps		1	1ms	100
+rtr-I1	    rtr-I1a	1Mbps		1	1ms	100
+rtr-I1	    rtr-I1b	1Mbps		1	1ms	100
+rtr-I2	    rtr-I2a	1Mbps		1	1ms	100
+rtr-I2	    rtr-I2b	1Mbps		1	1ms	100
+rtr-K1	    rtr-K1a	1Mbps		1	1ms	100
+rtr-K1	    rtr-K1b	1Mbps		1	1ms	100
+rtr-J1	    rtr-J1a	1Mbps		1	1ms	100
