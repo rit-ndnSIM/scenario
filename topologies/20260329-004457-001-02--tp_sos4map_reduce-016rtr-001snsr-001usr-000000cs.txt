@@ -21,20 +21,20 @@ rtr15	NA	0	0
 
 link
 # from	to	capacity	metric	delay	queue
-rtr1	rtr0	10Mbps	1	10ms	100000	
-rtr2	rtr6	10Mbps	1	10ms	100000	
-rtr3	rtr1	10Mbps	1	10ms	100000	
-rtr2	rtr14	10Mbps	1	10ms	100000	
-rtr1	rtr13	10Mbps	1	10ms	100000	
-rtr2	rtr12	10Mbps	1	10ms	100000	
-rtr1	rtr7	10Mbps	1	10ms	100000	
-rtr1	rtr5	10Mbps	1	10ms	100000	
-rtr2	rtr4	10Mbps	1	10ms	100000	
-rtr4	sensor0	10Mbps	1	10ms	100000	
-rtr1	rtr15	10Mbps	1	10ms	100000	
-rtr2	rtr0	10Mbps	1	10ms	100000	
-rtr1	rtr11	10Mbps	1	10ms	100000	
-rtr2	rtr8	10Mbps	1	10ms	100000	
-rtr3	user0	10Mbps	1	10ms	100000	
-rtr2	rtr10	10Mbps	1	10ms	100000	
-rtr1	rtr9	10Mbps	1	10ms	100000	
+rtr1	rtr0	10Mbps	1	1ms	100000	
+rtr2	rtr6	10Mbps	1	1ms	100000	
+rtr3	rtr1	10Mbps	1	1ms	100000	
+rtr2	rtr14	10Mbps	1	1ms	100000	
+rtr1	rtr13	10Mbps	1	1ms	100000	
+rtr2	rtr12	10Mbps	1	1ms	100000	
+rtr1	rtr7	10Mbps	1	1ms	100000	
+rtr1	rtr5	10Mbps	1	1ms	100000	
+rtr2	rtr4	10Mbps	1	1ms	100000	
+rtr4	sensor0	10Mbps	1	1ms	100000	
+rtr1	rtr15	10Mbps	1	1ms	100000	
+rtr2	rtr0	10Mbps	1	1ms	100000	
+rtr1	rtr11	10Mbps	1	1ms	100000	
+rtr2	rtr8	10Mbps	1	1ms	100000	
+rtr3	user0	10Mbps	1	1ms	100000	
+rtr2	rtr10	10Mbps	1	1ms	100000	
+rtr1	rtr9	10Mbps	1	1ms	100000	

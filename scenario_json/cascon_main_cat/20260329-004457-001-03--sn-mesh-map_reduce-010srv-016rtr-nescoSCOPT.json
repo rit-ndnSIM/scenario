@@ -140,7 +140,7 @@
     {
       "capacity": "10Mbps",
       "metric": "1",
-      "delay": "10ms",
+      "delay": "1ms",
       "queue": "100000",
       "from": "rtr7",
       "to": "rtr6"
@@ -148,7 +148,7 @@
     {
       "capacity": "10Mbps",
       "metric": "1",
-      "delay": "10ms",
+      "delay": "1ms",
       "queue": "100000",
       "from": "rtr7",
       "to": "rtr1"
@@ -156,7 +156,7 @@
     {
       "capacity": "10Mbps",
       "metric": "1",
-      "delay": "10ms",
+      "delay": "1ms",
       "queue": "100000",
       "from": "rtr1",
       "to": "rtr3"
@@ -164,7 +164,7 @@
     {
       "capacity": "10Mbps",
       "metric": "1",
-      "delay": "10ms",
+      "delay": "1ms",
       "queue": "100000",
       "from": "rtr7",
       "to": "rtr10"
@@ -172,7 +172,7 @@
     {
       "capacity": "10Mbps",
       "metric": "1",
-      "delay": "10ms",
+      "delay": "1ms",
       "queue": "100000",
       "from": "rtr4",
       "to": "rtr1"
@@ -180,7 +180,7 @@
     {
       "capacity": "10Mbps",
       "metric": "1",
-      "delay": "10ms",
+      "delay": "1ms",
       "queue": "100000",
       "from": "rtr5",
       "to": "rtr13"
@@ -188,7 +188,7 @@
     {
       "capacity": "10Mbps",
       "metric": "1",
-      "delay": "10ms",
+      "delay": "1ms",
       "queue": "100000",
       "from": "rtr1",
       "to": "rtr9"
@@ -196,7 +196,7 @@
     {
       "capacity": "10Mbps",
       "metric": "1",
-      "delay": "10ms",
+      "delay": "1ms",
       "queue": "100000",
       "from": "rtr7",
       "to": "rtr5"
@@ -204,7 +204,7 @@
     {
       "capacity": "10Mbps",
       "metric": "1",
-      "delay": "10ms",
+      "delay": "1ms",
       "queue": "100000",
       "from": "rtr1",
       "to": "rtr8"
@@ -212,7 +212,7 @@
     {
       "capacity": "10Mbps",
       "metric": "1",
-      "delay": "10ms",
+      "delay": "1ms",
       "queue": "100000",
       "from": "rtr7",
       "to": "rtr2"
@@ -220,7 +220,7 @@
     {
       "capacity": "10Mbps",
       "metric": "1",
-      "delay": "10ms",
+      "delay": "1ms",
       "queue": "100000",
       "from": "rtr14",
       "to": "sensor0"
@@ -228,7 +228,7 @@
     {
       "capacity": "10Mbps",
       "metric": "1",
-      "delay": "10ms",
+      "delay": "1ms",
       "queue": "100000",
       "from": "rtr15",
       "to": "rtr11"
@@ -236,7 +236,7 @@
     {
       "capacity": "10Mbps",
       "metric": "1",
-      "delay": "10ms",
+      "delay": "1ms",
       "queue": "100000",
       "from": "rtr1",
       "to": "rtr15"
@@ -244,7 +244,7 @@
     {
       "capacity": "10Mbps",
       "metric": "1",
-      "delay": "10ms",
+      "delay": "1ms",
       "queue": "100000",
       "from": "rtr2",
       "to": "rtr10"
@@ -252,7 +252,7 @@
     {
       "capacity": "10Mbps",
       "metric": "1",
-      "delay": "10ms",
+      "delay": "1ms",
       "queue": "100000",
       "from": "rtr14",
       "to": "rtr6"
@@ -260,7 +260,7 @@
     {
       "capacity": "10Mbps",
       "metric": "1",
-      "delay": "10ms",
+      "delay": "1ms",
       "queue": "100000",
       "from": "rtr2",
       "to": "rtr14"
@@ -268,7 +268,7 @@
     {
       "capacity": "10Mbps",
       "metric": "1",
-      "delay": "10ms",
+      "delay": "1ms",
       "queue": "100000",
       "from": "rtr2",
       "to": "rtr4"
@@ -276,7 +276,7 @@
     {
       "capacity": "10Mbps",
       "metric": "1",
-      "delay": "10ms",
+      "delay": "1ms",
       "queue": "100000",
       "from": "rtr14",
       "to": "rtr10"
@@ -284,7 +284,7 @@
     {
       "capacity": "10Mbps",
       "metric": "1",
-      "delay": "10ms",
+      "delay": "1ms",
       "queue": "100000",
       "from": "rtr7",
       "to": "rtr13"
@@ -292,7 +292,7 @@
     {
       "capacity": "10Mbps",
       "metric": "1",
-      "delay": "10ms",
+      "delay": "1ms",
       "queue": "100000",
       "from": "rtr9",
       "to": "rtr3"
@@ -300,7 +300,7 @@
     {
       "capacity": "10Mbps",
       "metric": "1",
-      "delay": "10ms",
+      "delay": "1ms",
       "queue": "100000",
       "from": "rtr14",
       "to": "rtr15"
@@ -308,7 +308,7 @@
     {
       "capacity": "10Mbps",
       "metric": "1",
-      "delay": "10ms",
+      "delay": "1ms",
       "queue": "100000",
       "from": "rtr12",
       "to": "rtr8"
@@ -316,7 +316,7 @@
     {
       "capacity": "10Mbps",
       "metric": "1",
-      "delay": "10ms",
+      "delay": "1ms",
       "queue": "100000",
       "from": "rtr5",
       "to": "rtr4"
@@ -324,7 +324,7 @@
     {
       "capacity": "10Mbps",
       "metric": "1",
-      "delay": "10ms",
+      "delay": "1ms",
       "queue": "100000",
       "from": "rtr11",
       "to": "rtr8"
@@ -332,7 +332,7 @@
     {
       "capacity": "10Mbps",
       "metric": "1",
-      "delay": "10ms",
+      "delay": "1ms",
       "queue": "100000",
       "from": "rtr2",
       "to": "user0"
@@ -340,7 +340,7 @@
     {
       "capacity": "10Mbps",
       "metric": "1",
-      "delay": "10ms",
+      "delay": "1ms",
       "queue": "100000",
       "from": "rtr1",
       "to": "rtr12"
@@ -348,7 +348,7 @@
     {
       "capacity": "10Mbps",
       "metric": "1",
-      "delay": "10ms",
+      "delay": "1ms",
       "queue": "100000",
       "from": "rtr9",
       "to": "rtr6"
@@ -356,7 +356,7 @@
     {
       "capacity": "10Mbps",
       "metric": "1",
-      "delay": "10ms",
+      "delay": "1ms",
       "queue": "100000",
       "from": "rtr13",
       "to": "rtr0"
@@ -364,7 +364,7 @@
     {
       "capacity": "10Mbps",
       "metric": "1",
-      "delay": "10ms",
+      "delay": "1ms",
       "queue": "100000",
       "from": "rtr13",
       "to": "rtr9"
@@ -372,7 +372,7 @@
     {
       "capacity": "10Mbps",
       "metric": "1",
-      "delay": "10ms",
+      "delay": "1ms",
       "queue": "100000",
       "from": "rtr0",
       "to": "rtr11"
