@@ -328,7 +328,7 @@ DagOrchestratorA_App::OnData(std::shared_ptr<const ndn::Data> data)
   std::string rxedDataName = simpleName.toUri();
 
 
-  // TODO: this is a HACK. I need a better way to get to the first byte of the content. Right now, I'm just incrementing the pointer past the TLV type, and size.
+  // this is a HACK. I need a better way to get to the first byte of the content. Right now, I'm just incrementing the pointer past the TLV type, and size.
   // and then getting to the first byte (which is all I'm using for data)
   /*
   unsigned char serviceOutput = 0;
