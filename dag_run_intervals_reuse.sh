@@ -195,4 +195,7 @@ do
 	echo ""
 done
 
+mv cs-trace*.txt trace_results
+mv cs-usage*.txt trace_results
+
 echo "All scenarios ran"
