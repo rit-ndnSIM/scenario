@@ -39,6 +39,7 @@ SCENARIO_DIR="$HOME/ndnSIM/scenario"
 WORKFLOW_DIR="$HOME/ndnSIM/scenario/workflows"
 TOPOLOGY_DIR="$HOME/ndnSIM/scenario/topologies"
 USAGE_ALLOCATION_GRAPHS_DIR="$HOME/ndnSIM/scenario/usage_allocation_graphs"
+CPM_DIR="$HOME/CPM"
 
 
 
@@ -175,12 +176,12 @@ do
 	coeffVariation="${packetArray[10]:-N.A.}"
 
 	cpm=$( \
-		../CPM/cpm --scheme ${type} --workflow ${wf} --hosting ${hosting} --topology ${topo} | sed -n \
+		${CPM_DIR}/cpm --scheme ${type} --workflow ${wf} --hosting ${hosting} --topology ${topo} | sed -n \
 		-e 's/^metric: \([0-9]*\)/\1/p' \
 		| tr -d '\n' \
 	)
 	cpm_t=$( \
-		../CPM/cpm --scheme ${type} --workflow ${wf} --hosting ${hosting} --topology ${topo} | sed -n \
+		${CPM_DIR}/cpm --scheme ${type} --workflow ${wf} --hosting ${hosting} --topology ${topo} | sed -n \
 		-e 's/^time: \([0-9]*\) ns/\1/p' \
 		| tr -d '\n' \
 	)
