@@ -31,7 +31,7 @@ NDNSIM_HOME="$HOME/ndnSIM"
 SCENARIO_DIR="$HOME/ndnSIM/scenario"
 WORKFLOW_DIR="$HOME/ndnSIM/scenario/workflows"
 TOPOLOGY_DIR="$HOME/ndnSIM/scenario/topologies"
-CPM_DIR="$HOME/ndnSIM/CPM"
+CPM_DIR="$HOME/CPM"
 
 
 

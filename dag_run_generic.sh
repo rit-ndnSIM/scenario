@@ -29,7 +29,7 @@ SCENARIO_DIR="$HOME/ndnSIM/scenario"
 WORKFLOW_DIR="$HOME/ndnSIM/scenario/workflows"
 TOPOLOGY_DIR="$HOME/ndnSIM/scenario/topologies"
 SCENARIO_JSON_DIR="$SCENARIO_DIR/scenario_json"
-CPM_DIR="$HOME/ndnSIM/CPM"
+CPM_DIR="$HOME/CPM"
 
 mkdir -p "$SCENARIO_JSON_DIR"
 

@@ -31,6 +31,7 @@ NDNSIM_HOME="$HOME/ndnSIM"
 SCENARIO_DIR="$HOME/ndnSIM/scenario"
 WORKFLOW_DIR="$HOME/ndnSIM/scenario/workflows"
 TOPOLOGY_DIR="$HOME/ndnSIM/scenario/topologies"
+CPM_DIR="$HOME/CPM"
 
 
 
@@ -189,12 +190,12 @@ do
 	data_trans="$(echo "$packets" | cut -d',' -f4)"
 
 	cpm=$( \
-		python critical_path_metric.py -type ${type} -workflow ${wf} -hosting ${hosting} -topology ${topo} | sed -n \
+		python ${CPM_DIR}/critical_path_metric.py -type ${type} -workflow ${wf} -hosting ${hosting} -topology ${topo} | sed -n \
 		-e 's/^metric is \([0-9]*\)/\1/p' \
 		| tr -d '\n' \
 	)
 	cpm_t=$( \
-		python critical_path_metric.py -type ${type} -workflow ${wf} -hosting ${hosting} -topology ${topo} | sed -n \
+		python ${CPM_DIR}/critical_path_metric.py -type ${type} -workflow ${wf} -hosting ${hosting} -topology ${topo} | sed -n \
 		-e 's/^time is \([0-9]*\)/\1/p' \
 		| tr -d '\n' \
 	)

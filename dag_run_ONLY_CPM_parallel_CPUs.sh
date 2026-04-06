@@ -6,7 +6,7 @@ set -e
 # --- 1. Define Directories ---
 export NDNSIM_HOME="$HOME/ndnSIM"
 export SCENARIO_DIR="$HOME/ndnSIM/scenario"
-export CPM_DIR="$HOME/ndnSIM/CPM"
+export CPM_DIR="$HOME/CPM"
 
 #TYPE="cascon_main"
 #TYPE="cascon_cpm"
