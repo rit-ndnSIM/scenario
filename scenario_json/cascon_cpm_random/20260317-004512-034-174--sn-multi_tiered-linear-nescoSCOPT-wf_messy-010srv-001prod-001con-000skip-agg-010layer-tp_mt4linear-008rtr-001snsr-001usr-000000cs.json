@@ -1,0 +1,410 @@
+{
+  "prefix": "nescoSCOPT",
+  "topofile": "/home/cabeee/ndnSIM/scenario/scenario_json/scenario_generator/generated_scenarios/20260317-004512-034-174--tp_mt4linear-008rtr-001snsr-001usr-000000cs.txt",
+  "serviceDiscovery": 0,
+  "resourceAllocation": 0,
+  "allocationReuse": 0,
+  "scheduleCompaction": 0,
+  "startTimeOffsetSD": 0,
+  "startTimeOffsetWF": 0,
+  "simulationEndTime": 200,
+  "router": [
+    {
+      "comment": "NA",
+      "y": 0,
+      "x": 0,
+      "cs-size": 0,
+      "node": "sensor0"
+    },
+    {
+      "comment": "NA",
+      "y": 0,
+      "x": 0,
+      "cs-size": 0,
+      "node": "rtr3"
+    },
+    {
+      "comment": "NA",
+      "y": 0,
+      "x": 0,
+      "cs-size": 0,
+      "node": "user0"
+    },
+    {
+      "comment": "NA",
+      "y": 0,
+      "x": 0,
+      "cs-size": 0,
+      "node": "rtr2"
+    },
+    {
+      "comment": "NA",
+      "y": 0,
+      "x": 0,
+      "cs-size": 0,
+      "node": "rtr5"
+    },
+    {
+      "comment": "NA",
+      "y": 0,
+      "x": 0,
+      "cs-size": 0,
+      "node": "rtr6"
+    },
+    {
+      "comment": "NA",
+      "y": 0,
+      "x": 0,
+      "cs-size": 0,
+      "node": "rtr0"
+    },
+    {
+      "comment": "NA",
+      "y": 0,
+      "x": 0,
+      "cs-size": 0,
+      "node": "rtr4"
+    },
+    {
+      "comment": "NA",
+      "y": 0,
+      "x": 0,
+      "cs-size": 0,
+      "node": "rtr1"
+    },
+    {
+      "comment": "NA",
+      "y": 0,
+      "x": 0,
+      "cs-size": 0,
+      "node": "rtr7"
+    }
+  ],
+  "link": [
+    {
+      "capacity": "10Mbps",
+      "metric": "1",
+      "delay": "10ms",
+      "queue": "100000",
+      "from": "rtr3",
+      "to": "rtr1"
+    },
+    {
+      "capacity": "10Mbps",
+      "metric": "1",
+      "delay": "10ms",
+      "queue": "100000",
+      "from": "rtr1",
+      "to": "rtr4"
+    },
+    {
+      "capacity": "10Mbps",
+      "metric": "1",
+      "delay": "10ms",
+      "queue": "100000",
+      "from": "rtr3",
+      "to": "rtr0"
+    },
+    {
+      "capacity": "10Mbps",
+      "metric": "1",
+      "delay": "10ms",
+      "queue": "100000",
+      "from": "rtr2",
+      "to": "rtr6"
+    },
+    {
+      "capacity": "10Mbps",
+      "metric": "1",
+      "delay": "10ms",
+      "queue": "100000",
+      "from": "rtr0",
+      "to": "rtr6"
+    },
+    {
+      "capacity": "10Mbps",
+      "metric": "1",
+      "delay": "10ms",
+      "queue": "100000",
+      "from": "rtr3",
+      "to": "rtr2"
+    },
+    {
+      "capacity": "10Mbps",
+      "metric": "1",
+      "delay": "10ms",
+      "queue": "100000",
+      "from": "rtr2",
+      "to": "rtr4"
+    },
+    {
+      "capacity": "10Mbps",
+      "metric": "1",
+      "delay": "10ms",
+      "queue": "100000",
+      "from": "rtr1",
+      "to": "rtr7"
+    },
+    {
+      "capacity": "10Mbps",
+      "metric": "1",
+      "delay": "10ms",
+      "queue": "100000",
+      "from": "rtr1",
+      "to": "rtr5"
+    },
+    {
+      "capacity": "10Mbps",
+      "metric": "1",
+      "delay": "10ms",
+      "queue": "100000",
+      "from": "rtr2",
+      "to": "rtr5"
+    },
+    {
+      "capacity": "10Mbps",
+      "metric": "1",
+      "delay": "10ms",
+      "queue": "100000",
+      "from": "rtr0",
+      "to": "rtr4"
+    },
+    {
+      "capacity": "10Mbps",
+      "metric": "1",
+      "delay": "10ms",
+      "queue": "100000",
+      "from": "rtr2",
+      "to": "rtr7"
+    },
+    {
+      "capacity": "10Mbps",
+      "metric": "1",
+      "delay": "10ms",
+      "queue": "100000",
+      "from": "rtr1",
+      "to": "rtr6"
+    },
+    {
+      "capacity": "10Mbps",
+      "metric": "1",
+      "delay": "10ms",
+      "queue": "100000",
+      "from": "rtr4",
+      "to": "user0"
+    },
+    {
+      "capacity": "10Mbps",
+      "metric": "1",
+      "delay": "10ms",
+      "queue": "100000",
+      "from": "rtr0",
+      "to": "rtr7"
+    },
+    {
+      "capacity": "10Mbps",
+      "metric": "1",
+      "delay": "10ms",
+      "queue": "100000",
+      "from": "rtr0",
+      "to": "rtr5"
+    },
+    {
+      "capacity": "10Mbps",
+      "metric": "1",
+      "delay": "10ms",
+      "queue": "100000",
+      "from": "rtr7",
+      "to": "sensor0"
+    }
+  ],
+  "services": [
+    {
+      "name": "/service7",
+      "type": "service"
+    },
+    {
+      "name": "/service9",
+      "type": "service"
+    },
+    {
+      "name": "/service0",
+      "type": "service"
+    },
+    {
+      "name": "/service3",
+      "type": "service"
+    },
+    {
+      "name": "/service6",
+      "type": "service"
+    },
+    {
+      "name": "/service8",
+      "type": "service"
+    },
+    {
+      "name": "/sensor",
+      "type": "producer"
+    },
+    {
+      "name": "/service4",
+      "type": "service"
+    },
+    {
+      "name": "/service2",
+      "type": "service"
+    },
+    {
+      "name": "/aggregator",
+      "type": "service"
+    },
+    {
+      "name": "/service1",
+      "type": "service"
+    },
+    {
+      "name": "/consumer",
+      "type": "consumer"
+    },
+    {
+      "name": "/service5",
+      "type": "service"
+    }
+  ],
+  "routerHosting": [
+    {
+      "router": "user0",
+      "service": "/consumer",
+      "workflowFile": "/home/cabeee/ndnSIM/scenario/scenario_json/scenario_generator/generated_scenarios/20260317-004512-034-174--wf_messy-010srv-001prod-001con-000skip-agg-010layer.json",
+      "dag": "dag1",
+      "start": 0,
+      "end": -1
+    },
+    {
+      "router": "sensor0",
+      "service": "/sensor",
+      "start": 0,
+      "end": -1
+    },
+    {
+      "router": "rtr7",
+      "service": "/service8",
+      "start": 0,
+      "end": -1,
+      "makespanNS": 0
+    },
+    {
+      "router": "user0",
+      "service": "/service2",
+      "start": 0,
+      "end": -1,
+      "makespanNS": 0
+    },
+    {
+      "router": "rtr7",
+      "service": "/service0",
+      "start": 0,
+      "end": -1,
+      "makespanNS": 0
+    },
+    {
+      "router": "rtr2",
+      "service": "/service7",
+      "start": 0,
+      "end": -1,
+      "makespanNS": 0
+    },
+    {
+      "router": "rtr7",
+      "service": "/service1",
+      "start": 0,
+      "end": -1,
+      "makespanNS": 0
+    },
+    {
+      "router": "rtr7",
+      "service": "/service3",
+      "start": 0,
+      "end": -1,
+      "makespanNS": 0
+    },
+    {
+      "router": "rtr7",
+      "service": "/service5",
+      "start": 0,
+      "end": -1,
+      "makespanNS": 0
+    },
+    {
+      "router": "rtr0",
+      "service": "/service4",
+      "start": 0,
+      "end": -1,
+      "makespanNS": 0
+    },
+    {
+      "router": "rtr1",
+      "service": "/service6",
+      "start": 0,
+      "end": -1,
+      "makespanNS": 0
+    },
+    {
+      "router": "user0",
+      "service": "/service9",
+      "start": 0,
+      "end": -1,
+      "makespanNS": 0
+    },
+    {
+      "router": "rtr0",
+      "service": "/aggregator",
+      "start": 0,
+      "end": -1,
+      "makespanNS": 0
+    }
+  ],
+  "dag": {
+    "dag1": {
+      "/sensor": {
+        "/service9": 0,
+        "/service0": 0
+      },
+      "/service0": {
+        "/service1": 0
+      },
+      "/service9": {
+        "/service1": 1
+      },
+      "/service1": {
+        "/service2": 0
+      },
+      "/service2": {
+        "/service3": 0,
+        "/service8": 0
+      },
+      "/service3": {
+        "/service4": 0
+      },
+      "/service8": {
+        "/service4": 1
+      },
+      "/service4": {
+        "/service5": 0
+      },
+      "/service5": {
+        "/service6": 0
+      },
+      "/service6": {
+        "/service7": 0
+      },
+      "/service7": {
+        "/aggregator": 0
+      },
+      "/aggregator": {
+        "/consumer": 0
+      }
+    }
+  }
+}
