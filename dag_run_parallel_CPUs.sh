@@ -41,10 +41,11 @@ export USAGE_ALLOCATION_GRAPHS_DIR="$HOME/ndnSIM/scenario/usage_allocation_graph
 #export GEN_ALLOCATION_GRAPHS="true"
 export GEN_ALLOCATION_GRAPHS="false"
 
-TYPE="cascon_main"
+#TYPE="cascon_main"
 #TYPE="cascon_main_cat"
 #TYPE="cascon_cpm"
 #TYPE="cascon_cpm_random"
+TYPE="cascon_cpm_random_nesco"
 #TYPE="cascon_intervals"
 #TYPE="fwdOptSD"
 #TYPE="cascon_random_test"
