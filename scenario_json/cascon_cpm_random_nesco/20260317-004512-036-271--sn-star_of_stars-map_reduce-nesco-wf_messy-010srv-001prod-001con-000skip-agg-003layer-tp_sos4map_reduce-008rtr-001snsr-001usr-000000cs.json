@@ -1,6 +1,6 @@
 {
   "prefix": "nesco",
-  "topofile": "/home/cabeee/ndnSIM/scenario/scenario_json/scenario_generator/generated_scenarios/20260317-004512-036-271--tp_sos4map_reduce-008rtr-001snsr-001usr-000000cs.txt",
+  "topofile": "/home/cabeee/ndnSIM/scenario/scenario_json/scenario_generator/generated_scenarios/cpm_100/20260317-004512-036-271--tp_sos4map_reduce-008rtr-001snsr-001usr-000000cs.txt",
   "serviceDiscovery": 0,
   "resourceAllocation": 0,
   "allocationReuse": 0,
@@ -212,7 +212,7 @@
     {
       "router": "user0",
       "service": "/consumer",
-      "workflowFile": "/home/cabeee/ndnSIM/scenario/scenario_json/scenario_generator/generated_scenarios/20260317-004512-036-271--wf_messy-010srv-001prod-001con-000skip-agg-003layer.json",
+      "workflowFile": "/home/cabeee/ndnSIM/scenario/scenario_json/scenario_generator/generated_scenarios/cpm_100/20260317-004512-036-271--wf_messy-010srv-001prod-001con-000skip-agg-003layer.json",
       "dag": "dag1",
       "start": 0,
       "end": -1

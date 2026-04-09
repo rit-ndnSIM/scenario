@@ -1,0 +1,16 @@
+router
+# node	comment	y	x	mpi-partition
+rtr0	NA	0	0	
+rtr3	NA	0	0	
+sensor0	NA	0	0	
+rtr2	NA	0	0	
+rtr1	NA	0	0	
+user0	NA	0	0	
+
+link
+# from	to	capacity	metric	delay	queue
+rtr1	rtr0	10Mbps	1	10ms	100000	
+rtr1	rtr2	10Mbps	1	10ms	100000	
+rtr3	sensor0	10Mbps	1	10ms	100000	
+rtr0	rtr3	10Mbps	1	10ms	100000	
+rtr1	user0	10Mbps	1	10ms	100000	

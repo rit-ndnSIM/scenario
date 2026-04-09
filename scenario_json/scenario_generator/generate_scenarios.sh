@@ -5,7 +5,7 @@ set -e
 # Generate a single timestamp to be used for all files in this run
 TIMESTAMP=$(date +%Y%m%d-%H%M%S)
 
-workdir="$PWD/generated_scenarios"
+workdir="$PWD/generated_scenarios/cpm_new_directory_name"
 mkdir -p "$workdir"
 
 generate_wf_linear() {

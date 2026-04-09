@@ -1,0 +1,166 @@
+{
+  "dag": {
+    "/sensor": {
+      "/service0": 0
+    },
+    "/service0": {
+      "/service19": 0,
+      "/service1": 0
+    },
+    "/service1": {
+      "/service2": 0
+    },
+    "/service19": {
+      "/service2": 1
+    },
+    "/service2": {
+      "/service3": 0
+    },
+    "/service3": {
+      "/service4": 0
+    },
+    "/service4": {
+      "/service5": 0
+    },
+    "/service5": {
+      "/service6": 0
+    },
+    "/service6": {
+      "/service7": 0
+    },
+    "/service7": {
+      "/service8": 0
+    },
+    "/service8": {
+      "/service9": 0
+    },
+    "/service9": {
+      "/service10": 0
+    },
+    "/service10": {
+      "/service11": 0
+    },
+    "/service11": {
+      "/service12": 0
+    },
+    "/service12": {
+      "/service13": 0
+    },
+    "/service13": {
+      "/service18": 0,
+      "/service14": 0
+    },
+    "/service14": {
+      "/service15": 0
+    },
+    "/service18": {
+      "/service15": 1
+    },
+    "/service15": {
+      "/service16": 0
+    },
+    "/service16": {
+      "/service17": 0
+    },
+    "/service17": {
+      "/aggregator": 0
+    },
+    "/aggregator": {
+      "/consumer": 0
+    }
+  },
+  "services": [
+    {
+      "name": "/service15",
+      "type": "service"
+    },
+    {
+      "name": "/service17",
+      "type": "service"
+    },
+    {
+      "name": "/service19",
+      "type": "service"
+    },
+    {
+      "name": "/service9",
+      "type": "service"
+    },
+    {
+      "name": "/service16",
+      "type": "service"
+    },
+    {
+      "name": "/service4",
+      "type": "service"
+    },
+    {
+      "name": "/service6",
+      "type": "service"
+    },
+    {
+      "name": "/service3",
+      "type": "service"
+    },
+    {
+      "name": "/service12",
+      "type": "service"
+    },
+    {
+      "name": "/sensor",
+      "type": "producer"
+    },
+    {
+      "name": "/consumer",
+      "type": "consumer"
+    },
+    {
+      "name": "/service14",
+      "type": "service"
+    },
+    {
+      "name": "/service2",
+      "type": "service"
+    },
+    {
+      "name": "/service13",
+      "type": "service"
+    },
+    {
+      "name": "/service7",
+      "type": "service"
+    },
+    {
+      "name": "/service10",
+      "type": "service"
+    },
+    {
+      "name": "/service11",
+      "type": "service"
+    },
+    {
+      "name": "/service1",
+      "type": "service"
+    },
+    {
+      "name": "/aggregator",
+      "type": "service"
+    },
+    {
+      "name": "/service0",
+      "type": "service"
+    },
+    {
+      "name": "/service18",
+      "type": "service"
+    },
+    {
+      "name": "/service5",
+      "type": "service"
+    },
+    {
+      "name": "/service8",
+      "type": "service"
+    }
+  ]
+}

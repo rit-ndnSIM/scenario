@@ -1,0 +1,343 @@
+{
+  "dag": {
+    "/sensor": {
+      "/service27": 0,
+      "/service14": 0,
+      "/service7": 0,
+      "/service22": 0,
+      "/service21": 0,
+      "/service25": 0,
+      "/service13": 0,
+      "/service5": 0,
+      "/service33": 0,
+      "/service6": 0,
+      "/service2": 0,
+      "/service4": 0,
+      "/service30": 0,
+      "/service16": 0,
+      "/service31": 0,
+      "/service3": 0,
+      "/service23": 0,
+      "/service15": 0,
+      "/service9": 0,
+      "/service26": 0,
+      "/service32": 0,
+      "/service39": 0,
+      "/service28": 0,
+      "/service36": 0,
+      "/service19": 0,
+      "/service17": 0,
+      "/service29": 0,
+      "/service18": 0,
+      "/service1": 0,
+      "/service0": 0,
+      "/service20": 0,
+      "/service10": 0,
+      "/service38": 0,
+      "/service37": 0,
+      "/service24": 0,
+      "/service8": 0,
+      "/service34": 0,
+      "/service11": 0,
+      "/service35": 0,
+      "/service12": 0
+    },
+    "/service0": {
+      "/aggregator": 0
+    },
+    "/service39": {
+      "/aggregator": 1
+    },
+    "/service38": {
+      "/aggregator": 2
+    },
+    "/service37": {
+      "/aggregator": 3
+    },
+    "/service36": {
+      "/aggregator": 4
+    },
+    "/service35": {
+      "/aggregator": 5
+    },
+    "/service34": {
+      "/aggregator": 6
+    },
+    "/service33": {
+      "/aggregator": 7
+    },
+    "/service32": {
+      "/aggregator": 8
+    },
+    "/service31": {
+      "/aggregator": 9
+    },
+    "/service30": {
+      "/aggregator": 10
+    },
+    "/service29": {
+      "/aggregator": 11
+    },
+    "/service28": {
+      "/aggregator": 12
+    },
+    "/service27": {
+      "/aggregator": 13
+    },
+    "/service26": {
+      "/aggregator": 14
+    },
+    "/service25": {
+      "/aggregator": 15
+    },
+    "/service24": {
+      "/aggregator": 16
+    },
+    "/service23": {
+      "/aggregator": 17
+    },
+    "/service22": {
+      "/aggregator": 18
+    },
+    "/service21": {
+      "/aggregator": 19
+    },
+    "/service20": {
+      "/aggregator": 20
+    },
+    "/service19": {
+      "/aggregator": 21
+    },
+    "/service18": {
+      "/aggregator": 22
+    },
+    "/service17": {
+      "/aggregator": 23
+    },
+    "/service16": {
+      "/aggregator": 24
+    },
+    "/service15": {
+      "/aggregator": 25
+    },
+    "/service14": {
+      "/aggregator": 26
+    },
+    "/service13": {
+      "/aggregator": 27
+    },
+    "/service12": {
+      "/aggregator": 28
+    },
+    "/service11": {
+      "/aggregator": 29
+    },
+    "/service10": {
+      "/aggregator": 30
+    },
+    "/service9": {
+      "/aggregator": 31
+    },
+    "/service8": {
+      "/aggregator": 32
+    },
+    "/service7": {
+      "/aggregator": 33
+    },
+    "/service6": {
+      "/aggregator": 34
+    },
+    "/service5": {
+      "/aggregator": 35
+    },
+    "/service4": {
+      "/aggregator": 36
+    },
+    "/service3": {
+      "/aggregator": 37
+    },
+    "/service2": {
+      "/aggregator": 38
+    },
+    "/service1": {
+      "/aggregator": 39
+    },
+    "/aggregator": {
+      "/consumer": 0
+    }
+  },
+  "services": [
+    {
+      "name": "/service7",
+      "type": "service"
+    },
+    {
+      "name": "/service22",
+      "type": "service"
+    },
+    {
+      "name": "/service13",
+      "type": "service"
+    },
+    {
+      "name": "/service33",
+      "type": "service"
+    },
+    {
+      "name": "/service6",
+      "type": "service"
+    },
+    {
+      "name": "/service16",
+      "type": "service"
+    },
+    {
+      "name": "/service31",
+      "type": "service"
+    },
+    {
+      "name": "/service23",
+      "type": "service"
+    },
+    {
+      "name": "/service9",
+      "type": "service"
+    },
+    {
+      "name": "/service28",
+      "type": "service"
+    },
+    {
+      "name": "/aggregator",
+      "type": "service"
+    },
+    {
+      "name": "/service1",
+      "type": "service"
+    },
+    {
+      "name": "/service0",
+      "type": "service"
+    },
+    {
+      "name": "/service20",
+      "type": "service"
+    },
+    {
+      "name": "/service38",
+      "type": "service"
+    },
+    {
+      "name": "/service37",
+      "type": "service"
+    },
+    {
+      "name": "/service24",
+      "type": "service"
+    },
+    {
+      "name": "/consumer",
+      "type": "consumer"
+    },
+    {
+      "name": "/service34",
+      "type": "service"
+    },
+    {
+      "name": "/service12",
+      "type": "service"
+    },
+    {
+      "name": "/service14",
+      "type": "service"
+    },
+    {
+      "name": "/service27",
+      "type": "service"
+    },
+    {
+      "name": "/service21",
+      "type": "service"
+    },
+    {
+      "name": "/service25",
+      "type": "service"
+    },
+    {
+      "name": "/service5",
+      "type": "service"
+    },
+    {
+      "name": "/service2",
+      "type": "service"
+    },
+    {
+      "name": "/service4",
+      "type": "service"
+    },
+    {
+      "name": "/service30",
+      "type": "service"
+    },
+    {
+      "name": "/service3",
+      "type": "service"
+    },
+    {
+      "name": "/service15",
+      "type": "service"
+    },
+    {
+      "name": "/service26",
+      "type": "service"
+    },
+    {
+      "name": "/service32",
+      "type": "service"
+    },
+    {
+      "name": "/service39",
+      "type": "service"
+    },
+    {
+      "name": "/service36",
+      "type": "service"
+    },
+    {
+      "name": "/service19",
+      "type": "service"
+    },
+    {
+      "name": "/service17",
+      "type": "service"
+    },
+    {
+      "name": "/service29",
+      "type": "service"
+    },
+    {
+      "name": "/service18",
+      "type": "service"
+    },
+    {
+      "name": "/service10",
+      "type": "service"
+    },
+    {
+      "name": "/service8",
+      "type": "service"
+    },
+    {
+      "name": "/service11",
+      "type": "service"
+    },
+    {
+      "name": "/service35",
+      "type": "service"
+    },
+    {
+      "name": "/sensor",
+      "type": "producer"
+    }
+  ]
+}
