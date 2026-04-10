@@ -34,6 +34,7 @@ export NS_LOG="$LOGS"
 export NDNSIM_HOME="$HOME/ndnSIM"
 export SCENARIO_DIR="$HOME/ndnSIM/scenario"
 export SCENARIO_LOGS_DIR="$SCENARIO_DIR/scenario_logs"
+export SCENARIO_TRACE_DIR="$SCENARIO_DIR/trace_results"
 export WORKFLOW_DIR="$HOME/ndnSIM/scenario/workflows"
 export TOPOLOGY_DIR="$HOME/ndnSIM/scenario/topologies"
 export CPM_DIR="$HOME/CPM"
@@ -55,9 +56,11 @@ export SCENARIO_JSON_DIR="$SCENARIO_DIR/scenario_json/$TYPE"
 export csv_out="$SCENARIO_DIR/perf-results-simulation-generic_${TYPE}.csv"
 
 mkdir -p "$SCENARIO_LOGS_DIR"
+mkdir -p "$SCENARIO_TRACE_DIR"
 
 # --- 1. Setup CSV Header ---
-header="Example, SD Interest Packets Generated, SD Data Packets Generated, SD Interest Packets Transmitted, SD Data Packets Transmitted, WF Interest Packets Generated, WF Data Packets Generated, WF Interest Packets Transmitted, WF Data Packets Transmitted, Critical-Path-Metric, CPM-t_exec(ns), SD Latency (us), SD Estimated WF Service Latency (us), WF Service Latency (us), Total Node Usage Time (us), Average Node Utilization (%), Coefficient of Variation (load distribution), Final Result, Time, ns-3 commit, pybindgen commit, scenario commit, ndnSIM commit"
+#header="Example, SD Interest Packets Generated, SD Data Packets Generated, SD Interest Packets Transmitted, SD Data Packets Transmitted, WF Interest Packets Generated, WF Data Packets Generated, WF Interest Packets Transmitted, WF Data Packets Transmitted, Critical-Path-Metric, CPM-t_exec(ns), SD Latency (us), SD Estimated WF Service Latency (us), WF Service Latency (us), Total Node Usage Time (us), Average Node Utilization (%), Coefficient of Variation (load distribution), Final Result, Time, ns-3 commit, pybindgen commit, scenario commit, ndnSIM commit"
+header="Example, SD Interest Packets Generated, SD Data Packets Generated, SD Interest Packets Transmitted, SD Data Packets Transmitted, WF Interest Packets Generated, WF Data Packets Generated, WF Interest Packets Transmitted, WF Data Packets Transmitted, Critical-Path-Metric, CPM-t_exec(ns), SD Latency (us), SD Estimated WF Service Latency (us), WF Service Latency (us), Total Node Usage Time (us), Average Node Utilization (%), Coefficient of Variation (load distribution), Total Cache Hits, Total Cache Misses, Avg Cache Usage, Total KB Transferred, Final Result, Time, ns-3 commit, pybindgen commit, scenario commit, ndnSIM commit"
 
 if [ ! -f "$csv_out" ]; then
     echo "Creating csv..."
@@ -101,6 +104,9 @@ run_simulation() {
     local scenario="${filename%.*}"
     local scenario_json="$filepath"
     local scenario_log="$SCENARIO_LOGS_DIR/scenario_${scenario}.log"
+    local scenario_csTrace="$SCENARIO_TRACE_DIR/cs-trace_${scenario}.txt"
+    local scenario_csUsage="$SCENARIO_TRACE_DIR/cs-usage_${scenario}.txt"
+    local scenario_rateTrace="$SCENARIO_TRACE_DIR/rate-trace_${scenario}.txt"
     local now="$(date -Iseconds)"
 
     echo "Starting Scenario: $scenario"
@@ -150,6 +156,45 @@ run_simulation() {
     local avgNodeUsage="${packetArray[9]:-N.A.}"
     local coeffVariation="${packetArray[10]:-N.A.}"
 
+
+
+
+    # --- Trace Analysis (with existence checks) ---
+
+    # 1. Total Cache Hits and Misses
+    if [ -f "$scenario_csTrace" ]; then
+        local csTraceOutput=$(python3 "$SCENARIO_DIR/analyze_traces.py" "$scenario_csTrace" "cs-trace")
+        local totalHits=$(echo "$csTraceOutput" | sed -n 's/^Total Cache Hits:\s*\([0-9]*\)$/\1/p')
+        local totalMisses=$(echo "$csTraceOutput" | sed -n 's/^Total Cache Misses:\s*\([0-9]*\)$/\1/p')
+    else
+        local totalHits=""
+        local totalMisses=""
+    fi
+
+    # 2. Average Cache Usage
+    if [ -f "$scenario_csUsage" ]; then
+        local csUsageOutput=$(python3 "$SCENARIO_DIR/analyze_traces.py" "$scenario_csUsage" "cs-usage")
+        local avgCacheUsage=$(echo "$csUsageOutput" | sed -n 's/^Average Total Usage (All Nodes) across.*: \([0-9.]*\)$/\1/p')
+    else
+        local avgCacheUsage=""
+    fi
+
+    # 3. Total Kilobytes Transferred
+    if [ -f "$scenario_rateTrace" ]; then
+        local rateTraceOutput=$(python3 "$SCENARIO_DIR/analyze_traces.py" "$scenario_rateTrace" "rate-trace")
+        local totalKB=$(echo "$rateTraceOutput" | sed -n 's/^Total Kilobytes: \([0-9.]*\) KB$/\1/p')
+    else
+        local totalKB=""
+    fi
+
+    # Final cleanup: ensure variables are empty strings if parsing failed but file existed
+    totalHits="${totalHits:-}"
+    totalMisses="${totalMisses:-}"
+    avgCacheUsage="${avgCacheUsage:-}"
+    totalKB="${totalKB:-}"
+
+
+
     set +e
     local cpm_output=$(${CPM_DIR}/cpm --scenarioJSON "${scenario_json}" 2>&1)
     local cpm_status=$?
@@ -165,7 +210,8 @@ run_simulation() {
         cpm_t=$(echo "$cpm_output" | sed -n 's/^time: \([0-9]*\) ns/\1/p' | tr -d '\n')
     fi
 
-    local row="$scenario, $SDinterest_gen, $SDdata_gen, $SDinterest_trans, $SDdata_trans, $WFinterest_gen, $WFdata_gen, $WFinterest_trans, $WFdata_trans, $cpm, $cpm_t, $SDlatency, $estimatedWFLatency, $WFlatency, $totalNodeUsageTime, $avgNodeUsage, $coeffVariation, $result, $now, $ns_3_hash, $pybindgen_hash, $scenario_hash, $ndnsim_hash"
+    #local row="$scenario, $SDinterest_gen, $SDdata_gen, $SDinterest_trans, $SDdata_trans, $WFinterest_gen, $WFdata_gen, $WFinterest_trans, $WFdata_trans, $cpm, $cpm_t, $SDlatency, $estimatedWFLatency, $WFlatency, $totalNodeUsageTime, $avgNodeUsage, $coeffVariation, $result, $now, $ns_3_hash, $pybindgen_hash, $scenario_hash, $ndnsim_hash"
+    local row="$scenario, $SDinterest_gen, $SDdata_gen, $SDinterest_trans, $SDdata_trans, $WFinterest_gen, $WFdata_gen, $WFinterest_trans, $WFdata_trans, $cpm, $cpm_t, $SDlatency, $estimatedWFLatency, $WFlatency, $totalNodeUsageTime, $avgNodeUsage, $coeffVariation, $totalHits, $totalMisses, $avgCacheUsage, $totalKB, $result, $now, $ns_3_hash, $pybindgen_hash, $scenario_hash, $ndnsim_hash"
 
     # Lock the CSV file writing process to prevent data corruption
     #sem --id csv_lock update_csv "$scenario" "$row" "$csv_out"
