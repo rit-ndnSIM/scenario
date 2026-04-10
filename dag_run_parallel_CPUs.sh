@@ -163,7 +163,7 @@ run_simulation() {
 
     # 1. Total Cache Hits and Misses
     if [ -f "$scenario_csTrace" ]; then
-        local csTraceOutput=$(python3 "$SCENARIO_DIR/analyze_traces.py" "$scenario_csTrace" "cs-trace")
+        local csTraceOutput=$(python3 "$SCENARIO_DIR/process_trace_logs.py" "$scenario_csTrace" "cs-trace")
         local totalHits=$(echo "$csTraceOutput" | sed -n 's/^Total Cache Hits:\s*\([0-9]*\)$/\1/p')
         local totalMisses=$(echo "$csTraceOutput" | sed -n 's/^Total Cache Misses:\s*\([0-9]*\)$/\1/p')
     else
@@ -173,7 +173,7 @@ run_simulation() {
 
     # 2. Average Cache Usage
     if [ -f "$scenario_csUsage" ]; then
-        local csUsageOutput=$(python3 "$SCENARIO_DIR/analyze_traces.py" "$scenario_csUsage" "cs-usage")
+        local csUsageOutput=$(python3 "$SCENARIO_DIR/process_trace_logs.py" "$scenario_csUsage" "cs-usage")
         local avgCacheUsage=$(echo "$csUsageOutput" | sed -n 's/^Average Total Usage (All Nodes) across.*: \([0-9.]*\)$/\1/p')
     else
         local avgCacheUsage=""
@@ -181,7 +181,7 @@ run_simulation() {
 
     # 3. Total Kilobytes Transferred
     if [ -f "$scenario_rateTrace" ]; then
-        local rateTraceOutput=$(python3 "$SCENARIO_DIR/analyze_traces.py" "$scenario_rateTrace" "rate-trace")
+        local rateTraceOutput=$(python3 "$SCENARIO_DIR/process_trace_logs.py" "$scenario_rateTrace" "rate-trace")
         local totalKB=$(echo "$rateTraceOutput" | sed -n 's/^Total Kilobytes: \([0-9.]*\) KB$/\1/p')
     else
         local totalKB=""
