@@ -42,12 +42,12 @@ export USAGE_ALLOCATION_GRAPHS_DIR="$HOME/ndnSIM/scenario/usage_allocation_graph
 #export GEN_ALLOCATION_GRAPHS="true"
 export GEN_ALLOCATION_GRAPHS="false"
 
-#TYPE="cascon_main"
+TYPE="cascon_main"
 #TYPE="cascon_main_cat"
 #TYPE="cascon_cpm"
 #TYPE="cascon_cpm_random"
 #TYPE="cascon_cpm_random_nesco"
-TYPE="cascon_lat-bw-cpm"
+#TYPE="cascon_lat-bw-cpm"
 #TYPE="cascon_intervals"
 #TYPE="fwdOptSD"
 #TYPE="cascon_random_test"
@@ -128,7 +128,7 @@ run_simulation() {
     result="${result:-N.A.}"
 
     local packets=$( \
-        python "$SCENARIO_DIR/process_nfd_logs_SD.py" --graph "$GEN_ALLOCATION_GRAPHS" --logfile "$scenario_log" --output "$USAGE_ALLOCATION_GRAPHS_DIR/${scenario}.png" | sed -n \
+        python3 "$SCENARIO_DIR/process_nfd_logs_SD.py" --graph "$GEN_ALLOCATION_GRAPHS" --logfile "$scenario_log" --output "$USAGE_ALLOCATION_GRAPHS_DIR/${scenario}.png" | sed -n \
         -e 's/^SD Interest Packets Generated: \([0-9]*\) interests$/\1,/p' \
         -e 's/^SD Data Packets Generated: \([0-9]*\) data$/\1,/p' \
         -e 's/^SD Interest Packets Transmitted: \([0-9]*\) interests$/\1,/p' \
