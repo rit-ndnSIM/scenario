@@ -99,7 +99,7 @@ do
 	echo "Parsing logs..."
 
 	packets=$( \
-		python process_nfd_logs.py | sed -n \
+		python3 process_nfd_logs.py | sed -n \
 		-e 's/^Interest Packets Generated: \([0-9]*\) interests$/\1,/p' \
 		-e 's/^Data Packets Generated: \([0-9]*\) data$/\1,/p' \
 		-e 's/^Interest Packets Transmitted: \([0-9]*\) interests$/\1,/p' \
@@ -113,7 +113,7 @@ do
 
 
 	#latencies=$( \
-		#python process_nfd_logs_intervals.py "$scenario_log" | sed -n \
+		#python3 process_nfd_logs_intervals.py "$scenario_log" | sed -n \
 		#-e 's/^\s*\/consumerL min latency: \([0-9\.]*\) microseconds$/\1,/p' \
 		#-e 's/^\s*\/consumerL low latency: \([0-9\.]*\) microseconds$/\1,/p' \
 		#-e 's/^\s*\/consumerL mid latency: \([0-9\.]*\) microseconds$/\1,/p' \
@@ -143,7 +143,7 @@ do
 		#-e 's/^\s*\/consumerR Final answer: \([0-9\.]*\) numerical$/\1,/p' \
 		#| tr -d '\n' \
 	#)
-	latencies=$(python process_nfd_logs_intervals.py "$scenario_log")
+	latencies=$(python3 process_nfd_logs_intervals.py "$scenario_log")
 
 	sensor_min_latency="$(echo "$latencies" | cut -d',' -f1)"
 	sensor_low_latency="$(echo "$latencies" | cut -d',' -f2)"

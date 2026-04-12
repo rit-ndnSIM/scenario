@@ -115,7 +115,7 @@ do
         result="${result:-N.A.}"
 
         packets=$( \
-            python process_nfd_logs_SD.py --graph $GEN_ALLOCATION_GRAPHS --output $USAGE_ALLOCATION_GRAPHS_DIR/${scenario}.png | sed -n \
+            python3 process_nfd_logs_SD.py --graph $GEN_ALLOCATION_GRAPHS --output $USAGE_ALLOCATION_GRAPHS_DIR/${scenario}.png | sed -n \
             -e 's/^SD Interest Packets Generated: \([0-9]*\) interests$/\1,/p' \
             -e 's/^SD Data Packets Generated: \([0-9]*\) data$/\1,/p' \
             -e 's/^SD Interest Packets Transmitted: \([0-9]*\) interests$/\1,/p' \

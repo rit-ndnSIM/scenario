@@ -85,7 +85,7 @@ do
     	latency="$(echo "$parse_out" | cut -d',' -f2)"
 
     	packets=$( \
-    		python process_nfd_logs.py | sed -n \
+    		python3 process_nfd_logs.py | sed -n \
     		-e 's/^Interest Packets Generated: \([0-9]*\) interests$/\1,/p' \
     		-e 's/^Data Packets Generated: \([0-9]*\) data$/\1,/p' \
     		-e 's/^Interest Packets Transmitted: \([0-9]*\) interests$/\1,/p' \

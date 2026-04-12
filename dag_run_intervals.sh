@@ -99,7 +99,7 @@ do
 
 	echo "Parsing logs..."
 	latencies=$( \
-		python process_nfd_logs_intervals.py "$scenario_log" | sed -n \
+		python3 process_nfd_logs_intervals.py "$scenario_log" | sed -n \
 		-e 's/^\s*consumer min latency: \([0-9\.]*\) microseconds$/\1,/p' \
 		-e 's/^\s*consumer low latency: \([0-9\.]*\) microseconds$/\1,/p' \
 		-e 's/^\s*consumer mid latency: \([0-9\.]*\) microseconds$/\1,/p' \
