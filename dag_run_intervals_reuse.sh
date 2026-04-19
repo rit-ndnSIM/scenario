@@ -45,6 +45,11 @@ declare -a scenarios=(
 ####"ndn-cabeee-intervals-20reuse-orchestratorB orchB 20-reuse.json 20-reuse-inAbilene.hosting topo-cabeee-Abilene.txt"
 	"ndn-cabeee-intervals-20reuse-nesco nesco 20-reuse.json 20-reuse-inAbilene.hosting topo-cabeee-Abilene.txt"
 	"ndn-cabeee-intervals-20reuse-nescoSCOPT nescoSCOPT 20-reuse.json 20-reuse-inAbilene.hosting topo-cabeee-Abilene.txt"
+	# 20 Reuse No-Caching (Abilene topology)
+	"ndn-cabeee-intervals-20reuseNC-orchestratorA orchA 20-reuse.json 20-reuse-inAbilene.hosting topo-cabeee-Abilene.txt"
+####"ndn-cabeee-intervals-20reuseNC-orchestratorB orchB 20-reuse.json 20-reuse-inAbilene.hosting topo-cabeee-Abilene.txt"
+	"ndn-cabeee-intervals-20reuseNC-nesco nesco 20-reuse.json 20-reuse-inAbilene.hosting topo-cabeee-Abilene.txt"
+	"ndn-cabeee-intervals-20reuseNC-nescoSCOPT nescoSCOPT 20-reuse.json 20-reuse-inAbilene.hosting topo-cabeee-Abilene.txt"
 	)
 	
 scenario_log="$SCENARIO_DIR/scenario.log"
@@ -197,5 +202,6 @@ done
 
 mv cs-trace*.txt trace_results
 mv cs-usage*.txt trace_results
+mv rate-trace*.txt trace_results
 
 echo "All scenarios ran"

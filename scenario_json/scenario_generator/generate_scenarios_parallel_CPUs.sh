@@ -3,8 +3,9 @@
 set -e
 
 # Generate a single timestamp to be used for all files in this run
+export name="new_experiment_name"
 export TIMESTAMP=$(date +%Y%m%d-%H%M%S)
-export workdir="$PWD/generated_scenarios"
+export workdir="$PWD/generated_scenarios/$name"
 mkdir -p "$workdir"
 
 generate_wf_linear() {
@@ -375,7 +376,7 @@ run_category_task() {
                     --startTimeOffsetWF 0 \
                     --simulationEndTime 200
 
-                cp "${output_filename}" ../cascon_cpm_random/
+                cp "${output_filename}" ../$name/
             done
 
             if [ "$VISUALIZE" = true ]; then

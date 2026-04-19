@@ -5,7 +5,8 @@ set -e
 # Generate a single timestamp to be used for all files in this run
 TIMESTAMP=$(date +%Y%m%d-%H%M%S)
 
-workdir="$PWD/generated_scenarios/main_cat_new_directory_name"
+name="main_cat"
+workdir="$PWD/generated_scenarios/$name"
 mkdir -p "$workdir"
 
 generate_wf_linear() {
@@ -244,7 +245,7 @@ generate_hs() {
 #         --simulationEndTime 200
 
 
-#     cp $workdir/${TIMESTAMP}-sn-${prefix}-${hs_clean#hs-} ../cascon_cpm_random/
+#     cp $workdir/${TIMESTAMP}-sn-${prefix}-${hs_clean#hs-} ../$name/
 # done
 
 # #./genvisuals_circle.py ${output_filename}
@@ -504,7 +505,7 @@ for run in $(seq 1 $NUM_RUNS); do
                         --startTimeOffsetWF 0 \
                         --simulationEndTime 200
 
-                    cp "${output_filename}" ../cascon_cpm_random/
+                    cp "${output_filename}" ../$name/
                 done
                 
                 # 5. Visualization
