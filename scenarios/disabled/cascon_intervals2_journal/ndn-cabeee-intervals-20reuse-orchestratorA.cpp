@@ -534,7 +534,7 @@ main(int argc, char* argv[])
 
   Simulator::Stop(Seconds(2000));
 
-  //ndn::L3RateTracer::InstallAll("rate-trace_cabeee-20reuse.txt", Seconds(1.0));
+  ndn::L3RateTracer::InstallAll("rate-trace_cabeee-20reuse-orchA.txt", Seconds(100.0));
   ndn::CsTracer::InstallAll("cs-trace_cabeee-20reuse-orchA.txt", Seconds(1.0));
 
   std::ofstream fout("cs-usage-20reuse-orchA.txt");

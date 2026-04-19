@@ -518,7 +518,7 @@ main(int argc, char* argv[])
 
   Simulator::Stop(Seconds(120));
 
-  //ndn::L3RateTracer::InstallAll("rate-trace_cabeee-20reuse.txt", Seconds(1.0));
+  ndn::L3RateTracer::InstallAll("rate-trace_cabeee-20reuse-nescoSCOPT.txt", Seconds(100.0));
   ndn::CsTracer::InstallAll("cs-trace_cabeee-20reuse-nescoSCOPT.txt", Seconds(1.0));
 
   std::ofstream fout("cs-usage-20reuse-nescoSCOPT.txt");

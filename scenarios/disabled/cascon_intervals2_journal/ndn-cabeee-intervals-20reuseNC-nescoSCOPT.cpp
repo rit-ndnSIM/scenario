@@ -26,14 +26,14 @@
 
 #include "cabeee-cs-tools.h"
 
-#define PREFIX "/nesco"
+#define PREFIX "/nescoSCOPT"
 
 namespace ns3 {
 
 /**
 *     Uses Abilene topology
 * 
-*     NS_LOG=CustomAppConsumer:CustomAppProducer:DagForwarderApp ./waf --run=ndn-cabeee-20reuse-nesco
+*     NS_LOG=CustomAppConsumer:CustomAppProducer:DagForwarderApp ./waf --run=ndn-cabeee-20reuse-nescoSCOPT
 */
 
 
@@ -108,7 +108,7 @@ main(int argc, char* argv[])
 
 
 
-  ndnHelper.setCsSize(1000); // enable/disable content store
+  ndnHelper.setCsSize(0); // enable/disable content store
   ndnHelper.Install(rtrA);
   ndnHelper.Install(rtrA1);
   //ndnHelper.Install(rtrA1a);
@@ -518,12 +518,12 @@ main(int argc, char* argv[])
 
   Simulator::Stop(Seconds(120));
 
-  ndn::L3RateTracer::InstallAll("rate-trace_cabeee-20reuse-nesco.txt", Seconds(100.0));
-  ndn::CsTracer::InstallAll("cs-trace_cabeee-20reuse-nesco.txt", Seconds(1.0));
+  ndn::L3RateTracer::InstallAll("rate-trace_cabeee-20reuseNC-nescoSCOPT.txt", Seconds(100.0));
+  //ndn::CsTracer::InstallAll("cs-trace_cabeee-20reuse-nescoSCOPT.txt", Seconds(1.0));
 
-  std::ofstream fout("cs-usage-20reuse-nesco.txt");
-  Simulator::Schedule(Seconds(0), &ns3::printCsHeader, ref(fout));
-  Simulator::Schedule(Seconds(0), &ns3::printCsUsage, ref(fout), Seconds(0.5), PREFIX);
+  //std::ofstream fout("cs-usage-20reuse-nescoSCOPT.txt");
+  //Simulator::Schedule(Seconds(0), &ns3::printCsHeader, ref(fout));
+  //Simulator::Schedule(Seconds(0), &ns3::printCsUsage, ref(fout), Seconds(0.5), PREFIX);
   //Simulator::Schedule(Seconds(0), &ns3::printCsHeader, ref(std::cout));
   //Simulator::Schedule(Seconds(0), &ns3::printCsUsage, ref(std::cout), Seconds(0.5), PREFIX); // record CS usage every 0.5 seconds
 

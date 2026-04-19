@@ -26,14 +26,14 @@
 
 #include "cabeee-cs-tools.h"
 
-#define PREFIX "/nesco"
+#define PREFIX "/orchA"
 
 namespace ns3 {
 
 /**
 *     Uses Abilene topology
 * 
-*     NS_LOG=CustomAppConsumer:CustomAppProducer:DagForwarderApp ./waf --run=ndn-cabeee-20reuse-nesco
+*     NS_LOG=CustomAppConsumer:CustomAppProducer:DagForwarderApp ./waf --run=ndn-cabeee-20reuse-nescoSCOPT
 */
 
 
@@ -108,7 +108,7 @@ main(int argc, char* argv[])
 
 
 
-  ndnHelper.setCsSize(1000); // enable/disable content store
+  ndnHelper.setCsSize(0); // enable/disable content store
   ndnHelper.Install(rtrA);
   ndnHelper.Install(rtrA1);
   //ndnHelper.Install(rtrA1a);
@@ -172,6 +172,7 @@ main(int argc, char* argv[])
 
   // Choosing forwarding strategy
   //ndn::StrategyChoiceHelper::InstallAll(Prefix + "/sensor", "/localhost/nfd/strategy/best-route");
+  ndn::StrategyChoiceHelper::InstallAll(Prefix + "/serviceOrchestration", "/localhost/nfd/strategy/multicast");
   ndn::StrategyChoiceHelper::InstallAll(Prefix + "/sensor1", "/localhost/nfd/strategy/multicast");
   ndn::StrategyChoiceHelper::InstallAll(Prefix + "/sensor2", "/localhost/nfd/strategy/multicast");
   ndn::StrategyChoiceHelper::InstallAll(Prefix + "/sensor3", "/localhost/nfd/strategy/multicast");
@@ -334,7 +335,7 @@ main(int argc, char* argv[])
 
 
   // Custom App for routers
-  ndn::AppHelper routerApp("DagForwarderApp");
+  ndn::AppHelper routerApp("DagServiceA_App");
   routerApp.SetPrefix(Prefix);
 
   routerApp.SetAttribute("Service", StringValue("serviceP1"));
@@ -433,6 +434,21 @@ main(int argc, char* argv[])
   routerApp.Install(rtrG).Start(Seconds(0));
 
 
+  ndn::AppHelper orchestratorApp("DagOrchestratorA_App");
+  orchestratorApp.SetPrefix(Prefix);
+  orchestratorApp.SetAttribute("Service", StringValue("serviceOrchestration"));
+  orchestratorApp.Install(rtrE1a).Start(Seconds(0));
+  orchestratorApp.Install(rtrF2a).Start(Seconds(0));
+  orchestratorApp.Install(rtrG1a).Start(Seconds(0));
+  orchestratorApp.Install(rtrG1b).Start(Seconds(0));
+  orchestratorApp.Install(rtrH1a).Start(Seconds(0));
+  orchestratorApp.Install(rtrI1a).Start(Seconds(0));
+  orchestratorApp.Install(rtrI1b).Start(Seconds(0));
+  orchestratorApp.Install(rtrI2a).Start(Seconds(0));
+  orchestratorApp.Install(rtrI2b).Start(Seconds(0));
+  orchestratorApp.Install(rtrJ1a).Start(Seconds(0));
+  orchestratorApp.Install(rtrK1a).Start(Seconds(0));
+  orchestratorApp.Install(rtrK1b).Start(Seconds(0));
 
   // Custom App for User(Consumer)
   ndn::AppHelper userApp("CustomAppConsumerPoisson");
@@ -440,7 +456,7 @@ main(int argc, char* argv[])
 
   userApp.SetAttribute("Service", StringValue("consumerP"));
   userApp.SetAttribute("Workflow", StringValue("workflows/20-sensor.json"));
-  userApp.SetAttribute("Orchestrate", UintegerValue(0));
+  userApp.SetAttribute("Orchestrate", UintegerValue(1)); // This enables the "orchestrator" by having the consumer set the head service to /serviceOrchestration
   userApp.SetAttribute("Frequency", DoubleValue(10));       // 10 interests per second on average (Poisson process)
   userApp.SetAttribute("NumInterests", UintegerValue(100)); // 100 total interests will be generated
   userApp.Install(rtrE1a).Start(Seconds(2));
@@ -458,39 +474,39 @@ main(int argc, char* argv[])
 
   userApp.SetAttribute("Service", StringValue("consumerL"));
   userApp.SetAttribute("Workflow", StringValue("workflows/20-linear.json"));
-  userApp.SetAttribute("Orchestrate", UintegerValue(0));
+  userApp.SetAttribute("Orchestrate", UintegerValue(1)); // This enables the "orchestrator" by having the consumer set the head service to /serviceOrchestration
   userApp.SetAttribute("Frequency", DoubleValue(10));       // 10 interests per second on average (Poisson process)
   userApp.SetAttribute("NumInterests", UintegerValue(100)); // 100 total interests will be generated
-  userApp.Install(rtrE1a).Start(Seconds(2));
-  userApp.Install(rtrF2a).Start(Seconds(2));
-  userApp.Install(rtrG1a).Start(Seconds(2));
-  userApp.Install(rtrG1b).Start(Seconds(2));
-  userApp.Install(rtrH1a).Start(Seconds(2));
-  userApp.Install(rtrI1a).Start(Seconds(2));
-  userApp.Install(rtrI1b).Start(Seconds(2));
-  userApp.Install(rtrI2a).Start(Seconds(2));
-  userApp.Install(rtrI2b).Start(Seconds(2));
-  userApp.Install(rtrJ1a).Start(Seconds(2));
-  userApp.Install(rtrK1a).Start(Seconds(2));
-  userApp.Install(rtrK1b).Start(Seconds(2));
+  userApp.Install(rtrE1a).Start(Seconds(60));
+  userApp.Install(rtrF2a).Start(Seconds(60));
+  userApp.Install(rtrG1a).Start(Seconds(60));
+  userApp.Install(rtrG1b).Start(Seconds(60));
+  userApp.Install(rtrH1a).Start(Seconds(60));
+  userApp.Install(rtrI1a).Start(Seconds(60));
+  userApp.Install(rtrI1b).Start(Seconds(60));
+  userApp.Install(rtrI2a).Start(Seconds(60));
+  userApp.Install(rtrI2b).Start(Seconds(60));
+  userApp.Install(rtrJ1a).Start(Seconds(60));
+  userApp.Install(rtrK1a).Start(Seconds(60));
+  userApp.Install(rtrK1b).Start(Seconds(60));
 
   userApp.SetAttribute("Service", StringValue("consumerR"));
   userApp.SetAttribute("Workflow", StringValue("workflows/20-reuse.json"));
-  userApp.SetAttribute("Orchestrate", UintegerValue(0));
+  userApp.SetAttribute("Orchestrate", UintegerValue(1)); // This enables the "orchestrator" by having the consumer set the head service to /serviceOrchestration
   userApp.SetAttribute("Frequency", DoubleValue(10));       // 10 interests per second on average (Poisson process)
   userApp.SetAttribute("NumInterests", UintegerValue(100)); // 100 total interests will be generated
-  userApp.Install(rtrE1a).Start(Seconds(2));
-  userApp.Install(rtrF2a).Start(Seconds(2));
-  userApp.Install(rtrG1a).Start(Seconds(2));
-  userApp.Install(rtrG1b).Start(Seconds(2));
-  userApp.Install(rtrH1a).Start(Seconds(2));
-  userApp.Install(rtrI1a).Start(Seconds(2));
-  userApp.Install(rtrI1b).Start(Seconds(2));
-  userApp.Install(rtrI2a).Start(Seconds(2));
-  userApp.Install(rtrI2b).Start(Seconds(2));
-  userApp.Install(rtrJ1a).Start(Seconds(2));
-  userApp.Install(rtrK1a).Start(Seconds(2));
-  userApp.Install(rtrK1b).Start(Seconds(2));
+  userApp.Install(rtrE1a).Start(Seconds(240));
+  userApp.Install(rtrF2a).Start(Seconds(240));
+  userApp.Install(rtrG1a).Start(Seconds(240));
+  userApp.Install(rtrG1b).Start(Seconds(240));
+  userApp.Install(rtrH1a).Start(Seconds(240));
+  userApp.Install(rtrI1a).Start(Seconds(240));
+  userApp.Install(rtrI1b).Start(Seconds(240));
+  userApp.Install(rtrI2a).Start(Seconds(240));
+  userApp.Install(rtrI2b).Start(Seconds(240));
+  userApp.Install(rtrJ1a).Start(Seconds(240));
+  userApp.Install(rtrK1a).Start(Seconds(240));
+  userApp.Install(rtrK1b).Start(Seconds(240));
 
 
 
@@ -516,14 +532,14 @@ main(int argc, char* argv[])
 
 
 
-  Simulator::Stop(Seconds(120));
+  Simulator::Stop(Seconds(2000));
 
-  ndn::L3RateTracer::InstallAll("rate-trace_cabeee-20reuse-nesco.txt", Seconds(100.0));
-  ndn::CsTracer::InstallAll("cs-trace_cabeee-20reuse-nesco.txt", Seconds(1.0));
+  ndn::L3RateTracer::InstallAll("rate-trace_cabeee-20reuseNC-orchA.txt", Seconds(100.0));
+  //ndn::CsTracer::InstallAll("cs-trace_cabeee-20reuse-orchA.txt", Seconds(1.0));
 
-  std::ofstream fout("cs-usage-20reuse-nesco.txt");
-  Simulator::Schedule(Seconds(0), &ns3::printCsHeader, ref(fout));
-  Simulator::Schedule(Seconds(0), &ns3::printCsUsage, ref(fout), Seconds(0.5), PREFIX);
+  //std::ofstream fout("cs-usage-20reuse-orchA.txt");
+  //Simulator::Schedule(Seconds(0), &ns3::printCsHeader, ref(fout));
+  //Simulator::Schedule(Seconds(0), &ns3::printCsUsage, ref(fout), Seconds(0.5), PREFIX);
   //Simulator::Schedule(Seconds(0), &ns3::printCsHeader, ref(std::cout));
   //Simulator::Schedule(Seconds(0), &ns3::printCsUsage, ref(std::cout), Seconds(0.5), PREFIX); // record CS usage every 0.5 seconds
 
