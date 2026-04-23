@@ -1,10 +1,10 @@
 {
   "prefix": "nesco",
   "topofile": "/home/cabeee/ndnSIM/scenario/topologies/topo-cabeee-3node.txt",
-  "serviceDiscovery": 0,
-  "resourceAllocation": 0,
-  "allocationReuse": 0,
-  "scheduleCompaction": 0,
+  "serviceDiscovery": 1,
+  "resourceAllocation": 1,
+  "allocationReuse": 1,
+  "scheduleCompaction": 1,
   "startTimeOffsetSD": 0,
   "startTimeOffsetWF": 2,
   "simulationEndTime": 3.0,
@@ -19,7 +19,7 @@
     },
     {
       "node": "rtr-1",
-      "cs-size": 100,
+      "cs-size": 0,
       "comment": "NA",
       "y": "60",
       "x": "20",
@@ -27,7 +27,7 @@
     },
     {
       "node": "rtr-2",
-      "cs-size": 100,
+      "cs-size": 0,
       "comment": "NA",
       "y": "60",
       "x": "-20",
@@ -35,7 +35,7 @@
     },
     {
       "node": "rtr-3",
-      "cs-size": 100,
+      "cs-size": 0,
       "comment": "NA",
       "y": "40",
       "x": "0",
