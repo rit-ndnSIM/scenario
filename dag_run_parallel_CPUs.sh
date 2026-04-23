@@ -9,6 +9,8 @@
 #CXXFLAGS="-std=c++17" ./waf configure --debug
 #---------------------------------------------------------
 
+START_TIME=$(date +%s)
+
 set -e
 
 # log levels: error, warn, info, debug
@@ -42,14 +44,14 @@ export USAGE_ALLOCATION_GRAPHS_DIR="$HOME/ndnSIM/scenario/usage_allocation_graph
 #export GEN_ALLOCATION_GRAPHS="true"
 export GEN_ALLOCATION_GRAPHS="false"
 
-TYPE="cascon_main"
+#TYPE="cascon_main"
 #TYPE="cascon_main_cat"
 #TYPE="cascon_cpm"
 #TYPE="cascon_cpm_random"
 #TYPE="cascon_cpm_random_nesco"
 #TYPE="cascon_lat-bw-cpm"
 #TYPE="cascon_intervals"
-#TYPE="fwdOptSD"
+TYPE="fwdOptSD"
 #TYPE="cascon_random_test"
 
 export SCENARIO_JSON_DIR="$SCENARIO_DIR/scenario_json/$TYPE"
@@ -240,3 +242,10 @@ find "$SCENARIO_JSON_DIR" -maxdepth 1 -name "*.json" | parallel --jobs 100% run_
 #sem --wait --id csv_lock
 
 echo "All scenarios completed."
+END_TIME=$(date +%s)
+TOTAL_RUNTIME=$((END_TIME - START_TIME))
+# Format the time into HH:MM:SS
+H=$((TOTAL_RUNTIME / 3600))
+M=$(((TOTAL_RUNTIME % 3600) / 60))
+S=$((TOTAL_RUNTIME % 60))
+printf "\nTotal Execution Time: %02d:%02d:%02d (%d seconds)\n" $H $M $S $TOTAL_RUNTIME
