@@ -133,8 +133,8 @@ main(int argc, char* argv[])
         simulationEndTime = scenario_json.at("simulationEndTime");
     }
     
-    int8_t startTimeOffsetSD = 0;
-    int8_t startTimeOffsetWF = 2;
+    uint64_t startTimeOffsetSD = 0;
+    uint64_t startTimeOffsetWF = 2;
     if (serviceDiscoveryFlag == 1) {
         startTimeOffsetSD = scenario_json.at("startTimeOffsetSD");
         startTimeOffsetWF = scenario_json.at("startTimeOffsetWF");
