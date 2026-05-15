@@ -659,6 +659,11 @@
       "name": "/service9",
       "type": "service",
       "strategy": "/localhost/nfd/strategy/best-route"
+    },
+    {
+      "name": "/serviceDiscovery",
+      "type": "service",
+      "strategy": "/localhost/nfd/strategy/best-route"
     }
   ],
   "routerHosting": [
@@ -670,89 +675,30 @@
       "start": 0,
       "end": -1
     },
-    {
-      "router": "sensor0",
-      "service": "/sensor",
-      "start": 0,
-      "end": -1
-    },
-    {
-      "router": "rtr14",
-      "service": "/service8",
-      "start": 0,
-      "end": -1,
-      "makespanNS": 1000000
-    },
-    {
-      "router": "rtr14",
-      "service": "/service3",
-      "start": 0,
-      "end": -1,
-      "makespanNS": 1000000
-    },
-    {
-      "router": "sensor0",
-      "service": "/service7",
-      "start": 0,
-      "end": -1,
-      "makespanNS": 1000000
-    },
-    {
-      "router": "rtr13",
-      "service": "/service6",
-      "start": 0,
-      "end": -1,
-      "makespanNS": 1000000
-    },
-    {
-      "router": "rtr8",
-      "service": "/aggregator",
-      "start": 0,
-      "end": -1,
-      "makespanNS": 1000000
-    },
-    {
-      "router": "rtr10",
-      "service": "/service1",
-      "start": 0,
-      "end": -1,
-      "makespanNS": 1000000
-    },
-    {
-      "router": "rtr3",
-      "service": "/service4",
-      "start": 0,
-      "end": -1,
-      "makespanNS": 1000000
-    },
-    {
-      "router": "rtr9",
-      "service": "/service2",
-      "start": 0,
-      "end": -1,
-      "makespanNS": 1000000
-    },
-    {
-      "router": "rtr9",
-      "service": "/service0",
-      "start": 0,
-      "end": -1,
-      "makespanNS": 1000000
-    },
-    {
-      "router": "rtr10",
-      "service": "/service5",
-      "start": 0,
-      "end": -1,
-      "makespanNS": 1000000
-    },
-    {
-      "router": "rtr3",
-      "service": "/service9",
-      "start": 0,
-      "end": -1,
-      "makespanNS": 1000000
-    }
+    { "router": "sensor0", "service": "/sensor", "start": 0, "end": -1 },
+    { "router": "rtr0", "service": "/sensor", "start": 0, "end": -1 },
+    { "router": "rtr14", "service": "/service8", "start": 0, "end": -1, "makespanNS": 1000000 },
+    { "router": "rtr1", "service": "/service8", "start": 0, "end": -1, "makespanNS": 1000000 },
+    { "router": "rtr14", "service": "/service3", "start": 0, "end": -1, "makespanNS": 1000000 },
+    { "router": "rtr2", "service": "/service3", "start": 0, "end": -1, "makespanNS": 1000000 },
+    { "router": "sensor0", "service": "/service7", "start": 0, "end": -1, "makespanNS": 1000000 },
+    { "router": "rtr15", "service": "/service7", "start": 0, "end": -1, "makespanNS": 1000000 },
+    { "router": "rtr13", "service": "/service6", "start": 0, "end": -1, "makespanNS": 1000000 },
+    { "router": "rtr4", "service": "/service6", "start": 0, "end": -1, "makespanNS": 1000000 },
+    { "router": "rtr8", "service": "/aggregator", "start": 0, "end": -1, "makespanNS": 1000000 },
+    { "router": "rtr12", "service": "/aggregator", "start": 0, "end": -1, "makespanNS": 1000000 },
+    { "router": "rtr10", "service": "/service1", "start": 0, "end": -1, "makespanNS": 1000000 },
+    { "router": "rtr5", "service": "/service1", "start": 0, "end": -1, "makespanNS": 1000000 },
+    { "router": "rtr3", "service": "/service4", "start": 0, "end": -1, "makespanNS": 1000000 },
+    { "router": "rtr11", "service": "/service4", "start": 0, "end": -1, "makespanNS": 1000000 },
+    { "router": "rtr9", "service": "/service2", "start": 0, "end": -1, "makespanNS": 1000000 },
+    { "router": "rtr6", "service": "/service2", "start": 0, "end": -1, "makespanNS": 1000000 },
+    { "router": "rtr9", "service": "/service0", "start": 0, "end": -1, "makespanNS": 1000000 },
+    { "router": "rtr0", "service": "/service0", "start": 0, "end": -1, "makespanNS": 1000000 },
+    { "router": "rtr10", "service": "/service5", "start": 0, "end": -1, "makespanNS": 1000000 },
+    { "router": "rtr7", "service": "/service5", "start": 0, "end": -1, "makespanNS": 1000000 },
+    { "router": "rtr3", "service": "/service9", "start": 0, "end": -1, "makespanNS": 1000000 },
+    { "router": "rtr15", "service": "/service9", "start": 0, "end": -1, "makespanNS": 1000000 }
   ],
   "dag": {
     "dag1": {

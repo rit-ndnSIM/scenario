@@ -1,6 +1,6 @@
 {
   "prefix": "nesco",
-  "topofile": "/home/cabeee/ndnSIM/scenario/topologies/topo-cabeee-3node.txt",
+  "topofile": "/home/cabeee/ndnSIM/scenario/topologies/topo-cabeee-3node-fwdOpt.txt",
   "serviceDiscovery": 0,
   "resourceAllocation": 0,
   "allocationReuse": 0,
@@ -56,12 +56,20 @@
       "to": "rtr-1",
       "capacity": "100Mbps",
       "metric": "1",
+      "delay": "2ms",
+      "queue": "100"
+    },
+    {
+      "from": "sensor",
+      "to": "rtr-2",
+      "capacity": "100Mbps",
+      "metric": "1",
       "delay": "1ms",
       "queue": "100"
     },
     {
       "from": "rtr-1",
-      "to": "rtr-2",
+      "to": "rtr-3",
       "capacity": "100Mbps",
       "metric": "1",
       "delay": "1ms",
@@ -72,7 +80,7 @@
       "to": "rtr-3",
       "capacity": "100Mbps",
       "metric": "1",
-      "delay": "1ms",
+      "delay": "3ms",
       "queue": "100"
     },
     {
@@ -219,139 +227,66 @@
       "name": "/serviceP3",
       "type": "service",
       "strategy": "/localhost/nfd/strategy/multicast"
+    },
+    {
+      "name": "/serviceDiscovery",
+      "type": "service",
+      "strategy": "/localhost/nfd/strategy/best-route"
     }
   ],
   "routerHosting": [
-    {
-      "router": "sensor",
-      "service": "/sensor1",
-      "makespanNS": 1000000
-    },
-    {
-      "router": "sensor",
-      "service": "/sensor2",
-      "makespanNS": 1000000
-    },
-    {
-      "router": "sensor",
-      "service": "/sensor3",
-      "makespanNS": 1000000
-    },
-    {
-      "router": "sensor",
-      "service": "/sensor4",
-      "makespanNS": 1000000
-    },
-    {
-      "router": "sensor",
-      "service": "/sensor5",
-      "makespanNS": 1000000
-    },
-    {
-      "router": "sensor",
-      "service": "/sensor6",
-      "makespanNS": 1000000
-    },
-    {
-      "router": "sensor",
-      "service": "/sensorL",
-      "makespanNS": 1000000
-    },
-    {
-      "router": "rtr-1",
-      "service": "/serviceL10",
-      "makespanNS": 1000000
-    },
-    {
-      "router": "rtr-1",
-      "service": "/serviceL6",
-      "makespanNS": 1000000
-    },
-    {
-      "router": "rtr-1",
-      "service": "/serviceL2",
-      "makespanNS": 1000000
-    },
-    {
-      "router": "rtr-2",
-      "service": "/serviceL9",
-      "makespanNS": 1000000
-    },
-    {
-      "router": "rtr-2",
-      "service": "/serviceL7",
-      "makespanNS": 1000000
-    },
-    {
-      "router": "rtr-2",
-      "service": "/serviceL5",
-      "makespanNS": 1000000
-    },
-    {
-      "router": "rtr-2",
-      "service": "/serviceL3",
-      "makespanNS": 1000000
-    },
-    {
-      "router": "rtr-2",
-      "service": "/serviceL1",
-      "makespanNS": 1000000
-    },
-    {
-      "router": "rtr-2",
-      "service": "/serviceP1",
-      "makespanNS": 1000000
-    },
-    {
-      "router": "rtr-2",
-      "service": "/serviceP2",
-      "makespanNS": 1000000
-    },
-    {
-      "router": "rtr-2",
-      "service": "/serviceP3",
-      "makespanNS": 1000000
-    },
-    {
-      "router": "rtr-2",
-      "service": "/serviceP4",
-      "makespanNS": 1000000
-    },
-    {
-      "router": "rtr-2",
-      "service": "/serviceP5",
-      "makespanNS": 1000000
-    },
-    {
-      "router": "rtr-2",
-      "service": "/serviceP6",
-      "makespanNS": 1000000
-    },
-    {
-      "router": "rtr-3",
-      "service": "/serviceL8",
-      "makespanNS": 1000000
-    },
-    {
-      "router": "rtr-3",
-      "service": "/serviceL4",
-      "makespanNS": 1000000
-    },
-    {
-      "router": "rtr-3",
-      "service": "/serviceP22",
-      "makespanNS": 1000000
-    },
-    {
-      "router": "rtr-3",
-      "service": "/serviceP23",
-      "makespanNS": 1000000
-    },
-    {
-      "router": "rtr-3",
-      "service": "/serviceR1",
-      "makespanNS": 1000000
-    },
+    { "router": "sensor", "service": "/sensor1", "makespanNS": 1000000 },
+    { "router": "rtr-1", "service": "/sensor1", "makespanNS": 1000000 },
+    { "router": "sensor", "service": "/sensor2", "makespanNS": 1000000 },
+    { "router": "rtr-2", "service": "/sensor2", "makespanNS": 1000000 },
+    { "router": "sensor", "service": "/sensor3", "makespanNS": 1000000 },
+    { "router": "rtr-3", "service": "/sensor3", "makespanNS": 1000000 },
+    { "router": "sensor", "service": "/sensor4", "makespanNS": 1000000 },
+    { "router": "rtr-1", "service": "/sensor4", "makespanNS": 1000000 },
+    { "router": "sensor", "service": "/sensor5", "makespanNS": 1000000 },
+    { "router": "rtr-2", "service": "/sensor5", "makespanNS": 1000000 },
+    { "router": "sensor", "service": "/sensor6", "makespanNS": 1000000 },
+    { "router": "rtr-3", "service": "/sensor6", "makespanNS": 1000000 },
+    { "router": "sensor", "service": "/sensorL", "makespanNS": 1000000 },
+    { "router": "rtr-2", "service": "/sensorL", "makespanNS": 1000000 },
+    { "router": "rtr-1", "service": "/serviceL10", "makespanNS": 1000000 },
+    { "router": "rtr-3", "service": "/serviceL10", "makespanNS": 1000000 },
+    { "router": "rtr-1", "service": "/serviceL6", "makespanNS": 1000000 },
+    { "router": "sensor", "service": "/serviceL6", "makespanNS": 1000000 },
+    { "router": "rtr-1", "service": "/serviceL2", "makespanNS": 1000000 },
+    { "router": "rtr-2", "service": "/serviceL2", "makespanNS": 1000000 },
+    { "router": "rtr-2", "service": "/serviceL9", "makespanNS": 1000000 },
+    { "router": "rtr-1", "service": "/serviceL9", "makespanNS": 1000000 },
+    { "router": "rtr-2", "service": "/serviceL7", "makespanNS": 1000000 },
+    { "router": "rtr-3", "service": "/serviceL7", "makespanNS": 1000000 },
+    { "router": "rtr-2", "service": "/serviceL5", "makespanNS": 1000000 },
+    { "router": "sensor", "service": "/serviceL5", "makespanNS": 1000000 },
+    { "router": "rtr-2", "service": "/serviceL3", "makespanNS": 1000000 },
+    { "router": "rtr-1", "service": "/serviceL3", "makespanNS": 1000000 },
+    { "router": "rtr-2", "service": "/serviceL1", "makespanNS": 1000000 },
+    { "router": "rtr-3", "service": "/serviceL1", "makespanNS": 1000000 },
+    { "router": "rtr-2", "service": "/serviceP1", "makespanNS": 1000000 },
+    { "router": "sensor", "service": "/serviceP1", "makespanNS": 1000000 },
+    { "router": "rtr-2", "service": "/serviceP2", "makespanNS": 1000000 },
+    { "router": "rtr-1", "service": "/serviceP2", "makespanNS": 1000000 },
+    { "router": "rtr-2", "service": "/serviceP3", "makespanNS": 1000000 },
+    { "router": "rtr-3", "service": "/serviceP3", "makespanNS": 1000000 },
+    { "router": "rtr-2", "service": "/serviceP4", "makespanNS": 1000000 },
+    { "router": "sensor", "service": "/serviceP4", "makespanNS": 1000000 },
+    { "router": "rtr-2", "service": "/serviceP5", "makespanNS": 1000000 },
+    { "router": "rtr-1", "service": "/serviceP5", "makespanNS": 1000000 },
+    { "router": "rtr-2", "service": "/serviceP6", "makespanNS": 1000000 },
+    { "router": "rtr-3", "service": "/serviceP6", "makespanNS": 1000000 },
+    { "router": "rtr-3", "service": "/serviceL8", "makespanNS": 1000000 },
+    { "router": "sensor", "service": "/serviceL8", "makespanNS": 1000000 },
+    { "router": "rtr-3", "service": "/serviceL4", "makespanNS": 1000000 },
+    { "router": "rtr-1", "service": "/serviceL4", "makespanNS": 1000000 },
+    { "router": "rtr-3", "service": "/serviceP22", "makespanNS": 1000000 },
+    { "router": "rtr-2", "service": "/serviceP22", "makespanNS": 1000000 },
+    { "router": "rtr-3", "service": "/serviceP23", "makespanNS": 1000000 },
+    { "router": "sensor", "service": "/serviceP23", "makespanNS": 1000000 },
+    { "router": "rtr-3", "service": "/serviceR1", "makespanNS": 1000000 },
+    { "router": "rtr-1", "service": "/serviceR1", "makespanNS": 1000000 },
     {
       "router": "user",
       "service": "/consumer",
