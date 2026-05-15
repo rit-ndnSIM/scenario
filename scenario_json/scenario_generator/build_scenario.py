@@ -17,6 +17,8 @@ import random
 def main():
     parser = argparse.ArgumentParser("build_scenario")
     parser.add_argument('-p', '--prefix', type=str, default='/nescoSCOPT', help="NDN prefix string")
+    parser.add_argument('-s', '--strategy', type=str, default='multicast', help="routing strategy")
+    parser.add_argument('-c', '--cs-size', type=int, default=0, help="content store size to enable caching")
     parser.add_argument('-x', '--topo-txt', type=Path, required=True, help="Topology txt file to use")
     parser.add_argument('-t', '--topo-json', type=Path, help="Topology json file to use")
     parser.add_argument('-w', '--workflow', type=Path, required=True, help="DAG workflow json")
@@ -53,8 +55,31 @@ def main():
             topology = graph.Topology.from_txt(f).get_dict()
 
     prefix = args.prefix
+    strategy = args.strategy
+    cs_size = args.cs_size
     services = workflow['services']
     dag = workflow['dag']
+
+
+    # Add the serviceDiscovery entry if the flag is set to 1
+    if args.serviceDiscovery == 1:
+        services.append({
+            "name": "/serviceDiscovery",
+            "type": "service",
+            "strategy": "/localhost/nfd/strategy/best-route"
+        })
+
+    # update the strategy with the command line input
+    strategy_path = f"/localhost/nfd/strategy/{strategy}"
+    for s in services:
+        s['strategy'] = strategy_path
+
+    # update the cs_size with the command line input
+    routers = topology['router']
+    for r in routers:
+        if not r['node'].startswith("user"):
+            r['cs-size'] = cs_size
+
 
     # TODO: should support multiple workflows for multiple consumers? the bones are there but little extra work
     # is single workflow with multiple consumers acceptable?
@@ -70,10 +95,10 @@ def main():
         'simulationEndTime': (args.simulationEndTime),
         #'workflowFile': str(args.workflow),
         **topology,
-        'services': workflow['services'],
+        'services': services,
         **hosting,
         'dag': {
-            'dag1': workflow['dag'],
+            'dag1': dag,
         }
     }
 

@@ -665,7 +665,7 @@ def main():
     shared_parser.add_argument('--mpi', type=int)
     shared_parser.add_argument('--bandwidth', type=str, default="10Mbps")
     shared_parser.add_argument('--metric', type=str, default="1")
-    shared_parser.add_argument('--delay', type=str, default="10ms")
+    shared_parser.add_argument('--delay', type=str, default="1ms")
     shared_parser.add_argument('--queue', type=str, default="100000")
 
     subparsers = parser.add_subparsers(title='algorithm')

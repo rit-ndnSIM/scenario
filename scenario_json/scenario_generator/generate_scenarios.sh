@@ -9,6 +9,7 @@ name="new_experiment_name"
 
 workdir="$PWD/generated_scenarios/$name"
 mkdir -p "$workdir"
+mkdir -p "../${name}/"
 
 generate_wf_linear() {
     # generate linear workflow

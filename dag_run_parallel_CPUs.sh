@@ -51,7 +51,10 @@ export GEN_ALLOCATION_GRAPHS="false"
 #TYPE="cascon_cpm_random_nesco"
 #TYPE="cascon_lat-bw-cpm"
 #TYPE="cascon_intervals"
-TYPE="fwdOptSD"
+#TYPE="fwdOptSD"
+#TYPE="fwdOptSDSweep"
+#TYPE="fwdOptSDSweep2"
+TYPE="fwdOptSDSweep3"
 #TYPE="cascon_random_test"
 
 export SCENARIO_JSON_DIR="$SCENARIO_DIR/scenario_json/$TYPE"
@@ -111,7 +114,7 @@ run_simulation() {
     local scenario_rateTrace="$SCENARIO_TRACE_DIR/rate-trace_${scenario}.txt"
     local now="$(date -Iseconds)"
 
-    echo "Starting Scenario: $scenario"
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] Starting Scenario: $scenario"
 
     # Run simulation, logging output to a unique file
     "$SCENARIO_DIR/waf" --run="ndn-cabeee-generic --scenario=$scenario_json --verbose=false" > "$scenario_log" 2>&1
@@ -230,13 +233,13 @@ export -f run_simulation
 echo "Dispatching jobs to all available CPU cores..."
 
 # Find all JSON files and pipe them into parallel using all system resources (may overload system if too many jobs are started at once)
-#find "$SCENARIO_JSON_DIR" -maxdepth 1 -name "*.json" | parallel --jobs 0 run_simulation {}
+#find "$SCENARIO_JSON_DIR" -maxdepth 1 -name "*.json" | parallel --ungroup --jobs 0 run_simulation {}
 # Find all JSON files and pipe them into parallel using all cores
-find "$SCENARIO_JSON_DIR" -maxdepth 1 -name "*.json" | parallel --jobs 100% run_simulation {}
+find "$SCENARIO_JSON_DIR" -maxdepth 1 -name "*.json" | parallel --ungroup --jobs 90% run_simulation {}
 # Find all JSON files and pipe them into parallel using 7 cores
-#find "$SCENARIO_JSON_DIR" -maxdepth 1 -name "*.json" | parallel --jobs 7 run_simulation {}
+#find "$SCENARIO_JSON_DIR" -maxdepth 1 -name "*.json" | parallel --ungroup --jobs 7 run_simulation {}
 # Find all JSON files and pipe them into parallel using half of the cores
-#find "$SCENARIO_JSON_DIR" -maxdepth 1 -name "*.json" | parallel --jobs 50% run_simulation {}
+#find "$SCENARIO_JSON_DIR" -maxdepth 1 -name "*.json" | parallel --ungroup --jobs 50% run_simulation {}
 
 # Wait for all semaphores to clear just to be safe
 #sem --wait --id csv_lock

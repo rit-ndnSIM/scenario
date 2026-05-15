@@ -441,7 +441,7 @@ class Workflow(Graph):
 
         return self.__class__([(node, service) for node, services in self._graph.items() for service in services], metadata=copy.deepcopy(self._metadata))
 
-    def get_services_json(self):
+    def get_services_json(self, strategy="/localhost/nfd/strategy/best-route"):
         services = []
 
         dag_producers = self.get_producers()
@@ -459,7 +459,7 @@ class Workflow(Graph):
             else:
                 raise ValueError("Node {node} is neither a producer, consumer, nor service (should be impossible, bug in Workflow(Graph))")
 
-            service = { "name": node, "type": typ }
+            service = { "name": node, "type": typ, "strategy": strategy }
             services.append(service)
 
         return services
