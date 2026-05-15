@@ -284,8 +284,9 @@ CustomAppConsumerServiceDiscovery::SendInterest()
   if(m_SDrunning == true)
   {
     //NS_LOG_ERROR("\n\n  ERROR!!! Workflow started before Service Discovery process finished!" << "\n\n");
-    NS_LOG_ERROR("\n\n  ERROR!!! Workflow started before Service Discovery process finished! Current time: " << Simulator::Now().GetNanoSeconds() << " nanoseconds, WF start time: " << m_WFstartTimeOffset.ToInteger(ns3::Time::NS) << " nanoseconds." << "\n\n");
+    NS_LOG_ERROR("\n\n  ERROR!!! (SendInterest) Workflow started before Service Discovery process finished! Current time: " << Simulator::Now().GetNanoSeconds() << " nanoseconds, WF start time: " << m_WFstartTimeOffset.ToInteger(ns3::Time::NS) << " nanoseconds." << "\n\n");
     NS_LOG_ERROR("\n\n  TO FIX ERROR: change the worflow start time for this scenario to be a little later, to allow SD to finish." << "\n\n");
+    //Simulator::Stop(Simulator::Now()); // end the simulation as soon as we receive this data packet, no need to keep going.
     return;
   }
 
@@ -306,6 +307,7 @@ CustomAppConsumerServiceDiscovery::SendInterest()
 
   std::ifstream f(m_dagPath);
   json dagObject = json::parse(f);
+  dagObject = { {"dag", dagObject["dag"] } }; // strip away all items except the one called "dag". In some cases (with automatically generated workflows), the JSON workflow file may contain "services" as well.
 
   // here we generate just the first interest(s) according to the workflow
   // to do this, we must discover which services in the DAG are "sink" services (services which feed the end consumer)
@@ -452,7 +454,7 @@ CustomAppConsumerServiceDiscovery::OnData(std::shared_ptr<const ndn::Data> data)
     if (timeNow > (m_WFstartTimeOffset + m_appStartTime))
     {
       //NS_LOG_ERROR("\n\n  ERROR!!! Workflow started before Service Discovery process finished!" << "\n\n");
-      NS_LOG_ERROR("\n\n  ERROR!!! Workflow started before Service Discovery process finished! Current time: " << Simulator::Now().GetSeconds() << ", WF start time: " << m_WFstartTimeOffset.ToInteger(ns3::Time::S) << " seconds." << "\n\n");
+      NS_LOG_ERROR("\n\n  ERROR!!! (OnData) Workflow started before Service Discovery process finished! Current time: " << Simulator::Now().GetSeconds() << ", WF start time: " << m_WFstartTimeOffset.ToInteger(ns3::Time::S) << " seconds." << "\n\n");
       NS_LOG_ERROR("\n\n  TO FIX ERROR: change the worflow start time for this scenario to be a little later, to allow SD to finish." << "\n\n");
     }
 
