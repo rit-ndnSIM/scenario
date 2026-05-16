@@ -3,7 +3,7 @@
 set -e
 
 # Generate a single timestamp to be used for all files in this run
-export name="fwdOptSDSweep3"
+export name="fwdOptSDSweep4"
 export TIMESTAMP=$(date +%Y%m%d-%H%M%S)
 export workdir="$PWD/generated_scenarios/$name"
 mkdir -p "$workdir"
@@ -154,6 +154,7 @@ generate_hs() {
     makespanMaxNS="$6"
     ser="$7"
     hostRatio="$8"
+    prev_hs="$9"
 
     hostRatio_string=$(printf "%03.1f" "$hostRatio")
     # we use jq to count how many items are under the "router" key in the JSON topology file
@@ -203,7 +204,9 @@ generate_hs() {
         --makespan-min "$makespanMinNS" \
         --makespan-max "$makespanMaxNS" \
         --min-hosts "$minHosts" \
-        --max-hosts "$maxHosts"
+        --max-hosts "$maxHosts" \
+        ${prev_hs:+--base-hosting "generated_scenarios/${name}/${prev_hs}"}
+    # Note: ${prev_hs:+--base-hosting ...} is a shell shorthand that only adds the flag if $prev_hs is not empty.
     echo "$output"
 }
 
@@ -365,17 +368,21 @@ run_category_task() {
         generated_wfs="$generated_wfs $wf"
     done
 
+
     # 3. Combinations
     for tp in $generated_topos; do
         for wf in $generated_wfs; do
+            prev_hs=""
+            # Generate hostings (sweep through hosting ratios, adding hosts to services as we increase the ratio - retain hosting from previous iteration)
             for hostRatio in $hostRatio_list; do
                 # Hosting Selection
                 sensors=1
                 users=1
                 makespanMinNS=8000000
                 makespanMaxNS=8000000
-                hs="$(generate_hs "$wf" "$tp" ${sensors} ${users} ${makespanMinNS} ${makespanMaxNS} ${padded_catCode} ${hostRatio})"
+                hs="$(generate_hs "$wf" "$tp" ${sensors} ${users} ${makespanMinNS} ${makespanMaxNS} ${padded_catCode} ${hostRatio} ${prev_hs})"
                 hostRatio_string=$(printf "%03.1f" "$hostRatio")
+                prev_hs=${hs}
 
                 # Clean the hs name
                 #hs_clean=${hs#*-}

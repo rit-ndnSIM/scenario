@@ -17,6 +17,11 @@ def uniform(args):
     if args.num_users:
         args.user_list = [f"user{i}" for i in range(args.num_users)]
 
+    base_assignments = []
+    if args.base_hosting and args.base_hosting.exists():
+        with open(args.base_hosting) as f:
+            base_assignments = json.load(f).get("routerHosting", [])
+
     with open(args.workflow) as f:
         workflow = graph.Workflow.from_dict(json.load(f))
 
@@ -26,7 +31,10 @@ def uniform(args):
     if len(args.start_times) != len(args.stop_times):
         raise Exception("length start times and stop times must match")
 
-    hosting = gen_uniform_hosting(workflow, topology, args.sensor_list, args.user_list, args.min_hosts, args.max_hosts)
+    # Pass the base_assignments to the generator
+    #hosting = gen_uniform_hosting(workflow, topology, args.sensor_list, args.user_list, args.min_hosts, args.max_hosts)
+    hosting = gen_uniform_hosting(workflow, topology, args.sensor_list, args.user_list, args.min_hosts, args.max_hosts, base_assignments)
+
     services = workflow.get_services()
     consumers = workflow.get_consumers()
     producers = workflow.get_producers()
@@ -44,7 +52,7 @@ def uniform(args):
 
     return { "routerHosting": hosting }
 
-
+'''
 def gen_uniform_hosting(workflow, topology, sensors=["sensor"], users=["user"], min_hosts=1, max_hosts=None):
     routers = topology.get_nodes()
 
@@ -90,6 +98,54 @@ def gen_uniform_hosting(workflow, topology, sensors=["sensor"], users=["user"], 
             hosting.append({ "router": router, "service": service })
 
     return hosting
+'''
+
+def gen_uniform_hosting(workflow, topology, sensors=["sensor"], users=["user"], min_hosts=1, max_hosts=None, base_assignments=[]):
+    routers = topology.get_nodes()
+    # ... existing validation checks ...
+
+    # If we have base assignments, start with them instead of an empty list
+    if base_assignments:
+        hosting = list(base_assignments)
+    else:
+        hosting = []
+        # Only perform initial sensor/user/producer/consumer mapping if hosting is empty
+        consumers = list(workflow.get_consumers())
+        producers = list(workflow.get_producers())
+
+        for user in users:
+            hosting.append({ "router": user, "service": consumers.pop()})
+        for consumer in consumers:
+            hosting.append({ "router": random.choice(users), "service": consumer})
+        for sensor in sensors:
+            hosting.append({ "router": sensor, "service": producers.pop()})
+        for producer in producers:
+            hosting.append({ "router": random.choice(sensors), "service": producer})
+
+    if max_hosts is None or max_hosts > len(routers):
+        max_hosts = len(routers)
+
+    for service in workflow.get_services():
+        # Determine current hosting for this service from the base file
+        current_routers = {h['router'] for h in hosting if h['service'] == service}
+        current_count = len(current_routers)
+
+        # Target number of hosts for this iteration
+        target_hosts = random.randint(min_hosts, max_hosts)
+        
+        # Only add if we haven't reached the target
+        if target_hosts > current_count:
+            needed = target_hosts - current_count
+            # Available routers are those NOT already hosting this specific service
+            available_routers = sorted(list(set(routers) - current_routers))
+            
+            if available_routers:
+                # Sample from the remaining available routers
+                new_routers = random.sample(available_routers, min(needed, len(available_routers)))
+                for router in new_routers:
+                    hosting.append({ "router": router, "service": service })
+
+    return hosting
 
 
 def combine(args):
@@ -127,6 +183,7 @@ def main():
     uni_parser.add_argument('--stop-times', nargs='+', type=int, default=[-1], help="list of stop time choices, paired with --start-times")
     uni_parser.add_argument('--makespan-min', type=int, default=0, help='minimum service makespan in NS')
     uni_parser.add_argument('--makespan-max', type=int, default=0, help='maximum service makespan in NS')
+    uni_parser.add_argument('-b', '--base-hosting', type=Path, help="base hosting json file to extend")
 
     comb_parser = subparsers.add_parser('combine', help="combine two hosting files")
     comb_parser.set_defaults(algorithm=combine)
