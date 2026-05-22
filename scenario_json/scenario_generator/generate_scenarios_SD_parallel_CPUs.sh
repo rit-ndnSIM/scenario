@@ -3,7 +3,7 @@
 set -e
 
 # Generate a single timestamp to be used for all files in this run
-export name="fwdOptSDSweep4"
+export name="fwdOptSDSweep20_5x8"
 export TIMESTAMP=$(date +%Y%m%d-%H%M%S)
 export workdir="$PWD/generated_scenarios/$name"
 mkdir -p "$workdir"
@@ -219,8 +219,8 @@ run_category_task() {
 # Define the sweep arrays
     run=$1
     wf_topo_pair=$2
-    num_services_list="4"
-    num_nodes_list="4"
+    num_services_list="5"
+    num_nodes_list="8"
     edgeratio_list="0.5"
     hostRatio_list="0 0.2 0.4 0.6 0.8 1"
     VISUALIZE=false
@@ -417,9 +417,9 @@ run_category_task() {
                         --resourceAllocation 0 \
                         --allocationReuse 0 \
                         --scheduleCompaction 0 \
-                        --startTimeOffsetSD 0 \
-                        --startTimeOffsetWF 0 \
-                        --simulationEndTime 200
+                        --startTimeOffsetSD 1 \
+                        --startTimeOffsetWF 2 \
+                        --simulationEndTime 3
 
                     cp "${output_filename}" ../$name/
 
@@ -440,9 +440,9 @@ run_category_task() {
                         --resourceAllocation 0 \
                         --allocationReuse 0 \
                         --scheduleCompaction 0 \
-                        --startTimeOffsetSD 0 \
-                        --startTimeOffsetWF 0 \
-                        --simulationEndTime 200
+                        --startTimeOffsetSD 1 \
+                        --startTimeOffsetWF 2 \
+                        --simulationEndTime 3
 
                     cp "${output_filename}" ../$name/
 
@@ -466,7 +466,7 @@ run_category_task() {
                         --scheduleCompaction 0 \
                         --startTimeOffsetSD 1 \
                         --startTimeOffsetWF 2 \
-                        --simulationEndTime 200
+                        --simulationEndTime 3
 
                     cp "${output_filename}" ../$name/
 
@@ -489,7 +489,7 @@ run_category_task() {
                         --scheduleCompaction 1 \
                         --startTimeOffsetSD 1 \
                         --startTimeOffsetWF 2 \
-                        --simulationEndTime 200
+                        --simulationEndTime 3
 
                     cp "${output_filename}" ../$name/
 
@@ -512,7 +512,7 @@ run_category_task() {
                         --scheduleCompaction 1 \
                         --startTimeOffsetSD 1 \
                         --startTimeOffsetWF 2 \
-                        --simulationEndTime 200
+                        --simulationEndTime 3
 
                     cp "${output_filename}" ../$name/
 
@@ -555,7 +555,7 @@ run_category_task() {
 export -f run_category_task
 
 # --- EXECUTION ---
-NUM_RUNS=1
+NUM_RUNS=20
 # Define specific pairs as "workflow:topology"
 wf_topo_pairs="linear:multi_tiered map_reduce:star_of_stars map_reduce:mesh wavefront:mesh"
 
