@@ -48,7 +48,8 @@ def uniform(args):
             # TODO: this may need to be configurable
             item.update({"workflowFile": str(args.workflow), "dag": "dag1", "start": 0, "end": -1 })
         elif item['service'] in producers:
-            item.update({"start": 0, "end": -1 })
+            #item.update({"start": 0, "end": -1 })
+            item.update({"start": 0, "end": -1, 'makespanNS': 1000000})
 
     return { "routerHosting": hosting }
 
