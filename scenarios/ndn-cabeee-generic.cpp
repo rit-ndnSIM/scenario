@@ -63,16 +63,31 @@ int
 main(int argc, char* argv[])
 {
     std::string scenario_file = "";
+    std::string trace_dir = "";
     bool verbose = false;
+    float overrideTrace = 0;
 
     CommandLine cmd;
     cmd.AddValue("scenario", "json scenario file to use", scenario_file);
+    cmd.AddValue("traceDir", "trace directory where to store trace files", trace_dir);
     cmd.AddValue("verbose", "increase verbosity", verbose);
+    cmd.AddValue("overrideTrace", "override rateTrace, csTrace and csUsage interval to this number of seconds", overrideTrace);
     cmd.Parse(argc, argv);
 
     if (scenario_file == "") {
         std::cerr << "No scenario file specified (use '--scenario FILE')\n";
         std::exit(1);
+    }
+
+    if (trace_dir == "") {
+        std::cerr << "No trace directory specified (use '--traceDir PATH')\n";
+        std::exit(1);
+    }
+
+    if (verbose)
+    {
+        std::cout << "Trace directory is: " << trace_dir << std::endl;
+        std::cout << "Trace override is: " << overrideTrace << std::endl;
     }
 
     const json scenario_json = json::parse(std::ifstream(scenario_file));
@@ -363,9 +378,15 @@ main(int argc, char* argv[])
     if (scenario_json.contains("csUsage")) {
         csUsageInterval = scenario_json.at("csUsage");
     }
+    if (overrideTrace > 0)
+    {
+        rateTraceInterval = overrideTrace;
+        csTraceInterval = overrideTrace;
+        csUsageInterval = overrideTrace;
+    }
     std::string baseName = std::filesystem::path(scenario_file).stem().string();
     if (rateTraceInterval != 0) {
-        std::string rTraceFileName = "trace_results/rate-trace_" + baseName + ".txt";
+        std::string rTraceFileName = trace_dir + "/rate-trace_" + baseName + ".txt";
         ndn::L3RateTracer::InstallAll(rTraceFileName, Seconds(rateTraceInterval));
         std::cout << "Rate Trace Interval IS set. Filename is " << rTraceFileName << std::endl;
     }
@@ -373,7 +394,7 @@ main(int argc, char* argv[])
         std::cout << "Rate Trace Interval NOT set" << std::endl;
     }
     if (csTraceInterval != 0) {
-        std::string csTraceFileName = "trace_results/cs-trace_" + baseName + ".txt";
+        std::string csTraceFileName = trace_dir + "/cs-trace_" + baseName + ".txt";
         ndn::CsTracer::InstallAll(csTraceFileName, Seconds(csTraceInterval));
         std::cout << "CS Trace Interval IS set. Filename is " << csTraceFileName << std::endl;
     }
@@ -381,7 +402,7 @@ main(int argc, char* argv[])
         std::cout << "CS Trace Interval NOT set" << std::endl;
     }
     if (csUsageInterval != 0) {
-        std::string csUsageFileName = "trace_results/cs-usage_" + baseName + ".txt";
+        std::string csUsageFileName = trace_dir + "/cs-usage_" + baseName + ".txt";
         std::ofstream fout(csUsageFileName);
         fout << "testing" << std::endl;
         Simulator::Schedule(Seconds(0), &ns3::printCsHeader, ref(fout));

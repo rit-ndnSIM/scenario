@@ -446,16 +446,20 @@ CustomAppConsumerServiceDiscovery::OnData(std::shared_ptr<const ndn::Data> data)
 
     // IF this is an SD data packet, then begin the normal consumer workflow request (call CustomAppConsumerServiceDiscovery::SendInterest())
     //CustomAppConsumerServiceDiscovery::SendInterest();
+    // We no longer start the WF as soon as SD is done. We instead use the WF start time from the JSON file.
 
     m_SDrunning = false;
 
     // if we have already started the workflow, report an error. (if current time is past the workflow start time)
     Time timeNow = Simulator::Now();
-    if (timeNow > (m_WFstartTimeOffset + m_appStartTime))
+    //if (timeNow > (m_WFstartTimeOffset + m_appStartTime))
+    if (timeNow > m_WFstartTimeOffset)
     {
       //NS_LOG_ERROR("\n\n  ERROR!!! Workflow started before Service Discovery process finished!" << "\n\n");
       NS_LOG_ERROR("\n\n  ERROR!!! (OnData) Workflow started before Service Discovery process finished! Current time: " << Simulator::Now().GetSeconds() << ", WF start time: " << m_WFstartTimeOffset.ToInteger(ns3::Time::S) << " seconds." << "\n\n");
       NS_LOG_ERROR("\n\n  TO FIX ERROR: change the worflow start time for this scenario to be a little later, to allow SD to finish." << "\n\n");
+      //Simulator::Stop(Simulator::Now()); // end the simulation as soon as we receive this data packet, no need to keep going.
+      return;
     }
 
   }

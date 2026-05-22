@@ -33,17 +33,8 @@ LOGS=$LOGS:ndn-cxx.nfd.Forwarder="error|warn|info|time|node|func"
 
 export NS_LOG="$LOGS"
 
-export NDNSIM_HOME="$HOME/ndnSIM"
-export SCENARIO_DIR="$HOME/ndnSIM/scenario"
-export SCENARIO_LOGS_DIR="$SCENARIO_DIR/scenario_logs"
-export SCENARIO_TRACE_DIR="$SCENARIO_DIR/trace_results"
-export WORKFLOW_DIR="$HOME/ndnSIM/scenario/workflows"
-export TOPOLOGY_DIR="$HOME/ndnSIM/scenario/topologies"
-export CPM_DIR="$HOME/CPM"
-export USAGE_ALLOCATION_GRAPHS_DIR="$HOME/ndnSIM/scenario/usage_allocation_graphs"
-#export GEN_ALLOCATION_GRAPHS="true"
-export GEN_ALLOCATION_GRAPHS="false"
 
+#---------------------------------  SETTINGS -----------------------------------
 #TYPE="cascon_main"
 #TYPE="cascon_main_cat"
 #TYPE="cascon_cpm"
@@ -55,8 +46,33 @@ export GEN_ALLOCATION_GRAPHS="false"
 #TYPE="fwdOptSDSweep"
 #TYPE="fwdOptSDSweep2"
 #TYPE="fwdOptSDSweep3"
-TYPE="fwdOptSDSweep4"
+#TYPE="fwdOptSDSweep4"
+#TYPE="fwdOptSDSweep5"
+TYPE="fwdOptSDSweep20"
+#TYPE="fwdOptSDSweep20_5x8"
 #TYPE="cascon_random_test"
+
+
+#export GEN_ALLOCATION_GRAPHS="true"
+export GEN_ALLOCATION_GRAPHS="false"
+export FORCE_RERUN_ALL="true"   # Set to "true" to run everything. Set to "false" to only run missing/failed scenarios.
+export FORCE_TRACE=0.1    # Set to override trace settings in JSON file. This value is the trace interval in seconds.
+
+
+#------------------------------ END OF SETTINGS -----------------------------------
+
+
+
+export NDNSIM_HOME="$HOME/ndnSIM"
+export SCENARIO_DIR="$HOME/ndnSIM/scenario"
+export SCENARIO_LOGS_DIR="$SCENARIO_DIR/scenario_logs"
+export SCENARIO_TRACE_DIR="$SCENARIO_DIR/trace_results/$TYPE"
+export WORKFLOW_DIR="$HOME/ndnSIM/scenario/workflows"
+export TOPOLOGY_DIR="$HOME/ndnSIM/scenario/topologies"
+export CPM_DIR="$HOME/CPM"
+export USAGE_ALLOCATION_GRAPHS_DIR="$HOME/ndnSIM/scenario/usage_allocation_graphs"
+
+
 
 export SCENARIO_JSON_DIR="$SCENARIO_DIR/scenario_json/$TYPE"
 export csv_out="$SCENARIO_DIR/perf-results-simulation-generic_${TYPE}.csv"
@@ -68,13 +84,36 @@ mkdir -p "$SCENARIO_TRACE_DIR"
 #header="Example, SD Interest Packets Generated, SD Data Packets Generated, SD Interest Packets Transmitted, SD Data Packets Transmitted, WF Interest Packets Generated, WF Data Packets Generated, WF Interest Packets Transmitted, WF Data Packets Transmitted, Critical-Path-Metric, CPM-t_exec(ns), SD Latency (us), SD Estimated WF Service Latency (us), WF Service Latency (us), Total Node Usage Time (us), Average Node Utilization (%), Coefficient of Variation (load distribution), Final Result, Time, ns-3 commit, pybindgen commit, scenario commit, ndnSIM commit"
 header="Example, SD Interest Packets Generated, SD Data Packets Generated, SD Interest Packets Transmitted, SD Data Packets Transmitted, WF Interest Packets Generated, WF Data Packets Generated, WF Interest Packets Transmitted, WF Data Packets Transmitted, Critical-Path-Metric, CPM-t_exec(ns), SD Latency (us), SD Estimated WF Service Latency (us), WF Service Latency (us), Total Node Usage Time (us), Average Node Utilization (%), Coefficient of Variation (load distribution), Total Cache Hits, Total Cache Misses, Avg Cache Usage, Total KB Transferred, Final Result, Time, ns-3 commit, pybindgen commit, scenario commit, ndnSIM commit"
 
+# Function to write sorted placeholder rows into the CSV file
+populate_blank_scenarios() {
+    # Count how many total columns exist by counting commas in the header
+    local total_commas=$(echo "$header" | tr -cd ',' | wc -c)
+    local trailing_commas=""
+    
+    # Generate the exact number of trailing commas needed for the blank rows
+    for i in $(seq 1 $total_commas); do
+        trailing_commas="${trailing_commas},"
+    done
+
+    # 1. Find all JSON files
+    # 2. Extract just the filename without the path
+    # 3. Strip the .json extension
+    # 4. Sort them alphabetically
+    # 5. Append the commas and write to the CSV
+    find "$SCENARIO_JSON_DIR" -maxdepth 1 -name "*.json" -exec basename {} .json \; | sort | while read -r scenario; do
+        echo "${scenario}${trailing_commas}" >> "$csv_out"
+    done
+}
+
 if [ ! -f "$csv_out" ]; then
     echo "Creating csv..."
     echo "$header" > "$csv_out"
+    populate_blank_scenarios
 elif ! grep -q -F "$header" "$csv_out"; then
     echo "Overwriting csv..."
     mv "$csv_out" "$csv_out.bak"
     echo "$header" > "$csv_out"
+    populate_blank_scenarios
 else
     echo "Updating csv..."
     cp "$csv_out" "$csv_out.bak"
@@ -106,6 +145,9 @@ export -f update_csv
 # --- 4. Define the Simulation Worker ---
 run_simulation() {
     local filepath="$1"
+    local force_run="$2"
+    local csv_file="$3"
+    local force_trace="$4"
     local filename=$(basename "$filepath")
     local scenario="${filename%.*}"
     local scenario_json="$filepath"
@@ -115,10 +157,27 @@ run_simulation() {
     local scenario_rateTrace="$SCENARIO_TRACE_DIR/rate-trace_${scenario}.txt"
     local now="$(date -Iseconds)"
 
+    # --- Smart Skip Logic ---
+    if [ "$force_run" = "false" ]; then
+        # Locate the exact line for this scenario
+        local csv_line=$(grep -F "$scenario," "$csv_file" | head -1)
+        if [ -n "$csv_line" ]; then
+            # Parse the 14th column using comma separation, trimming spaces
+            local col14=$(echo "$csv_line" | cut -d',' -f14 | tr -d '[:space:]')
+            
+            # Check if it's a valid positive float or integer (> 0)
+            if [[ "$col14" =~ ^[0-9]+(\.[0-9]+)?$ ]] && (( $(echo "$col14 > 0" | bc -l) )); then
+                echo "[SKIP] Scenario '$scenario' already has a valid result ($col14 us)."
+                return 0
+            fi
+        fi
+    fi
+
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] Starting Scenario: $scenario"
 
     # Run simulation, logging output to a unique file
-    "$SCENARIO_DIR/waf" --run="ndn-cabeee-generic --scenario=$scenario_json --verbose=false" > "$scenario_log" 2>&1
+    #"$SCENARIO_DIR/waf" --run="ndn-cabeee-generic --scenario=$scenario_json --verbose=true" > "$scenario_log" 2>&1
+    "$SCENARIO_DIR/waf" --run="ndn-cabeee-generic --scenario=$scenario_json --verbose=false --overrideTrace=$force_trace --traceDir=$SCENARIO_TRACE_DIR" > "$scenario_log" 2>&1
 
     # Parse logs
     local estimatedWFLatency=$(grep "Service Latency estimated by SD:" "$scenario_log" | tail -n 1 | sed -n 's/^\s*Service Latency estimated by SD: \([0-9\.]*\) microseconds.$/\1/p')
@@ -231,16 +290,35 @@ run_simulation() {
 export -f run_simulation
 
 # --- 5. Dispatch Jobs ---
-echo "Dispatching jobs to all available CPU cores..."
+#echo "Dispatching jobs to all available CPU cores..."
+echo "Dispatching jobs in prioritized hR order (0.0 -> 0.2 -> 0.4 -> 0.6 -> 0.8 -> 1.0)..."
+
 
 # Find all JSON files and pipe them into parallel using all system resources (may overload system if too many jobs are started at once)
 #find "$SCENARIO_JSON_DIR" -maxdepth 1 -name "*.json" | parallel --ungroup --jobs 0 run_simulation {}
 # Find all JSON files and pipe them into parallel using all cores
-find "$SCENARIO_JSON_DIR" -maxdepth 1 -name "*.json" | parallel --ungroup --jobs 90% run_simulation {}
+#find "$SCENARIO_JSON_DIR" -maxdepth 1 -name "*.json" | parallel --ungroup --jobs 90% run_simulation {}
 # Find all JSON files and pipe them into parallel using 7 cores
 #find "$SCENARIO_JSON_DIR" -maxdepth 1 -name "*.json" | parallel --ungroup --jobs 7 run_simulation {}
 # Find all JSON files and pipe them into parallel using half of the cores
 #find "$SCENARIO_JSON_DIR" -maxdepth 1 -name "*.json" | parallel --ungroup --jobs 50% run_simulation {}
+
+
+# 1. Find all json files
+# 2. Extract 'hR_X.X' from the middle of the filename to use as a sorting prefix
+# 3. Sort them alphanumerically (0.0 first, 1.0 last)
+# 4. Strip the prefix so GNU Parallel receives the original clean file path
+find "$SCENARIO_JSON_DIR" -maxdepth 1 -name "*.json" | awk '
+    {
+        # Match "hR_" followed by a number, a dot, and another number
+        if (match($0, /hR_[0-9]+\.[0-9]+/)) {
+            print substr($0, RSTART, RLENGTH) "\t" $0
+        } else {
+            # Catch-all fallback just in case a file misses the pattern
+            print "z_no_hR" "\t" $0
+        }
+    }
+' | sort -V | cut -f2- | parallel --ungroup --jobs 90% run_simulation {} "$FORCE_RERUN_ALL" "$csv_out" "$FORCE_TRACE"
 
 # Wait for all semaphores to clear just to be safe
 #sem --wait --id csv_lock
@@ -253,3 +331,23 @@ H=$((TOTAL_RUNTIME / 3600))
 M=$(((TOTAL_RUNTIME % 3600) / 60))
 S=$((TOTAL_RUNTIME % 60))
 printf "\nTotal Execution Time: %02d:%02d:%02d (%d seconds)\n" $H $M $S $TOTAL_RUNTIME
+
+echo -e "\a"
+sleep 0.5
+echo -e "\a"
+sleep 0.5
+echo -e "\a"
+sleep 0.5
+echo -e "\a"
+sleep 0.5
+echo -e "\a"
+sleep 0.5
+echo -e "\a"
+sleep 0.5
+echo -e "\a"
+sleep 0.5
+echo -e "\a"
+sleep 0.5
+echo -e "\a"
+sleep 0.5
+echo -e "\a"
