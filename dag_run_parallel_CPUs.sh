@@ -183,8 +183,11 @@ run_simulation() {
     local estimatedWFLatency=$(grep "Service Latency estimated by SD:" "$scenario_log" | tail -n 1 | sed -n 's/^\s*Service Latency estimated by SD: \([0-9\.]*\) microseconds.$/\1/p')
     estimatedWFLatency="${estimatedWFLatency:-N.A.}"
 
-    local SDlatency=$(grep "Service Discovery Latency:" "$scenario_log" | tail -n 1 | sed -n 's/^\s*Service Discovery Latency: \([0-9\.]*\) microseconds.$/\1/p')
+    #local SDlatency=$(grep "Service Discovery Latency:" "$scenario_log" | tail -n 1 | sed -n 's/^\s*Service Discovery Latency: \([0-9\.]*\) microseconds.$/\1/p')
+    #SDlatency="${SDlatency:-N.A.}"
+    local SDlatency=$(grep -o "Service Discovery Latency: [0-9]* microseconds" "$scenario_log" | tail -n 1 | cut -d' ' -f4)
     SDlatency="${SDlatency:-N.A.}"
+
 
     local WFlatency=$(grep "Service Latency:" "$scenario_log" | sed -n 's/^\s*Service Latency: \([0-9\.]*\) microseconds.$/\1/p')
     WFlatency="${WFlatency:-Error_WFLatency}"
