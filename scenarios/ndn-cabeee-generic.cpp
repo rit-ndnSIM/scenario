@@ -66,12 +66,14 @@ main(int argc, char* argv[])
     std::string trace_dir = "";
     bool verbose = false;
     float overrideTrace = 0;
+    uint64_t overrideMakespan = 0;
 
     CommandLine cmd;
     cmd.AddValue("scenario", "json scenario file to use", scenario_file);
     cmd.AddValue("traceDir", "trace directory where to store trace files", trace_dir);
     cmd.AddValue("verbose", "increase verbosity", verbose);
     cmd.AddValue("overrideTrace", "override rateTrace, csTrace and csUsage interval to this number of seconds", overrideTrace);
+    cmd.AddValue("overrideMakespan", "override service makespan value to this number of nanoseconds", overrideMakespan);
     cmd.Parse(argc, argv);
 
     if (scenario_file == "") {
@@ -88,6 +90,7 @@ main(int argc, char* argv[])
     {
         std::cout << "Trace directory is: " << trace_dir << std::endl;
         std::cout << "Trace override is: " << overrideTrace << std::endl;
+        std::cout << "Makespan override is: " << overrideMakespan << std::endl;
     }
 
     const json scenario_json = json::parse(std::ifstream(scenario_file));
@@ -182,6 +185,10 @@ main(int argc, char* argv[])
         std::string srv_name{ hosting.at("service") };
         if (hosting.contains("makespanNS")) {
             makespanNS = hosting["makespanNS"];
+        }
+        if (overrideMakespan > 0)
+        {
+            makespanNS = overrideMakespan;
         }
         Ptr<Node> rtr_node = Names::Find<Node>(rtr_name);
         hosting_map[rtr_name + srv_name] = &hosting;

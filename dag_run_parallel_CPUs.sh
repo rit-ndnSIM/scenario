@@ -60,6 +60,7 @@ export FORCE_RERUN_ALL="true"   # Set to "true" to run everything. Set to "false
 #export FORCE_RERUN_ALL="false"   # Set to "true" to run everything. Set to "false" to only run missing/failed scenarios.
 export FORCE_TRACE=0    # Set to override trace settings in JSON file. This value is the trace interval in seconds.
 #export FORCE_TRACE=0.1    # Set to override trace settings in JSON file. This value is the trace interval in seconds.
+export FORCE_MAKESPAN=20000000    # Set to override service makespanNS settings in JSON file.
 
 
 #------------------------------ END OF SETTINGS -----------------------------------
@@ -151,6 +152,7 @@ run_simulation() {
     local force_run="$2"
     local csv_file="$3"
     local force_trace="$4"
+    local force_makespan="$5"
     local filename=$(basename "$filepath")
     local scenario="${filename%.*}"
     local scenario_json="$filepath"
@@ -180,7 +182,7 @@ run_simulation() {
 
     # Run simulation, logging output to a unique file
     #"$SCENARIO_DIR/waf" --run="ndn-cabeee-generic --scenario=$scenario_json --verbose=true" > "$scenario_log" 2>&1
-    "$SCENARIO_DIR/waf" --run="ndn-cabeee-generic --scenario=$scenario_json --verbose=false --overrideTrace=$force_trace --traceDir=$SCENARIO_TRACE_DIR" > "$scenario_log" 2>&1
+    "$SCENARIO_DIR/waf" --run="ndn-cabeee-generic --scenario=$scenario_json --verbose=false --overrideTrace=$force_trace --traceDir=$SCENARIO_TRACE_DIR --overrideMakespan=$force_makespan" > "$scenario_log" 2>&1
 
     # Parse logs
     local estimatedWFLatency=$(grep "Service Latency estimated by SD:" "$scenario_log" | tail -n 1 | sed -n 's/^\s*Service Latency estimated by SD: \([0-9\.]*\) microseconds.$/\1/p')
@@ -324,7 +326,7 @@ find "$SCENARIO_JSON_DIR" -maxdepth 1 -name "*.json" | awk '
             print "z_no_hR" "\t" $0
         }
     }
-' | sort -V | cut -f2- | parallel --ungroup --jobs 90% run_simulation {} "$FORCE_RERUN_ALL" "$csv_out" "$FORCE_TRACE"
+' | sort -V | cut -f2- | parallel --ungroup --jobs 90% run_simulation {} "$FORCE_RERUN_ALL" "$csv_out" "$FORCE_TRACE" "$FORCE_MAKESPAN"
 
 # Wait for all semaphores to clear just to be safe
 #sem --wait --id csv_lock
