@@ -1,0 +1,103 @@
+{
+    "routerHosting": [
+        {
+            "router": "user0",
+            "service": "/consumer",
+            "workflowFile": "/home/cabeee/ndnSIM/scenario/scenario_json/scenario_generator/generated_scenarios/fwdOptSDSweep20_5x8/20260519-222659-002-174--wf_messy-005srv-001prod-001con-000skip-agg-005layer.json",
+            "dag": "dag1",
+            "start": 0,
+            "end": -1
+        },
+        {
+            "router": "sensor0",
+            "service": "/sensor",
+            "start": 0,
+            "end": -1,
+            "makespanNS": 1000000
+        },
+        {
+            "router": "user0",
+            "service": "/service4",
+            "start": 0,
+            "end": -1,
+            "makespanNS": 8000000
+        },
+        {
+            "router": "rtr5",
+            "service": "/service3",
+            "start": 0,
+            "end": -1,
+            "makespanNS": 8000000
+        },
+        {
+            "router": "rtr7",
+            "service": "/aggregator",
+            "start": 0,
+            "end": -1,
+            "makespanNS": 8000000
+        },
+        {
+            "router": "rtr5",
+            "service": "/service1",
+            "start": 0,
+            "end": -1,
+            "makespanNS": 8000000
+        },
+        {
+            "router": "rtr1",
+            "service": "/service2",
+            "start": 0,
+            "end": -1,
+            "makespanNS": 8000000
+        },
+        {
+            "router": "user0",
+            "service": "/service0",
+            "start": 0,
+            "end": -1,
+            "makespanNS": 8000000
+        },
+        {
+            "router": "rtr2",
+            "service": "/service4",
+            "start": 0,
+            "end": -1,
+            "makespanNS": 8000000
+        },
+        {
+            "router": "rtr2",
+            "service": "/service3",
+            "start": 0,
+            "end": -1,
+            "makespanNS": 8000000
+        },
+        {
+            "router": "rtr3",
+            "service": "/service1",
+            "start": 0,
+            "end": -1,
+            "makespanNS": 8000000
+        },
+        {
+            "router": "rtr2",
+            "service": "/aggregator",
+            "start": 0,
+            "end": -1,
+            "makespanNS": 8000000
+        },
+        {
+            "router": "user0",
+            "service": "/service2",
+            "start": 0,
+            "end": -1,
+            "makespanNS": 8000000
+        },
+        {
+            "router": "rtr6",
+            "service": "/service0",
+            "start": 0,
+            "end": -1,
+            "makespanNS": 8000000
+        }
+    ]
+}

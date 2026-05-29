@@ -1,0 +1,71 @@
+{
+    "dag": {
+        "/sensor": {
+            "/service0": 0,
+            "/service2": 0,
+            "/service4": 0,
+            "/service1": 0,
+            "/service3": 0
+        },
+        "/service0": {
+            "/aggregator": 0
+        },
+        "/service4": {
+            "/aggregator": 1
+        },
+        "/service3": {
+            "/aggregator": 2
+        },
+        "/service2": {
+            "/aggregator": 3
+        },
+        "/service1": {
+            "/aggregator": 4
+        },
+        "/aggregator": {
+            "/consumer": 0
+        }
+    },
+    "services": [
+        {
+            "name": "/service0",
+            "type": "service",
+            "strategy": "/localhost/nfd/strategy/best-route"
+        },
+        {
+            "name": "/aggregator",
+            "type": "service",
+            "strategy": "/localhost/nfd/strategy/best-route"
+        },
+        {
+            "name": "/consumer",
+            "type": "consumer",
+            "strategy": "/localhost/nfd/strategy/best-route"
+        },
+        {
+            "name": "/service2",
+            "type": "service",
+            "strategy": "/localhost/nfd/strategy/best-route"
+        },
+        {
+            "name": "/service4",
+            "type": "service",
+            "strategy": "/localhost/nfd/strategy/best-route"
+        },
+        {
+            "name": "/service1",
+            "type": "service",
+            "strategy": "/localhost/nfd/strategy/best-route"
+        },
+        {
+            "name": "/sensor",
+            "type": "producer",
+            "strategy": "/localhost/nfd/strategy/best-route"
+        },
+        {
+            "name": "/service3",
+            "type": "service",
+            "strategy": "/localhost/nfd/strategy/best-route"
+        }
+    ]
+}

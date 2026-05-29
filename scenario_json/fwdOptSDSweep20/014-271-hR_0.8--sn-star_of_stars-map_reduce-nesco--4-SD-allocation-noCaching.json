@@ -1,0 +1,321 @@
+{
+  "prefix": "nesco",
+  "topofile": "/home/cabeee/ndnSIM/scenario/scenario_json/scenario_generator/generated_scenarios/fwdOptSDSweep20/20260518-235523-014-271--tp_sos4map_reduce-004rtr-001snsr-001usr-000000cs.txt",
+  "serviceDiscovery": 1,
+  "resourceAllocation": 1,
+  "allocationReuse": 1,
+  "scheduleCompaction": 1,
+  "startTimeOffsetSD": 1,
+  "startTimeOffsetWF": 2,
+  "simulationEndTime": 3,
+  "router": [
+    {
+      "comment": "NA",
+      "y": 0,
+      "x": 0,
+      "cs-size": 0,
+      "node": "rtr3"
+    },
+    {
+      "comment": "NA",
+      "y": 0,
+      "x": 0,
+      "cs-size": 0,
+      "node": "user0"
+    },
+    {
+      "comment": "NA",
+      "y": 0,
+      "x": 0,
+      "cs-size": 0,
+      "node": "sensor0"
+    },
+    {
+      "comment": "NA",
+      "y": 0,
+      "x": 0,
+      "cs-size": 0,
+      "node": "rtr1"
+    },
+    {
+      "comment": "NA",
+      "y": 0,
+      "x": 0,
+      "cs-size": 0,
+      "node": "rtr0"
+    },
+    {
+      "comment": "NA",
+      "y": 0,
+      "x": 0,
+      "cs-size": 0,
+      "node": "rtr2"
+    }
+  ],
+  "link": [
+    {
+      "capacity": "10Mbps",
+      "metric": "1",
+      "delay": "1ms",
+      "queue": "100000",
+      "from": "rtr3",
+      "to": "sensor0"
+    },
+    {
+      "capacity": "10Mbps",
+      "metric": "1",
+      "delay": "1ms",
+      "queue": "100000",
+      "from": "rtr1",
+      "to": "rtr2"
+    },
+    {
+      "capacity": "10Mbps",
+      "metric": "1",
+      "delay": "1ms",
+      "queue": "100000",
+      "from": "rtr1",
+      "to": "rtr3"
+    },
+    {
+      "capacity": "10Mbps",
+      "metric": "1",
+      "delay": "1ms",
+      "queue": "100000",
+      "from": "rtr0",
+      "to": "rtr1"
+    },
+    {
+      "capacity": "10Mbps",
+      "metric": "1",
+      "delay": "1ms",
+      "queue": "100000",
+      "from": "rtr2",
+      "to": "user0"
+    }
+  ],
+  "services": [
+    {
+      "name": "/consumer",
+      "type": "consumer",
+      "strategy": "/localhost/nfd/strategy/best-route"
+    },
+    {
+      "name": "/service1",
+      "type": "service",
+      "strategy": "/localhost/nfd/strategy/best-route"
+    },
+    {
+      "name": "/service2",
+      "type": "service",
+      "strategy": "/localhost/nfd/strategy/best-route"
+    },
+    {
+      "name": "/service0",
+      "type": "service",
+      "strategy": "/localhost/nfd/strategy/best-route"
+    },
+    {
+      "name": "/service3",
+      "type": "service",
+      "strategy": "/localhost/nfd/strategy/best-route"
+    },
+    {
+      "name": "/sensor",
+      "type": "producer",
+      "strategy": "/localhost/nfd/strategy/best-route"
+    },
+    {
+      "name": "/aggregator",
+      "type": "service",
+      "strategy": "/localhost/nfd/strategy/best-route"
+    },
+    {
+      "name": "/serviceDiscovery",
+      "type": "service",
+      "strategy": "/localhost/nfd/strategy/best-route"
+    }
+  ],
+  "routerHosting": [
+    {
+      "router": "user0",
+      "service": "/consumer",
+      "workflowFile": "/home/cabeee/ndnSIM/scenario/scenario_json/scenario_generator/generated_scenarios/fwdOptSDSweep20/20260518-235523-014-271--wf_messy-004srv-001prod-001con-000skip-agg-003layer.json",
+      "dag": "dag1",
+      "start": 0,
+      "end": -1
+    },
+    {
+      "router": "sensor0",
+      "service": "/sensor",
+      "start": 0,
+      "end": -1,
+      "makespanNS": 1000000
+    },
+    {
+      "router": "sensor0",
+      "service": "/service3",
+      "start": 0,
+      "end": -1,
+      "makespanNS": 8000000
+    },
+    {
+      "router": "rtr3",
+      "service": "/service2",
+      "start": 0,
+      "end": -1,
+      "makespanNS": 8000000
+    },
+    {
+      "router": "sensor0",
+      "service": "/service1",
+      "start": 0,
+      "end": -1,
+      "makespanNS": 8000000
+    },
+    {
+      "router": "rtr2",
+      "service": "/aggregator",
+      "start": 0,
+      "end": -1,
+      "makespanNS": 8000000
+    },
+    {
+      "router": "rtr3",
+      "service": "/service0",
+      "start": 0,
+      "end": -1,
+      "makespanNS": 8000000
+    },
+    {
+      "router": "rtr0",
+      "service": "/service2",
+      "start": 0,
+      "end": -1,
+      "makespanNS": 8000000
+    },
+    {
+      "router": "rtr1",
+      "service": "/service1",
+      "start": 0,
+      "end": -1,
+      "makespanNS": 8000000
+    },
+    {
+      "router": "rtr1",
+      "service": "/aggregator",
+      "start": 0,
+      "end": -1,
+      "makespanNS": 8000000
+    },
+    {
+      "router": "rtr3",
+      "service": "/service3",
+      "start": 0,
+      "end": -1,
+      "makespanNS": 8000000
+    },
+    {
+      "router": "rtr2",
+      "service": "/service0",
+      "start": 0,
+      "end": -1,
+      "makespanNS": 8000000
+    },
+    {
+      "router": "rtr0",
+      "service": "/service3",
+      "start": 0,
+      "end": -1,
+      "makespanNS": 8000000
+    },
+    {
+      "router": "rtr2",
+      "service": "/service1",
+      "start": 0,
+      "end": -1,
+      "makespanNS": 8000000
+    },
+    {
+      "router": "sensor0",
+      "service": "/service0",
+      "start": 0,
+      "end": -1,
+      "makespanNS": 8000000
+    },
+    {
+      "router": "rtr3",
+      "service": "/aggregator",
+      "start": 0,
+      "end": -1,
+      "makespanNS": 8000000
+    },
+    {
+      "router": "user0",
+      "service": "/service2",
+      "start": 0,
+      "end": -1,
+      "makespanNS": 8000000
+    },
+    {
+      "router": "sensor0",
+      "service": "/aggregator",
+      "start": 0,
+      "end": -1,
+      "makespanNS": 8000000
+    },
+    {
+      "router": "rtr1",
+      "service": "/service2",
+      "start": 0,
+      "end": -1,
+      "makespanNS": 8000000
+    },
+    {
+      "router": "rtr1",
+      "service": "/service0",
+      "start": 0,
+      "end": -1,
+      "makespanNS": 8000000
+    },
+    {
+      "router": "user0",
+      "service": "/service3",
+      "start": 0,
+      "end": -1,
+      "makespanNS": 8000000
+    },
+    {
+      "router": "user0",
+      "service": "/service1",
+      "start": 0,
+      "end": -1,
+      "makespanNS": 8000000
+    }
+  ],
+  "dag": {
+    "dag1": {
+      "/sensor": {
+        "/service2": 0,
+        "/service0": 0,
+        "/service1": 0,
+        "/service3": 0
+      },
+      "/service0": {
+        "/aggregator": 0
+      },
+      "/service3": {
+        "/aggregator": 1
+      },
+      "/service2": {
+        "/aggregator": 2
+      },
+      "/service1": {
+        "/aggregator": 3
+      },
+      "/aggregator": {
+        "/consumer": 0
+      }
+    }
+  }
+}
