@@ -114,13 +114,14 @@ DagForwarderApp::StopApplication()
 
 
 
-void
+//void
+std::string
 DagForwarderApp::SendInterest(const std::string& interestName, std::string dagString)
 {
   if (!m_isRunning)
   {
-    NS_LOG_DEBUG("Warning: trying to send interest while application is stopped!");
-    return;
+    NS_LOG_WARN("Warning: trying to send interest while application is stopped!");
+    return NULL;
   }
 
   /////////////////////////////////////
@@ -144,6 +145,7 @@ DagForwarderApp::SendInterest(const std::string& interestName, std::string dagSt
 
 
 
+  NS_LOG_DEBUG("\nStarting new SendInterest for " << interestName);
   //std::cout << "\n\n\n\n\n\n\n\n\n\n\n\nStarting new SendInterest for " << interestName << '\n';
   //std::cout << "Full DAG as received: " << std::setw(2) << dagObject << '\n';
 
@@ -284,6 +286,9 @@ DagForwarderApp::SendInterest(const std::string& interestName, std::string dagSt
   m_transmittedInterests(interest, this, m_face);
 
   m_appLink->onReceiveInterest(*interest);
+
+  //TODO-done: return the full name+hash? This way we can capture it to write it into the dagServTracker entry in OnInterest()
+  return interest->getName().toUri();
 }
 
 
@@ -299,14 +304,14 @@ DagForwarderApp::OnInterest(std::shared_ptr<const ndn::Interest> interest)
   ndn::App::OnInterest(interest);
 
 
-  NS_LOG_DEBUG("Received Interest packet for " << interest->getName());
+  NS_LOG_DEBUG("Forwarder: Received Interest packet for " << interest->getName());
   //NS_LOG_DEBUG("Received on node hosting service " << m_service);
 
 
   // ignore interests that are meant for csUpdate 
   if (interest->getName().getPrefix(2).toUri() == "/nesco/csUpdate")
   {
-    NS_LOG_DEBUG("  This is a forwarding app, ignoring interest meant for csUpdater app.\n");
+    NS_LOG_DEBUG("Forwarder:  This is a forwarding app, ignoring interest meant for csUpdater app.\n");
     return;
   } 
 
@@ -359,6 +364,8 @@ DagForwarderApp::OnInterest(std::shared_ptr<const ndn::Interest> interest)
   //m_dagServTracker[m_nameUri].push_back( json::object_t::value_type("inputsRxed", nullJson ) );
   //m_dagServTracker[rxedInterestName].push_back( json::object_t::value_type("inputsRxed", nullJson ) );
 
+  std::string rxedFullInterestNameAndHash = interest->getName().toUri();
+
 
 
   if (m_dagObject.empty() && m_service.toUri() == dagObject["head"])
@@ -392,11 +399,13 @@ DagForwarderApp::OnInterest(std::shared_ptr<const ndn::Interest> interest)
             {
               //std::cout << " FOUND IT!!" << std::endl;
               //std::cout << "Forwarder dagServTracker data structure before: " << std::setw(2) << m_dagServTracker << '\n';
-              m_dagServTracker[(std::string)y.key()]["inputsRxed"][(std::string)x.key()] = 0;
+              m_dagServTracker[(std::string)y.key()]["inputsRxed"][(std::string)x.key()] = 0; //TODO: use full name+hash like we did below
               //std::cout << "Forwarder dagServTracker data structure after: " << std::setw(2) << m_dagServTracker << '\n';
               //std::cout << "x.key is " << x.key() << ", and y.key is " << y.key() << '\n';
 
-              m_vectorOfServiceInputs.push_back(0);             // for now, just create vector entries for the inputs, so that if they arrive out of order, we can insert at any index location
+              //m_mapOfVectorOfServiceInputs.push_back(0);             // for now, just create vector entries for the inputs, so that if they arrive out of order, we can insert at any index location
+              m_mapOfVectorOfServiceInputs[y.key()].push_back(0);             // for now, just create vector entries for the inputs, so that if they arrive out of order, we can insert at any index location
+              //TODO: vector above needs to be a map of vectors. key will be full incoming name+hash
             }
           }
         }
@@ -405,7 +414,7 @@ DagForwarderApp::OnInterest(std::shared_ptr<const ndn::Interest> interest)
         NS_LOG_DEBUG("\n\nshortcutOPT: Generarating all interests for required inputs..." << '\n');
         // generate all the interests for required inputs
         //for (auto& serviceInput : m_dagServTracker[(std::string)m_nameUri]["inputsRxed"].items())
-        for (auto& serviceInput : m_dagServTracker[(std::string)m_service.toUri()]["inputsRxed"].items())
+        for (auto& serviceInput : m_dagServTracker[(std::string)m_service.toUri()]["inputsRxed"].items()) // TODO: use full name+hash
         {
           if (serviceInput.value() == 0)
           {
@@ -421,7 +430,7 @@ DagForwarderApp::OnInterest(std::shared_ptr<const ndn::Interest> interest)
                                                 // for this, we would need to be able to store and retrieve unique interests and their digest (perhaps using a fully hierarchical name?)
                                         // right now, this application only has one m_nameAndDigest private variable, and thus can only "store" one service instance.
                                         // we could turn that variable into a list of ndn::Name variables, and add to the list for each instance of the service?
-                                    // we also have only one m_vectorOfServiceInputs[], so we would need a list of them, one for each version of the service.
+                                    // we also have only one m_mapOfVectorOfServiceInputs[], so we would need a list of them, one for each version of the service.
                                     // once a service is fullfilled, we should remove the list items for it to clean up.
 
         //TODO: for now, I just force the single m_nameUri to be the same as the received interest name.
@@ -447,29 +456,55 @@ DagForwarderApp::OnInterest(std::shared_ptr<const ndn::Interest> interest)
         //if (y.key() == m_nameUri)
         if (y.key() == rxedInterestName)
         {
-          m_dagServTracker[(std::string)y.key()]["inputsRxed"][(std::string)x.key()] = 0;
+/*
+          //m_dagServTracker[(std::string)y.key()]["inputsRxed"][(std::string)x.key()] = 0; // TODO-done: use full names+hash instead (started doing this below)
+          //TODO-done: create interest packet, add application parameters with pDAG, and then grab the new name+hash to use below. OR, just populate with the simple names for now, and swap them out for full name+hash below when I generate the interests for these inputs?
+          m_dagServTracker[interest->getName()]["inputsRxed"][inputServiceFullNameAndHash] = 0;
           //std::cout << "x.key is " << x.key() << ", and y.key is " << y.key() << '\n';
 
-          m_vectorOfServiceInputs.push_back(0);             // for now, just create vector entries for the inputs, so that if they arrive out of order, we can insert at any index location
+          m_mapOfVectorOfServiceInputs.push_back(0);             // for now, just create vector entries for the inputs, so that if they arrive out of order, we can insert at any index location
+          //TODO-done: vector above needs to be a map of vectors. key will be full incoming name+hash
+*/
+
+
+          // generate the interest for this input
+          std::string dagString = m_dagObject.dump();
+          std::string inputServiceFullNameAndHash;
+          inputServiceFullNameAndHash = DagForwarderApp::SendInterest(x.key(), dagString);
+          m_dagServTracker[rxedFullInterestNameAndHash]["inputsRxed"][inputServiceFullNameAndHash] = 0;
+          m_dagServTracker[rxedFullInterestNameAndHash]["inputIndex"][inputServiceFullNameAndHash] = y.value();
+          m_mapOfVectorOfServiceInputs[inputServiceFullNameAndHash].push_back(0); // for now, just create vector entries for the inputs, so that if they arrive out of order, we can insert at any index location
+
+
+
+
         }
       }
     }
+    NS_LOG_DEBUG("Forwarder dagServTracker data structure: " << std::setw(2) << m_dagServTracker);
     //std::cout << "Forwarder dagServTracker data structure: " << std::setw(2) << m_dagServTracker << '\n';
 
 
-
+/*
     // generate all the interests for required inputs
     //for (auto& serviceInput : m_dagServTracker[(std::string)m_nameUri]["inputsRxed"].items())
-    for (auto& serviceInput : m_dagServTracker[(std::string)rxedInterestName]["inputsRxed"].items())
+    //for (auto& serviceInput : m_dagServTracker[(std::string)rxedInterestName]["inputsRxed"].items())
+    for (auto& serviceInput : m_dagServTracker[interest->getName()]["inputsRxed"].items())
     {
       if (serviceInput.value() == 0)
       {
         // generate the interest for this input
         std::string dagString = m_dagObject.dump();
-        DagForwarderApp::SendInterest(serviceInput.key(), dagString);
+        //DagForwarderApp::SendInterest(serviceInput.key(), dagString);
+        std::string fullNameAndHashSent;
+        fullNameAndHashSent = DagForwarderApp::SendInterest(serviceInput.key(), dagString);
+        // TODO-done: now with the full name, replace the simplename in m_dagServTracker. We first use move (transfers the value efficiently by reassigning the pointer, without making an unnecessary deep copy), then delete the old entry.
+        auto oldEntry = m_dagServTracker.find(interest->getName());
+        m_dagServTracker[fullNameAndHashSent] = std::move(m_dagServTracker[interest->getName()]);
+        m_dagServTracker.erase(oldEntry);
       }
     }
-
+*/
 
 
     m_nameAndDigest = interest->getName();  // store the name with digest so that we can later generate the data packet with the same name/digest!
@@ -477,7 +512,7 @@ DagForwarderApp::OnInterest(std::shared_ptr<const ndn::Interest> interest)
                                             // for this, we would need to be able to store and retrieve unique interests and their digest (perhaps using a fully hierarchical name?)
                                     // right now, this application only has one m_nameAndDigest private variable, and thus can only "store" one service instance.
                                     // we could turn that variable into a list of ndn::Name variables, and add to the list for each instance of the service?
-                                // we also have only one m_vectorOfServiceInputs[], so we would need a list of them, one for each version of the service.
+                                // we also have only one m_mapOfVectorOfServiceInputs[], so we would need a list of them, one for each version of the service.
                                 // once a service is fullfilled, we should remove the list items for it to clean up.
 
     //TODO: for now, I just force the single m_nameUri to be the same as the received interest name.
@@ -521,6 +556,8 @@ DagForwarderApp::OnData(std::shared_ptr<const ndn::Data> data)
   simpleName = simpleName.getSubName(1); // remove the first component of the name (/nesco)
   //std::string rxedDataName = (data->getName()).getPrefix(-1).toUri(); // remove the last component of the name (the parameter digest) so we have just the raw name
   std::string rxedDataName = simpleName.toUri();
+
+  std::string rxedFullDataNameAndHash = data->getName().toUri();
 
 /*
   // this is a HACK. I need a better way to get to the first byte of the content. Right now, I'm just incrementing the pointer past the TLV type, and size.
@@ -573,7 +610,7 @@ DagForwarderApp::OnData(std::shared_ptr<const ndn::Data> data)
   if (data_freshnessPeriod < m_lowestFreshness) {
     m_lowestFreshness = data_freshnessPeriod;
   }
-
+/*
   char index = -1;
   for (auto& x : m_dagObject["dag"].items())
   {
@@ -592,216 +629,262 @@ DagForwarderApp::OnData(std::shared_ptr<const ndn::Data> data)
   }
   if (index < 0)
   {
-    std::cout << "  ERROR!! index for m_vectorOfServiceInputs cannot be negative! Something went wrong!!" << '\n';
-    NS_LOG_DEBUG("\n\nERROR. index for m_vectorOfServiceInputs cannot be negative. rxedDataName: " << rxedDataName << ", m_nameUri: " << m_nameUri << ". Full m_dagObject: " << std::setw(2) << m_dagObject << '\n');
+    std::cout << "  ERROR!! index for m_mapOfVectorOfServiceInputs cannot be negative! Something went wrong!!" << '\n';
+    NS_LOG_DEBUG("\n\nERROR. index for m_mapOfVectorOfServiceInputs cannot be negative. rxedDataName: " << rxedDataName << ", m_nameUri: " << m_nameUri << ". Full m_dagObject: " << std::setw(2) << m_dagObject << '\n');
   }
   else
   {
-    //m_vectorOfServiceInputs[index] = (*pServiceInput);
-    m_vectorOfServiceInputs[index] = serviceInput;
+    //m_mapOfVectorOfServiceInputs[index] = (*pServiceInput);
+    m_mapOfVectorOfServiceInputs[index] = serviceInput;
+    //TODO-done: vector above needs to be a map of vectors. key will be full incoming name+hash. This one will need a lookup, since the incoming name+hash is for the INPUT, and the map uses THIS service's name+hash.
   }
+*/
 
-  // mark this input as having been received
-  m_dagServTracker[m_nameUri]["inputsRxed"][rxedDataName] = 1;
-  //m_dagServTracker[head]["inputsRxed"][rxedDataName] = 1;
-  //std::cout << "Forwarder dagServTracker data structure: " << std::setw(2) << m_dagServTracker << '\n';
-
-  // we have to check if we have received all necessary inputs for this instance of the hosted service!
-  //      if so, run the service below and generate new data packet to go downstream.
-  //      otherwise, just wait for the other inputs.
-  unsigned char allInputsReceived = 1;
-  for (auto& serviceInput : m_dagServTracker[m_nameUri]["inputsRxed"].items())
-  //for (auto& serviceInput : m_dagServTracker[head]["inputsRxed"].items())
+  //TODO-done: complete loops below that get the index value and populate the service result
+  //for each instance of fullRxedDataNameAndHash in m_dagServTracker
+  for (auto& x : m_dagServTracker.items())
   {
-    if (serviceInput.value() == 0)
+    //std::cout << "Checking x.key: " << (std::string)x.key() << '\n';
+    for (auto& y : m_dagServTracker[x.key()]["inputIndex"].items())
     {
-      allInputsReceived = 0;
-      break;
+      //std::cout << "Checking y.key: " << (std::string)y.key() << '\n';
+      if (y.key() == rxedFullDataNameAndHash)
+      {
+        char index = y.value().get<char>();
+        m_mapOfVectorOfServiceInputs[rxedFullDataNameAndHash][index] = serviceInput;
+        m_dagServTracker[x.key()]["inputsRxed"][rxedFullDataNameAndHash] = 1; // TODO-done: use full name+hash
+      }
     }
-  }
-  if (allInputsReceived == 1)
-  {
 
-    //"RUN" the service, and create a new data packet to respond downstream
-    //NS_LOG_DEBUG("Fake running service " << m_service);
-    NS_LOG_DEBUG("Running service " << m_service);
-
-    // run operation. First we need to figure out what service this is, so we know the operation. This screams to be a function pointer! For now just use if's
-
-    // TODO7: we should use function pointers here, and have each service be a function defined in a separate file. Figure out how to deal with potentially different num of inputs.
-
-    serviceOutput = 0;
-    for (auto input : m_vectorOfServiceInputs) // for (each input)
+    // Now check if we have received all the inputs for this service
+    unsigned char allInputsReceived = 1;
+    for (auto& serviceInput : m_dagServTracker[x.key()]["inputsRxed"].items()) // TODO-done: use full name+hash
     {
-      serviceOutput += input;
+      if (serviceInput.value() == 0)
+      {
+        allInputsReceived = 0;
+        break;
+      }
     }
+
+
 
 /*
-    if (m_service.ndn::Name::toUri() == "/service1"){
-      serviceOutput = (m_vectorOfServiceInputs[0])*2;
-    }
-    if (m_service.ndn::Name::toUri() == "/service2"){
-      serviceOutput = (m_vectorOfServiceInputs[0])+1;
-    }
-    if (m_service.ndn::Name::toUri() == "/service3"){
-      serviceOutput = (m_vectorOfServiceInputs[0])+7;
-    }
-    if (m_service.ndn::Name::toUri() == "/service4"){
-      serviceOutput = (m_vectorOfServiceInputs[0])*3 + (m_vectorOfServiceInputs[1])*4;
-    }
-    if (m_service.ndn::Name::toUri() == "/service5"){
-      serviceOutput = (m_vectorOfServiceInputs[0])*2;
-    }
-    if (m_service.ndn::Name::toUri() == "/service6"){
-      serviceOutput = (m_vectorOfServiceInputs[0])+1;
-    }
-    if (m_service.ndn::Name::toUri() == "/service7"){
-      serviceOutput = (m_vectorOfServiceInputs[0])+7;
-    }
-    if (m_service.ndn::Name::toUri() == "/service8"){
-      serviceOutput = (m_vectorOfServiceInputs[0])*1 + (m_vectorOfServiceInputs[1])*1;
-    }
-    if ((m_service.ndn::Name::toUri() == "/serviceL1") ||
-        (m_service.ndn::Name::toUri() == "/serviceL2") ||
-        (m_service.ndn::Name::toUri() == "/serviceL3") ||
-        (m_service.ndn::Name::toUri() == "/serviceL4") ||
-        (m_service.ndn::Name::toUri() == "/serviceL5") ||
-        (m_service.ndn::Name::toUri() == "/serviceL6") ||
-        (m_service.ndn::Name::toUri() == "/serviceL7") ||
-        (m_service.ndn::Name::toUri() == "/serviceL8") ||
-        (m_service.ndn::Name::toUri() == "/serviceL9") ||
-        (m_service.ndn::Name::toUri() == "/serviceL10") ||
-        (m_service.ndn::Name::toUri() == "/serviceL11") ||
-        (m_service.ndn::Name::toUri() == "/serviceL12") ||
-        (m_service.ndn::Name::toUri() == "/serviceL13") ||
-        (m_service.ndn::Name::toUri() == "/serviceL14") ||
-        (m_service.ndn::Name::toUri() == "/serviceL15") ||
-        (m_service.ndn::Name::toUri() == "/serviceL16") ||
-        (m_service.ndn::Name::toUri() == "/serviceL17") ||
-        (m_service.ndn::Name::toUri() == "/serviceL18") ||
-        (m_service.ndn::Name::toUri() == "/serviceL19") ||
-        (m_service.ndn::Name::toUri() == "/serviceL20")){
-      serviceOutput = (m_vectorOfServiceInputs[0])+1;
-    }
-    if ((m_service.ndn::Name::toUri() == "/serviceP1") ||
-        (m_service.ndn::Name::toUri() == "/serviceP2") ||
-        (m_service.ndn::Name::toUri() == "/serviceP3") ||
-        (m_service.ndn::Name::toUri() == "/serviceP4") ||
-        (m_service.ndn::Name::toUri() == "/serviceP5") ||
-        (m_service.ndn::Name::toUri() == "/serviceP6") ||
-        (m_service.ndn::Name::toUri() == "/serviceP7") ||
-        (m_service.ndn::Name::toUri() == "/serviceP8") ||
-        (m_service.ndn::Name::toUri() == "/serviceP9") ||
-        (m_service.ndn::Name::toUri() == "/serviceP10") ||
-        (m_service.ndn::Name::toUri() == "/serviceP11") ||
-        (m_service.ndn::Name::toUri() == "/serviceP12") ||
-        (m_service.ndn::Name::toUri() == "/serviceP13") ||
-        (m_service.ndn::Name::toUri() == "/serviceP14") ||
-        (m_service.ndn::Name::toUri() == "/serviceP15") ||
-        (m_service.ndn::Name::toUri() == "/serviceP16") ||
-        (m_service.ndn::Name::toUri() == "/serviceP17") ||
-        (m_service.ndn::Name::toUri() == "/serviceP18") ||
-        (m_service.ndn::Name::toUri() == "/serviceP19") ||
-        (m_service.ndn::Name::toUri() == "/serviceP20")){
-      serviceOutput = (m_vectorOfServiceInputs[0])+1;
-    }
-    if (m_service.ndn::Name::toUri() == "/serviceP21"){
-      serviceOutput =
-            (m_vectorOfServiceInputs[0])+
-            (m_vectorOfServiceInputs[1])+
-            (m_vectorOfServiceInputs[2])+
-            (m_vectorOfServiceInputs[3])+
-            (m_vectorOfServiceInputs[4])+
-            (m_vectorOfServiceInputs[5])+
-            (m_vectorOfServiceInputs[6])+
-            (m_vectorOfServiceInputs[7])+
-            (m_vectorOfServiceInputs[8])+
-            (m_vectorOfServiceInputs[9])+
-            (m_vectorOfServiceInputs[10])+
-            (m_vectorOfServiceInputs[11])+
-            (m_vectorOfServiceInputs[12])+
-            (m_vectorOfServiceInputs[13])+
-            (m_vectorOfServiceInputs[14])+
-            (m_vectorOfServiceInputs[15])+
-            (m_vectorOfServiceInputs[16])+
-            (m_vectorOfServiceInputs[17])+
-            (m_vectorOfServiceInputs[18])+
-            (m_vectorOfServiceInputs[19]);
-    }
-    if (m_service.ndn::Name::toUri().rfind("/serviceCPM-", 0) == 0) { // if name of string starts with /serviceCPM- (any of the 001-100 CPM services)
-      serviceOutput = (m_vectorOfServiceInputs[0])+1;
-    }
-    if ((m_service.ndn::Name::toUri() == "/serviceP22") ||
-        (m_service.ndn::Name::toUri() == "/serviceP23") ||
-        (m_service.ndn::Name::toUri() == "/serviceR1")){
-      serviceOutput =
-            (m_vectorOfServiceInputs[0])+
-            (m_vectorOfServiceInputs[1])+
-            (m_vectorOfServiceInputs[2]);
-    }
-
+    // mark this input as having been received
+    m_dagServTracker[m_nameUri]["inputsRxed"][rxedDataName] = 1; // TODO-done: use full name+hash
+    //m_dagServTracker[head]["inputsRxed"][rxedDataName] = 1;
+    //std::cout << "Forwarder dagServTracker data structure: " << std::setw(2) << m_dagServTracker << '\n';
 */
+
+/*  
+    // we have to check if we have received all necessary inputs for this instance of the hosted service!
+    //      if so, run the service below and generate new data packet to go downstream.
+    //      otherwise, just wait for the other inputs.
+    unsigned char allInputsReceived = 1;
+    for (auto& serviceInput : m_dagServTracker[m_nameUri]["inputsRxed"].items()) // TODO-done: use full name+hash
+    //for (auto& serviceInput : m_dagServTracker[head]["inputsRxed"].items())
+    {
+      if (serviceInput.value() == 0)
+      {
+        allInputsReceived = 0;
+        break;
+      }
+    }
+*/
+
+
+
+
+    if (allInputsReceived == 1)
+    {
+
+      //"RUN" the service, and create a new data packet to respond downstream
+      //NS_LOG_DEBUG("Fake running service " << m_service);
+      NS_LOG_DEBUG("Running service " << m_service);
+
+      // run operation. First we need to figure out what service this is, so we know the operation. This screams to be a function pointer! For now just use if's
+
+      // TODO7: we should use function pointers here, and have each service be a function defined in a separate file. Figure out how to deal with potentially different num of inputs.
+
+      serviceOutput = 0;
+      for (auto input : m_mapOfVectorOfServiceInputs[x.value()]) // for (each input)
+      //TODO-done: vector above needs to be a map of vectors. key will be full incoming name+hash. This one will need a lookup, since the incoming name+hash is for the INPUT, and the map uses THIS service's name+hash.
+      {
+        serviceOutput += input;
+      }
+
+  /*
+      if (m_service.ndn::Name::toUri() == "/service1"){
+        serviceOutput = (m_mapOfVectorOfServiceInputs[0])*2;
+      }
+      if (m_service.ndn::Name::toUri() == "/service2"){
+        serviceOutput = (m_mapOfVectorOfServiceInputs[0])+1;
+      }
+      if (m_service.ndn::Name::toUri() == "/service3"){
+        serviceOutput = (m_mapOfVectorOfServiceInputs[0])+7;
+      }
+      if (m_service.ndn::Name::toUri() == "/service4"){
+        serviceOutput = (m_mapOfVectorOfServiceInputs[0])*3 + (m_mapOfVectorOfServiceInputs[1])*4;
+      }
+      if (m_service.ndn::Name::toUri() == "/service5"){
+        serviceOutput = (m_mapOfVectorOfServiceInputs[0])*2;
+      }
+      if (m_service.ndn::Name::toUri() == "/service6"){
+        serviceOutput = (m_mapOfVectorOfServiceInputs[0])+1;
+      }
+      if (m_service.ndn::Name::toUri() == "/service7"){
+        serviceOutput = (m_mapOfVectorOfServiceInputs[0])+7;
+      }
+      if (m_service.ndn::Name::toUri() == "/service8"){
+        serviceOutput = (m_mapOfVectorOfServiceInputs[0])*1 + (m_mapOfVectorOfServiceInputs[1])*1;
+      }
+      if ((m_service.ndn::Name::toUri() == "/serviceL1") ||
+          (m_service.ndn::Name::toUri() == "/serviceL2") ||
+          (m_service.ndn::Name::toUri() == "/serviceL3") ||
+          (m_service.ndn::Name::toUri() == "/serviceL4") ||
+          (m_service.ndn::Name::toUri() == "/serviceL5") ||
+          (m_service.ndn::Name::toUri() == "/serviceL6") ||
+          (m_service.ndn::Name::toUri() == "/serviceL7") ||
+          (m_service.ndn::Name::toUri() == "/serviceL8") ||
+          (m_service.ndn::Name::toUri() == "/serviceL9") ||
+          (m_service.ndn::Name::toUri() == "/serviceL10") ||
+          (m_service.ndn::Name::toUri() == "/serviceL11") ||
+          (m_service.ndn::Name::toUri() == "/serviceL12") ||
+          (m_service.ndn::Name::toUri() == "/serviceL13") ||
+          (m_service.ndn::Name::toUri() == "/serviceL14") ||
+          (m_service.ndn::Name::toUri() == "/serviceL15") ||
+          (m_service.ndn::Name::toUri() == "/serviceL16") ||
+          (m_service.ndn::Name::toUri() == "/serviceL17") ||
+          (m_service.ndn::Name::toUri() == "/serviceL18") ||
+          (m_service.ndn::Name::toUri() == "/serviceL19") ||
+          (m_service.ndn::Name::toUri() == "/serviceL20")){
+        serviceOutput = (m_mapOfVectorOfServiceInputs[0])+1;
+      }
+      if ((m_service.ndn::Name::toUri() == "/serviceP1") ||
+          (m_service.ndn::Name::toUri() == "/serviceP2") ||
+          (m_service.ndn::Name::toUri() == "/serviceP3") ||
+          (m_service.ndn::Name::toUri() == "/serviceP4") ||
+          (m_service.ndn::Name::toUri() == "/serviceP5") ||
+          (m_service.ndn::Name::toUri() == "/serviceP6") ||
+          (m_service.ndn::Name::toUri() == "/serviceP7") ||
+          (m_service.ndn::Name::toUri() == "/serviceP8") ||
+          (m_service.ndn::Name::toUri() == "/serviceP9") ||
+          (m_service.ndn::Name::toUri() == "/serviceP10") ||
+          (m_service.ndn::Name::toUri() == "/serviceP11") ||
+          (m_service.ndn::Name::toUri() == "/serviceP12") ||
+          (m_service.ndn::Name::toUri() == "/serviceP13") ||
+          (m_service.ndn::Name::toUri() == "/serviceP14") ||
+          (m_service.ndn::Name::toUri() == "/serviceP15") ||
+          (m_service.ndn::Name::toUri() == "/serviceP16") ||
+          (m_service.ndn::Name::toUri() == "/serviceP17") ||
+          (m_service.ndn::Name::toUri() == "/serviceP18") ||
+          (m_service.ndn::Name::toUri() == "/serviceP19") ||
+          (m_service.ndn::Name::toUri() == "/serviceP20")){
+        serviceOutput = (m_mapOfVectorOfServiceInputs[0])+1;
+      }
+      if (m_service.ndn::Name::toUri() == "/serviceP21"){
+        serviceOutput =
+              (m_mapOfVectorOfServiceInputs[0])+
+              (m_mapOfVectorOfServiceInputs[1])+
+              (m_mapOfVectorOfServiceInputs[2])+
+              (m_mapOfVectorOfServiceInputs[3])+
+              (m_mapOfVectorOfServiceInputs[4])+
+              (m_mapOfVectorOfServiceInputs[5])+
+              (m_mapOfVectorOfServiceInputs[6])+
+              (m_mapOfVectorOfServiceInputs[7])+
+              (m_mapOfVectorOfServiceInputs[8])+
+              (m_mapOfVectorOfServiceInputs[9])+
+              (m_mapOfVectorOfServiceInputs[10])+
+              (m_mapOfVectorOfServiceInputs[11])+
+              (m_mapOfVectorOfServiceInputs[12])+
+              (m_mapOfVectorOfServiceInputs[13])+
+              (m_mapOfVectorOfServiceInputs[14])+
+              (m_mapOfVectorOfServiceInputs[15])+
+              (m_mapOfVectorOfServiceInputs[16])+
+              (m_mapOfVectorOfServiceInputs[17])+
+              (m_mapOfVectorOfServiceInputs[18])+
+              (m_mapOfVectorOfServiceInputs[19]);
+      }
+      if (m_service.ndn::Name::toUri().rfind("/serviceCPM-", 0) == 0) { // if name of string starts with /serviceCPM- (any of the 001-100 CPM services)
+        serviceOutput = (m_mapOfVectorOfServiceInputs[0])+1;
+      }
+      if ((m_service.ndn::Name::toUri() == "/serviceP22") ||
+          (m_service.ndn::Name::toUri() == "/serviceP23") ||
+          (m_service.ndn::Name::toUri() == "/serviceR1")){
+        serviceOutput =
+              (m_mapOfVectorOfServiceInputs[0])+
+              (m_mapOfVectorOfServiceInputs[1])+
+              (m_mapOfVectorOfServiceInputs[2]);
+      }
+
+  */
+      
+      NS_LOG_DEBUG("Service " << m_service.ndn::Name::toUri() << " has output: " << (int)serviceOutput);
     
-    NS_LOG_DEBUG("Service " << m_service.ndn::Name::toUri() << " has output: " << (int)serviceOutput);
-  
-    // this following line is for linear workflows only!
-    //now add the service name in front of the data name
-    //std::string new_name = m_service.ndn::Name::toUri() + data->getName().ndn::Name::toUri();
-    //NS_LOG_DEBUG("Creating data for new name: " << new_name);
-    // for dag workflows, FOR NOW we just generate the data packet with the name of the service we ran. We don't support repeated services yet. For that we need higharchical names/results such as "/S2/S1/sensor" for example
+      // this following line is for linear workflows only!
+      //now add the service name in front of the data name
+      //std::string new_name = m_service.ndn::Name::toUri() + data->getName().ndn::Name::toUri();
+      //NS_LOG_DEBUG("Creating data for new name: " << new_name);
+      // for dag workflows, FOR NOW we just generate the data packet with the name of the service we ran. We don't support repeated services yet. For that we need higharchical names/results such as "/S2/S1/sensor" for example
 
-    NS_LOG_DEBUG("Creating data for name: " << m_nameAndDigest);  // m_name doesn't have the sha256 digest, so it doesn't match the original interest!
-                                                                  // We use m_nameAndDigest to store the old name with the digest.
+      //NS_LOG_DEBUG("Creating data for name: " << m_nameAndDigest);  // m_name doesn't have the sha256 digest, so it doesn't match the original interest!
+                                                                    // We use m_nameAndDigest to store the old name with the digest.
+      NS_LOG_DEBUG("Creating data for name: " << x.key());
 
-    //auto new_data = std::make_shared<ndn::Data>(new_name);
-    auto new_data = std::make_shared<ndn::Data>(m_nameAndDigest);
-    new_data->setFreshnessPeriod(ndn::time::milliseconds(m_lowestFreshness));
+      //auto new_data = std::make_shared<ndn::Data>(new_name);
+      //auto new_data = std::make_shared<ndn::Data>(m_nameAndDigest);
+      auto new_data = std::make_shared<ndn::Data>(x.key());
+      new_data->setFreshnessPeriod(ndn::time::milliseconds(m_lowestFreshness));
 
-    //new_data->setContent(std::make_shared< ::ndn::Buffer>(1024));
-    unsigned char myBuffer[1024];
-    json dataPacketContents;
-    dataPacketContents.clear();
-    dataPacketContents["makespanNS"] = m_makespan;
-    dataPacketContents["serviceOutput"] = serviceOutput;
-    NS_LOG_DEBUG("ForwarderAPP - Sending Data packet with JSON data packet contents: " << dataPacketContents);
-    std::string dataPacketString;
-    dataPacketString = dataPacketContents.dump();
-    if (strlen(dataPacketString.c_str())+1 > 1024) // string length plus NULL terminating character
-    {
-      NS_LOG_ERROR("ForwarderAPP ERROR!! The data packet size is larger than 1024!!!");
+      //new_data->setContent(std::make_shared< ::ndn::Buffer>(1024));
+      unsigned char myBuffer[1024];
+      json dataPacketContents;
+      dataPacketContents.clear();
+      dataPacketContents["makespanNS"] = m_makespan;
+      dataPacketContents["serviceOutput"] = serviceOutput;
+      NS_LOG_DEBUG("ForwarderAPP - Sending Data packet with JSON data packet contents: " << dataPacketContents);
+      std::string dataPacketString;
+      dataPacketString = dataPacketContents.dump();
+      if (strlen(dataPacketString.c_str())+1 > 1024) // string length plus NULL terminating character
+      {
+        NS_LOG_ERROR("ForwarderAPP ERROR!! The data packet size is larger than 1024!!!");
+      }
+      memcpy(myBuffer, dataPacketString.c_str(), strlen(dataPacketString.c_str())+1);
+      new_data->setContent(myBuffer, strlen(dataPacketString.c_str())+1); // make the data just big enough to fit the json object
+      // write to the buffer
+      //myBuffer[0] = serviceOutput;
+      //new_data->setContent(myBuffer, 1024);
+      // instead of just writing a single value to the buffer, now we write the JSON data structure containing makespan and serviceOutput
+      // write to the buffer, after making sure it's big enough
+
+      ndn::StackHelper::getKeyChain().sign(*new_data);
+      // Call trace (for logging purposes)
+      m_transmittedDatas(new_data, this, m_face);
+      m_appLink->onReceiveData(*new_data);
+
+
+      // now that we have run the service (and sent the result data out - and caching it), we set inputs to "not received"
+      // this is done so when cached results expire due to freshness, any new interests will trigger inputs to be fetched again, and the service will run again.
+      allInputsReceived = 0;
+      /*
+      for (auto& serviceInput : m_dagServTracker[m_nameUri]["inputsRxed"].items())
+      {
+        serviceInput.value() = 0;
+      }
+      */
+      m_dagServTracker[x.key()].clear(); //TODO-done: are we sure we want to clear the whole structure? Or just the entry that this last data packet was for? We are now using full name+hash.
+      m_lowestFreshness = ndn::time::milliseconds(100000); // set to a high value (I know no producer freshness value is higher than 100 seconds)
+
+
+
     }
-    memcpy(myBuffer, dataPacketString.c_str(), strlen(dataPacketString.c_str())+1);
-    new_data->setContent(myBuffer, strlen(dataPacketString.c_str())+1); // make the data just big enough to fit the json object
-    // write to the buffer
-    //myBuffer[0] = serviceOutput;
-    //new_data->setContent(myBuffer, 1024);
-    // instead of just writing a single value to the buffer, now we write the JSON data structure containing makespan and serviceOutput
-    // write to the buffer, after making sure it's big enough
-
-    ndn::StackHelper::getKeyChain().sign(*new_data);
-    // Call trace (for logging purposes)
-    m_transmittedDatas(new_data, this, m_face);
-    m_appLink->onReceiveData(*new_data);
-
-
-    // now that we have run the service (and sent the result data out - and caching it), we set inputs to "not received"
-    // this is done so when cached results expire due to freshness, any new interests will trigger inputs to be fetched again, and the service will run again.
-    allInputsReceived = 0;
-    /*
-    for (auto& serviceInput : m_dagServTracker[m_nameUri]["inputsRxed"].items())
+    else
     {
-      serviceInput.value() = 0;
+      NS_LOG_DEBUG("    Even though we received data packet, we are still waiting for more inputs!");
     }
-    */
-    m_dagServTracker.clear();
-    m_lowestFreshness = ndn::time::milliseconds(100000); // set to a high value (I know no producer freshness value is higher than 100 seconds)
 
 
 
-  }
-  else
-  {
-    NS_LOG_DEBUG("    Even though we received data packet, we are still waiting for more inputs!");
   }
   
 }

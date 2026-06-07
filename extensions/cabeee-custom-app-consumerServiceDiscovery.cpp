@@ -40,6 +40,9 @@ using json = nlohmann::json;
 
 //#include "ns3/integer.h"
 #include "ns3/uinteger.h"
+#include "ns3/double.h"
+#include <thread>
+#include <chrono>
 
 //#include "ns3/ndnSIM/ndn-cxx/ndn-cxx/encoding/encoder.hpp"
 //#include "ns3/ndnSIM/ndn-cxx/ndn-cxx/encoding/block.hpp"
@@ -68,6 +71,8 @@ CustomAppConsumerServiceDiscovery::GetTypeId()
                     MakeStringAccessor(&CustomAppConsumerServiceDiscovery::m_dagPath), MakeStringChecker())
     .AddAttribute("Orchestrate", "Requested orchestration", UintegerValue(0),
                     MakeUintegerAccessor(&CustomAppConsumerServiceDiscovery::m_orchestrate), MakeUintegerChecker<uint16_t>())
+    .AddAttribute("SDName", "Requested service discovery type", StringValue("/dumb-SDName"),
+                    ndn::MakeNameAccessor(&CustomAppConsumerServiceDiscovery::m_SDName), ndn::MakeNameChecker())
     .AddAttribute("ServiceDiscovery", "Requested forwarding optimization", UintegerValue(0),
                     MakeUintegerAccessor(&CustomAppConsumerServiceDiscovery::m_serviceDiscovery), MakeUintegerChecker<uint16_t>())
     .AddAttribute("ResourceAllocation", "Requested forwarding optimization", UintegerValue(0),
@@ -79,7 +84,11 @@ CustomAppConsumerServiceDiscovery::GetTypeId()
     .AddAttribute("SDstartTimeOffset", "Requested forwarding optimization", TimeValue(Seconds(1)),
                     MakeTimeAccessor(&CustomAppConsumerServiceDiscovery::m_SDstartTimeOffset), MakeTimeChecker())
     .AddAttribute("WFstartTimeOffset", "Requested forwarding optimization", TimeValue(Seconds(2)),
-                    MakeTimeAccessor(&CustomAppConsumerServiceDiscovery::m_WFstartTimeOffset), MakeTimeChecker());
+                    MakeTimeAccessor(&CustomAppConsumerServiceDiscovery::m_WFstartTimeOffset), MakeTimeChecker())
+    .AddAttribute("Frequency", "Average number of interests per second - frequency", DoubleValue(10),
+                    MakeDoubleAccessor(&CustomAppConsumerServiceDiscovery::m_frequency), MakeDoubleChecker<double>())
+    .AddAttribute("NumInterests", "Total number of interests to generate", UintegerValue(1),
+                    MakeUintegerAccessor(&CustomAppConsumerServiceDiscovery::m_numInterests), MakeUintegerChecker<uint16_t>());
   return tid;
 }
 
@@ -96,6 +105,7 @@ CustomAppConsumerServiceDiscovery::StartApplication()
   ndn::App::StartApplication();
   m_isRunning = true;
   m_SDrunning = false;
+  m_WFrunning = false;
   m_appStartTime = Simulator::Now();
 
   // Add entry to FIB for `/prefix/sub`
@@ -110,20 +120,28 @@ CustomAppConsumerServiceDiscovery::StartApplication()
   // Schedule send of first interest
   if (m_serviceDiscovery == 0) // no service discovery
   {
-    Simulator::Schedule(m_WFstartTimeOffset, &CustomAppConsumerServiceDiscovery::SendInterest, this);
+    // Schedule send of first interest. If doing Poisson Process, the rest will be scheduled in succession after the data comes back for each one.
+    Simulator::Schedule(m_WFstartTimeOffset, &CustomAppConsumerServiceDiscovery::SendInterest, this); //Time is relative from the current time, not from 0.
   }
   if (m_serviceDiscovery == 1) // perform service discovery
   {
-    Simulator::Schedule(m_SDstartTimeOffset, &CustomAppConsumerServiceDiscovery::SendSDInterest, this);
-    Simulator::Schedule(m_WFstartTimeOffset, &CustomAppConsumerServiceDiscovery::SendInterest, this);
+    Simulator::Schedule(m_SDstartTimeOffset, &CustomAppConsumerServiceDiscovery::SendSDInterest, this); //Time is relative from the current time, not from 0.
+    Simulator::Schedule(m_WFstartTimeOffset, &CustomAppConsumerServiceDiscovery::SendInterest, this);   //Time is relative from the current time, not from 0.
   }
-  //Simulator::Schedule(Seconds(2.0), &CustomAppConsumerServiceDiscovery::SendInterest, this);
-  //Simulator::Schedule(Seconds(3.0), &CustomAppConsumerServiceDiscovery::SendInterest, this);
-  //Simulator::Schedule(Seconds(4.0), &CustomAppConsumerServiceDiscovery::SendInterest, this);
-  //Simulator::Schedule(Seconds(5.0), &CustomAppConsumerServiceDiscovery::SendInterest, this);
-  //Simulator::Schedule(Seconds(6.0), &CustomAppConsumerServiceDiscovery::SendInterest, this);
-  //Simulator::Schedule(Seconds(7.0), &CustomAppConsumerServiceDiscovery::SendInterest, this);
-  //Simulator::Schedule(Seconds(8.0), &CustomAppConsumerServiceDiscovery::SendInterest, this);
+  if (m_serviceDiscovery == 2) // perform service discovery
+  {
+    // request only the first SD message. The WF request will be sent out as soon as we receive the SD data.
+    // each WF request will be preceded by an SD.
+    Simulator::Schedule(m_SDstartTimeOffset, &CustomAppConsumerServiceDiscovery::SendSDInterest, this); //Time is relative from the current time, not from 0.
+  }
+  m_interestNum = 1;
+  //Simulator::Schedule(Seconds(2.0), &CustomAppConsumerServiceDiscovery::SendInterest, this);  //Time is relative from the current time, not from 0.
+  //Simulator::Schedule(Seconds(3.0), &CustomAppConsumerServiceDiscovery::SendInterest, this);  //Time is relative from the current time, not from 0.
+  //Simulator::Schedule(Seconds(4.0), &CustomAppConsumerServiceDiscovery::SendInterest, this);  //Time is relative from the current time, not from 0.
+  //Simulator::Schedule(Seconds(5.0), &CustomAppConsumerServiceDiscovery::SendInterest, this);  //Time is relative from the current time, not from 0.
+  //Simulator::Schedule(Seconds(6.0), &CustomAppConsumerServiceDiscovery::SendInterest, this);  //Time is relative from the current time, not from 0.
+  //Simulator::Schedule(Seconds(7.0), &CustomAppConsumerServiceDiscovery::SendInterest, this);  //Time is relative from the current time, not from 0.
+  //Simulator::Schedule(Seconds(8.0), &CustomAppConsumerServiceDiscovery::SendInterest, this);  //Time is relative from the current time, not from 0.
 }
 
 // Processing when application is stopped
@@ -145,6 +163,7 @@ CustomAppConsumerServiceDiscovery::SendSDInterest()
   }
 
   m_SDrunning = true;
+  m_SDstartTime = Simulator::Now();
 
   /////////////////////////////////////
   // Sending one Interest packet out //
@@ -156,7 +175,7 @@ CustomAppConsumerServiceDiscovery::SendSDInterest()
   Ptr<UniformRandomVariable> rand = CreateObject<UniformRandomVariable>();
   interest->setNonce(rand->GetValue(0, std::numeric_limits<uint32_t>::max()));
   interest->setInterestLifetime(ndn::time::seconds(540));
-  //interest->setMustBeFresh(true);
+  interest->setMustBeFresh(true);
 
   
 
@@ -178,9 +197,11 @@ CustomAppConsumerServiceDiscovery::SendSDInterest()
     }
   }
 
+
   //m_SDstartTimeOffset = Simulator::Now();
   // Convert to integer in milliseconds and then to string
-  int64_t SDstartTimeOffsetNS = m_SDstartTimeOffset.ToInteger(ns3::Time::NS);
+  //int64_t SDstartTimeOffsetNS = m_SDstartTimeOffset.ToInteger(ns3::Time::NS);
+  int64_t SDstartTimeOffsetNS = Simulator::Now().ToInteger(ns3::Time::NS);
   //std::stringstream ssSD_ns;
   //ssSD_ns << SDstartTimeOffsetNS << " ns";
   //ssSD_ns << SDstartTimeOffsetNS;
@@ -207,7 +228,8 @@ CustomAppConsumerServiceDiscovery::SendSDInterest()
   if (m_orchestrate == 0) {
     dagObject["head"] = sinkService;
     //interest->setName(m_prefix.ndn::Name::toUri() + sinkService);
-    interest->setName(m_prefix.ndn::Name::toUri() + "/serviceDiscovery" + sinkService);
+    //interest->setName(m_prefix.ndn::Name::toUri() + "/serviceDiscovery" + sinkService);
+    interest->setName(m_prefix.ndn::Name::toUri() + m_SDName.ndn::Name::toUri() + sinkService);
 
     bool consumerFound = false;
     // now we remove the entry that has the sinkService feeding the consumer. It is not needed, and can't be in the dag if we want caching of intermediate results to work.
@@ -230,12 +252,14 @@ CustomAppConsumerServiceDiscovery::SendSDInterest()
     }
   }
   else if (m_orchestrate == 1){ // orchestration method A
-    dagObject["head"] = "/serviceOrchestration";
-    interest->setName(m_prefix.ndn::Name::toUri() + "/serviceOrchestration");
+    //dagObject["head"] = "/serviceOrchestration";
+    //interest->setName(m_prefix.ndn::Name::toUri() + "/serviceOrchestration");
+    NS_LOG_ERROR("ERROR, this should not happen. m_orchestrate value is 1, and we don't support Service Discovery with Orchestrator A" << '\n');
   }
   else if (m_orchestrate == 2){ // orchestration method B
-    dagObject["head"] = "/serviceOrchestration/dag";
-    interest->setName(m_prefix.ndn::Name::toUri() + "/serviceOrchestration/dag");
+    //dagObject["head"] = "/serviceOrchestration/dag";
+    //interest->setName(m_prefix.ndn::Name::toUri() + "/serviceOrchestration/dag");
+    NS_LOG_ERROR("ERROR, this should not happen. m_orchestrate value is 2, and we don't support Service Discovery with Orchestrator B" << '\n');
   }
   else
   {
@@ -290,7 +314,9 @@ CustomAppConsumerServiceDiscovery::SendInterest()
     return;
   }
 
+  m_WFrunning = true;
   ///now = Simulator::Now();
+  m_WFstartTime = Simulator::Now();
 
   /////////////////////////////////////
   // Sending one Interest packet out //
@@ -302,7 +328,7 @@ CustomAppConsumerServiceDiscovery::SendInterest()
   Ptr<UniformRandomVariable> rand = CreateObject<UniformRandomVariable>();
   interest->setNonce(rand->GetValue(0, std::numeric_limits<uint32_t>::max()));
   interest->setInterestLifetime(ndn::time::seconds(540));
-  //interest->setMustBeFresh(true);
+  interest->setMustBeFresh(true);
 
 
   std::ifstream f(m_dagPath);
@@ -428,82 +454,154 @@ CustomAppConsumerServiceDiscovery::OnData(std::shared_ptr<const ndn::Data> data)
   NS_LOG_DEBUG("Receiving Data packet for " << data->getName());
 
 
-  if (data->getName().ndn::Name::getPrefix(-1).getSubName(1,1).ndn::Name::toUri() == "/serviceDiscovery")
+  //if (data->getName().ndn::Name::getPrefix(-1).getSubName(1,1).ndn::Name::toUri() == "/serviceDiscovery")
+  if (data->getName().ndn::Name::getPrefix(-1).getSubName(1,1).ndn::Name::toUri() == m_SDName)
   {
-    NS_LOG_INFO("\n\n      CONSUMER: Service Discovery DATA received for name " << data->getName() << std::endl << "\n\n");
-    m_SDendTime = Simulator::Now();
-    Time serviceDiscoveryLatency = m_SDendTime - m_SDstartTimeOffset;
-    NS_LOG_INFO("\n  Service Discovery Latency: " <<  serviceDiscoveryLatency.GetMilliSeconds() << " milliseconds." << std::endl);
-    NS_LOG_INFO("\n  Service Discovery Latency: " <<  serviceDiscoveryLatency.GetMicroSeconds() << " microseconds." << std::endl);
-    NS_LOG_INFO("\n  Service Discovery Latency: " <<  serviceDiscoveryLatency.GetNanoSeconds() << " nanoseconds." << std::endl);
-
-    std::string dataPacketString;
-    dataPacketString = (const char *)data->getContent().value();
-    json dataPacketContents = json::parse(dataPacketString);
-    NS_LOG_INFO("\n\nData received - absolute EFT:   " << dataPacketContents["EFT"] << " nanoseconds\n");
-    int64_t workflowLatency_ns = dataPacketContents["EFT"].get<int64_t>() - m_WFstartTimeOffset.ToInteger(ns3::Time::NS);
-    NS_LOG_INFO("\n\n  Service Latency estimated by SD: " << workflowLatency_ns/1000 << " microseconds.\n\n");
-
-    // IF this is an SD data packet, then begin the normal consumer workflow request (call CustomAppConsumerServiceDiscovery::SendInterest())
-    //CustomAppConsumerServiceDiscovery::SendInterest();
-    // We no longer start the WF as soon as SD is done. We instead use the WF start time from the JSON file.
-
-    m_SDrunning = false;
-
-    // if we have already started the workflow, report an error. (if current time is past the workflow start time)
-    Time timeNow = Simulator::Now();
-    //if (timeNow > (m_WFstartTimeOffset + m_appStartTime))
-    if (timeNow > m_WFstartTimeOffset)
+    if (m_serviceDiscovery == 1)
     {
-      //NS_LOG_ERROR("\n\n  ERROR!!! Workflow started before Service Discovery process finished!" << "\n\n");
-      NS_LOG_ERROR("\n\n  ERROR!!! (OnData) Workflow started before Service Discovery process finished! Current time: " << Simulator::Now().GetSeconds() << ", WF start time: " << m_WFstartTimeOffset.ToInteger(ns3::Time::S) << " seconds." << "\n\n");
-      NS_LOG_ERROR("\n\n  TO FIX ERROR: change the worflow start time for this scenario to be a little later, to allow SD to finish." << "\n\n");
-      //Simulator::Stop(Simulator::Now()); // end the simulation as soon as we receive this data packet, no need to keep going.
-      return;
+      NS_LOG_INFO("\n\n      CONSUMER: Service Discovery DATA received for name " << data->getName() << std::endl << "\n\n");
+      m_SDendTime = Simulator::Now();
+      Time serviceDiscoveryLatency = m_SDendTime - m_SDstartTimeOffset;
+      NS_LOG_INFO("\n  Service Discovery Latency: " <<  serviceDiscoveryLatency.GetMilliSeconds() << " milliseconds." << std::endl);
+      NS_LOG_INFO("\n  Service Discovery Latency: " <<  serviceDiscoveryLatency.GetMicroSeconds() << " microseconds." << std::endl);
+      NS_LOG_INFO("\n  Service Discovery Latency: " <<  serviceDiscoveryLatency.GetNanoSeconds() << " nanoseconds." << std::endl);
+
+      std::string dataPacketString;
+      dataPacketString = (const char *)data->getContent().value();
+      json dataPacketContents = json::parse(dataPacketString);
+      NS_LOG_INFO("\n\nData received - absolute EFT:   " << dataPacketContents["EFT"] << " nanoseconds\n");
+      int64_t workflowLatency_ns = dataPacketContents["EFT"].get<int64_t>() - m_WFstartTimeOffset.ToInteger(ns3::Time::NS);
+      NS_LOG_INFO("\n\n  Service Latency estimated by SD: " << workflowLatency_ns/1000 << " microseconds.\n\n");
+
+      // IF this is an SD data packet, then begin the normal consumer workflow request (call CustomAppConsumerServiceDiscovery::SendInterest())
+      //CustomAppConsumerServiceDiscovery::SendInterest();
+      // We no longer start the WF as soon as SD is done. We instead use the WF start time from the JSON file.
+
+      m_SDrunning = false;
+
+      // if we have already started the workflow, report an error. (if current time is past the workflow start time)
+      Time timeNow = Simulator::Now();
+      //if (timeNow > (m_WFstartTime + m_appStartTime))
+      if (timeNow > m_WFstartTime)
+      {
+        //NS_LOG_ERROR("\n\n  ERROR!!! Workflow started before Service Discovery process finished!" << "\n\n");
+        NS_LOG_ERROR("\n\n  ERROR!!! (OnData) Workflow started before Service Discovery process finished! Current time: " << Simulator::Now().GetSeconds() << ", WF start time: " << m_WFstartTime.ToInteger(ns3::Time::S) << " seconds." << "\n\n");
+        NS_LOG_ERROR("\n\n  TO FIX ERROR: change the worflow start time for this scenario to be a little later, to allow SD to finish." << "\n\n");
+        //Simulator::Stop(Simulator::Now()); // end the simulation as soon as we receive this data packet, no need to keep going.
+        return;
+      }
+    }
+    else if (m_serviceDiscovery == 2)
+    {
+      NS_LOG_INFO("\n\n      CONSUMER: Service Discovery DATA # " << m_interestNum << "/" << m_numInterests << " received for name " << data->getName() << std::endl << "\n\n");
+      m_SDendTime = Simulator::Now();
+      Time serviceDiscoveryLatency = m_SDendTime - m_SDstartTime;
+      NS_LOG_INFO("\n  Service Discovery Latency: " <<  serviceDiscoveryLatency.GetMilliSeconds() << " milliseconds." << std::endl);
+      NS_LOG_INFO("\n  Service Discovery Latency: " <<  serviceDiscoveryLatency.GetMicroSeconds() << " microseconds." << std::endl);
+      NS_LOG_INFO("\n  Service Discovery Latency: " <<  serviceDiscoveryLatency.GetNanoSeconds() << " nanoseconds." << std::endl);
+
+      std::string dataPacketString;
+      dataPacketString = (const char *)data->getContent().value();
+      json dataPacketContents = json::parse(dataPacketString);
+      NS_LOG_INFO("\n\nData received - absolute EFT:   " << dataPacketContents["EFT"] << " nanoseconds\n");
+      int64_t workflowLatency_ns = dataPacketContents["EFT"].get<int64_t>() - m_WFstartTime.ToInteger(ns3::Time::NS);
+      NS_LOG_INFO("\n\n  Service Latency estimated by SD: " << workflowLatency_ns/1000 << " microseconds.\n\n");
+
+
+      // IF this is an SD data packet for m_serviceDiscovery == 2, then begin the workflow request (call CustomAppConsumerServiceDiscovery::SendInterest())
+      m_SDrunning = false;
+      CustomAppConsumerServiceDiscovery::SendInterest();
+
     }
 
   }
+  // else, it's the final workflow data packet, so just report the result and stop the simulation timer
   else
   {
-  // else, it's the final workflow data packet, so just report the result and stop the simulation timer
+    if (m_numInterests == 1) // we are running an experiment with only 1 WF request (not Poisson Process)
+    {
 
-    NS_LOG_INFO("\n\n      CONSUMER: DATA received for name " << data->getName() << std::endl << "\n\n");
+      NS_LOG_INFO("\n\n      CONSUMER: DATA received for name " << data->getName() << std::endl << "\n\n");
 
-    m_WFendTime = Simulator::Now();
-    Time serviceLatency = m_WFendTime - m_WFstartTimeOffset - m_appStartTime;
-    NS_LOG_INFO("\n  Service Latency: " <<  serviceLatency.GetMilliSeconds() << " milliseconds." << std::endl);
-    NS_LOG_INFO("\n  Service Latency: " <<  serviceLatency.GetMicroSeconds() << " microseconds." << std::endl);
-    NS_LOG_INFO("\n  Service Latency: " <<  serviceLatency.GetNanoSeconds() << " nanoseconds." << std::endl);
+      m_WFrunning = false;
+      m_WFendTime = Simulator::Now();
+      Time serviceLatency = m_WFendTime - m_WFstartTime - m_appStartTime;
+      NS_LOG_INFO("\n  Service Latency: " <<  serviceLatency.GetMilliSeconds() << " milliseconds." << std::endl);
+      NS_LOG_INFO("\n  Service Latency: " <<  serviceLatency.GetMicroSeconds() << " microseconds." << std::endl);
+      NS_LOG_INFO("\n  Service Latency: " <<  serviceLatency.GetNanoSeconds() << " nanoseconds." << std::endl);
 
-/*
-    // this is a HACK. I need a better way to get to the first byte of the content. Right now, I'm just incrementing the pointer past the TLV type, and size.
-    // and then getting to the first byte (which is all I'm using for data)
-    ndn::Block myRxedBlock = data->getContent();
-    //NS_LOG_DEBUG("\nCONSUMER: result = " << myRxedBlock << std::endl << "\n\n");
-    uint8_t *pContent = (uint8_t *)(myRxedBlock.data()); // this points to the first byte, which is the TLV-TYPE (21 for data packet contet)
-    pContent++;  // now this points to the second byte, containing 253 (0xFD), meaning size (1024) is expressed with 2 octets
-    pContent++;  // now this points to the first size octet
-    pContent++;  // now this points to the second size octet
-    pContent++;  // now we are pointing at the first byte of the true content
-*/
+  /*
+      // this is a HACK. I need a better way to get to the first byte of the content. Right now, I'm just incrementing the pointer past the TLV type, and size.
+      // and then getting to the first byte (which is all I'm using for data)
+      ndn::Block myRxedBlock = data->getContent();
+      //NS_LOG_DEBUG("\nCONSUMER: result = " << myRxedBlock << std::endl << "\n\n");
+      uint8_t *pContent = (uint8_t *)(myRxedBlock.data()); // this points to the first byte, which is the TLV-TYPE (21 for data packet contet)
+      pContent++;  // now this points to the second byte, containing 253 (0xFD), meaning size (1024) is expressed with 2 octets
+      pContent++;  // now this points to the first size octet
+      pContent++;  // now this points to the second size octet
+      pContent++;  // now we are pointing at the first byte of the true content
+  */
 
-    //NS_LOG_DEBUG("Now reading it into string...");
-    std::string dataPacketString;
-    dataPacketString = (const char *)data->getContent().value();
-    //NS_LOG_DEBUG("Data string received: " << dataPacketString);
+      //NS_LOG_DEBUG("Now reading it into string...");
+      std::string dataPacketString;
+      dataPacketString = (const char *)data->getContent().value();
+      //NS_LOG_DEBUG("Data string received: " << dataPacketString);
 
-    //NS_LOG_DEBUG("Now parsing it into JSON...");
-    json dataPacketContents = json::parse(dataPacketString);
-    //NS_LOG_DEBUG("Data received: " << dataPacketContents);
+      //NS_LOG_DEBUG("Now parsing it into JSON...");
+      json dataPacketContents = json::parse(dataPacketString);
+      //NS_LOG_DEBUG("Data received: " << dataPacketContents);
 
-    int64_t finalResult = 0;
-    finalResult = dataPacketContents["serviceOutput"];
+      int64_t finalResult = 0;
+      finalResult = dataPacketContents["serviceOutput"];
 
-    //NS_LOG_INFO("\n  The final answer is: " <<  (int)(*pContent) << std::endl << "\n\n");
-    NS_LOG_INFO("\n  The final answer is: " <<  finalResult << std::endl << "\n\n");
+      //NS_LOG_INFO("\n  The final answer is: " <<  (int)(*pContent) << std::endl << "\n\n");
+      NS_LOG_INFO("\n  The final answer is: " <<  finalResult << std::endl << "\n\n");
 
-    Simulator::Stop(Simulator::Now()); // end the simulation as soon as we receive this data packet, no need to keep going.
+      Simulator::Stop(Simulator::Now()); // end the simulation as soon as we receive this data packet, no need to keep going.
+    }
+    else if (m_numInterests > 1) // we are running an experiment with many requests as a Poisson Process
+    {
+      //NS_LOG_DEBUG("Now reading it into string...");
+      std::string dataPacketString;
+      dataPacketString = (const char *)data->getContent().value();
+      //NS_LOG_DEBUG("Data string received: " << dataPacketString);
 
+      //NS_LOG_DEBUG("Now parsing it into JSON...");
+      json dataPacketContents = json::parse(dataPacketString);
+      //NS_LOG_DEBUG("Data received: " << dataPacketContents);
+
+      int64_t finalResult = 0;
+      finalResult = dataPacketContents["serviceOutput"];
+
+      //std::cout << "  Final answer for    " << m_service.ndn::Name::toUri() << " " << m_interestNum << "/" << m_numInterests << ": " <<  (int)(*pContent) << std::endl;
+      std::cout << "  Final answer for consumer node    " << GetNode()->GetId() << ", service " << m_service.ndn::Name::toUri() << ", interest # " << m_interestNum << "/" << m_numInterests << ": " <<  finalResult << std::endl;
+
+      m_WFrunning = false;
+      m_WFendTime = Simulator::Now();
+      Time serviceLatency = m_WFendTime - m_WFstartTime - m_appStartTime;
+      std::cout << "  Service Latency for consumer node " << GetNode()->GetId() << ", service " << m_service.ndn::Name::toUri() << ", interest # " << m_interestNum << "/" << m_numInterests << ": " <<  serviceLatency.GetMilliSeconds() << " milliseconds." << std::endl;
+      std::cout << "  Service Latency for consumer node " << GetNode()->GetId() << ", service " << m_service.ndn::Name::toUri() << ", interest # " << m_interestNum << "/" << m_numInterests << ": " <<  serviceLatency.GetMicroSeconds() << " microseconds." << std::endl;
+
+      std::cout << std::endl;
+
+
+      // now that the previous workflow interest has been satisfied, we can schedule the next one. We wait so that we don't have more
+      // than one active request. Otherwise, we would need a more complex way of measuring the latency of concurrently running requests.
+      if (m_interestNum < m_numInterests)
+      {
+        m_interestNum++;
+        Ptr<RandomVariableStream> randomWaitTime;
+        randomWaitTime = CreateObject<ExponentialRandomVariable>();                   // borrowed from ndn-consumer-cbr for exponential wait (Poisson process)
+        randomWaitTime->SetAttribute("Mean", DoubleValue(1.0 / m_frequency));         // borrowed from ndn-consumer-cbr for exponential wait (Poisson process)
+        randomWaitTime->SetAttribute("Bound", DoubleValue(50 * 1.0 / m_frequency));   // borrowed from ndn-consumer-cbr for exponential wait (Poisson process)
+        // call the next SD request INSTEAD of the next WF request.
+        //Simulator::Schedule(Seconds(randomWaitTime->GetValue()), &CustomAppConsumerServiceDiscovery::SendInterest, this); // wait random time before starting next interest. Time is relative from the current time, not from 0.
+        Simulator::Schedule(Seconds(randomWaitTime->GetValue()), &CustomAppConsumerServiceDiscovery::SendSDInterest, this); // wait random time before starting next interest. Time is relative from the current time, not from 0.
+      }
+      //else{
+        //Simulator::Stop(Simulator::Now()); // end the simulation as soon as we receive this data packet, no need to keep going. This only applies if this is the ONLY consumer in our simulation
+      //}
+    }
   }
 
 }

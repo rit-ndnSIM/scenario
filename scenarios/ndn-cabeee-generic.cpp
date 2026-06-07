@@ -153,7 +153,7 @@ main(int argc, char* argv[])
     
     uint64_t startTimeOffsetSD = 0;
     uint64_t startTimeOffsetWF = 2;
-    if (serviceDiscoveryFlag == 1) {
+    if (serviceDiscoveryFlag > 0) {
         startTimeOffsetSD = scenario_json.at("startTimeOffsetSD");
         startTimeOffsetWF = scenario_json.at("startTimeOffsetWF");
     }
@@ -171,6 +171,8 @@ main(int argc, char* argv[])
     }
 
     if (Prefix == "orchA" || Prefix == "orchB") {
+        if (verbose)
+            std::cout << "Now setting routing strategy for " << Prefix << "/serviceOrchestration to /localhost/nfd/strategy/multicast" << std::endl;
         ndn::StrategyChoiceHelper::InstallAll(Prefix + "/serviceOrchestration", "/localhost/nfd/strategy/multicast");
     }
 
@@ -228,11 +230,20 @@ main(int argc, char* argv[])
         if (type == "producer") {
             appHelper = ndn::AppHelper("CustomAppProducer");
             appHelper.SetAttribute("Makespan", UintegerValue(makespanNS));
-            if (serviceDiscoveryFlag == 1) {
+            if (serviceDiscoveryFlag > 0) {
                 serviceDiscoveryApp = ndn::AppHelper("DagServiceDiscoveryApp");
                 serviceDiscoveryApp.SetPrefix(Prefix);
+                if (serviceDiscoveryFlag == 1) {
+                    serviceDiscoveryApp.SetAttribute("SDName", StringValue("/serviceDiscovery"));
+                }
+                if (serviceDiscoveryFlag == 2) {
+                    serviceDiscoveryApp.SetAttribute("SDName", StringValue("/serviceDiscovery2"));
+                }
                 serviceDiscoveryApp.SetAttribute("Service", StringValue(srv_name));
                 serviceDiscoveryApp.SetAttribute("Makespan", UintegerValue(makespanNS));
+                if (verbose) {
+                    std::cout << "Now installing ServiceDiscoveryApp in router " << (rtr_name) << ", starting at time: " << start << std::endl;
+                }
                 auto sd_app = serviceDiscoveryApp.Install(rtr_node);
                 sd_app.Start(Seconds(start));
                 if (end > 0)
@@ -241,6 +252,9 @@ main(int argc, char* argv[])
             ndnGlobalRoutingHelper.AddOrigins(Prefix + srv_name, rtr_name);
             if (serviceDiscoveryFlag == 1) {
                 ndnGlobalRoutingHelper.AddOrigins(Prefix + "/serviceDiscovery" + srv_name, rtr_name);
+            }
+            if (serviceDiscoveryFlag == 2) {
+                ndnGlobalRoutingHelper.AddOrigins(Prefix + "/serviceDiscovery2" + srv_name, rtr_name);
             }
         } else if (type == "service") {
             if (Prefix == "nesco" || Prefix == "nescoSCOPT"){
@@ -254,11 +268,20 @@ main(int argc, char* argv[])
                 appHelper = ndn::AppHelper("DagServiceB_App");
             }
             appHelper.SetAttribute("Makespan", UintegerValue(makespanNS));
-            if (serviceDiscoveryFlag == 1) {
+            if (serviceDiscoveryFlag > 0) {
                 serviceDiscoveryApp = ndn::AppHelper("DagServiceDiscoveryApp");
                 serviceDiscoveryApp.SetPrefix(Prefix);
+                if (serviceDiscoveryFlag == 1) {
+                    serviceDiscoveryApp.SetAttribute("SDName", StringValue("/serviceDiscovery"));
+                }
+                if (serviceDiscoveryFlag == 2) {
+                    serviceDiscoveryApp.SetAttribute("SDName", StringValue("/serviceDiscovery2"));
+                }
                 serviceDiscoveryApp.SetAttribute("Service", StringValue(srv_name));
                 serviceDiscoveryApp.SetAttribute("Makespan", UintegerValue(makespanNS));
+                if (verbose) {
+                    std::cout << "Now installing ServiceDiscoveryApp in router " << (rtr_name) << ", starting at time: " << start << std::endl;
+                }
                 auto sd_app = serviceDiscoveryApp.Install(rtr_node);
                 sd_app.Start(Seconds(start));
                 if (end > 0)
@@ -267,6 +290,9 @@ main(int argc, char* argv[])
             ndnGlobalRoutingHelper.AddOrigins(Prefix + srv_name, rtr_name);
             if (serviceDiscoveryFlag == 1) {
                 ndnGlobalRoutingHelper.AddOrigins(Prefix + "/serviceDiscovery" + srv_name, rtr_name);
+            }
+            if (serviceDiscoveryFlag == 2) {
+                ndnGlobalRoutingHelper.AddOrigins(Prefix + "/serviceDiscovery2" + srv_name, rtr_name);
             }
         } else if (type == "consumer") {
             //TODO: do we want to support having the DAG workflow in the scenario_file? Right now we just support it being in a separate file (workflowFile)
@@ -282,7 +308,19 @@ main(int argc, char* argv[])
             appHelper.SetAttribute("Workflow", StringValue(workflow_file));
             if (Prefix == "nesco" || Prefix == "nescoSCOPT") {
                 appHelper.SetAttribute("Orchestrate", UintegerValue(0));
-                if (serviceDiscoveryFlag == 1) {
+                if (serviceDiscoveryFlag > 0) {
+                    if (serviceDiscoveryFlag == 1) {
+                        appHelper.SetAttribute("SDName", StringValue("/serviceDiscovery"));
+                    }
+                    if (serviceDiscoveryFlag == 2) {
+                        appHelper.SetAttribute("SDName", StringValue("/serviceDiscovery2"));
+                    }
+                    if (scenario_json.contains("poissonConsumerFrequency")) {
+                        appHelper.SetAttribute("Frequency", DoubleValue(scenario_json.at("poissonConsumerFrequency")));
+                    }
+                    if (scenario_json.contains("poissonConsumerNumInterests")) {
+                        appHelper.SetAttribute("NumInterests", UintegerValue(scenario_json.at("poissonConsumerNumInterests")));
+                    }
                     appHelper.SetAttribute("ServiceDiscovery", UintegerValue(serviceDiscoveryFlag));
                     appHelper.SetAttribute("ResourceAllocation", UintegerValue(resourceAllocationFlag));
                     appHelper.SetAttribute("AllocationReuse", UintegerValue(allocationReuseFlag));
@@ -361,7 +399,8 @@ main(int argc, char* argv[])
         srv_app.Start(Seconds(start));
         if (end > 0)
             srv_app.Stop(Seconds(end));
-    }
+        
+    } // end for (const auto& hosting : scenario_json.at("routerHosting"))
 
     // Calculate and install FIBs
     ndn::GlobalRoutingHelper::CalculateRoutes();

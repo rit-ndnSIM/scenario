@@ -51,7 +51,8 @@ export NS_LOG="$LOGS"
 #TYPE="fwdOptSDSweep20"
 #TYPE="fwdOptSDSweep20_5x8"
 #TYPE="cascon_random_test"
-TYPE="linearWFs_SD20"
+#TYPE="linearWFs_SD20"
+TYPE="fwdOptSD2Sweep20"
 
 
 #export GEN_ALLOCATION_GRAPHS="true"
@@ -60,7 +61,8 @@ export FORCE_RERUN_ALL="true"   # Set to "true" to run everything. Set to "false
 #export FORCE_RERUN_ALL="false"   # Set to "true" to run everything. Set to "false" to only run missing/failed scenarios.
 export FORCE_TRACE=0    # Set to override trace settings in JSON file. This value is the trace interval in seconds.
 #export FORCE_TRACE=0.1    # Set to override trace settings in JSON file. This value is the trace interval in seconds.
-export FORCE_MAKESPAN=20000000    # Set to override service makespanNS settings in JSON file.
+#export FORCE_MAKESPAN=20000000    # Set to override service makespanNS settings in JSON file.
+export FORCE_MAKESPAN=0    # Set to override service makespanNS settings in JSON file.
 
 
 #------------------------------ END OF SETTINGS -----------------------------------

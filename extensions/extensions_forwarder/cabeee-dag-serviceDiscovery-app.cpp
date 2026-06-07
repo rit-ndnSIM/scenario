@@ -60,6 +60,8 @@ DagServiceDiscoveryApp::GetTypeId()
     .AddConstructor<DagServiceDiscoveryApp>()
     .AddAttribute("Prefix", "Requested prefix", StringValue("/dumb-interest"),
                     ndn::MakeNameAccessor(&DagServiceDiscoveryApp::m_prefix), ndn::MakeNameChecker())
+    .AddAttribute("SDName", "Requested service discovery type", StringValue("/dumb-SDName"),
+                    ndn::MakeNameAccessor(&DagServiceDiscoveryApp::m_SDName), ndn::MakeNameChecker())
     .AddAttribute("Service", "Requested service", StringValue("dumb-service"),
                     ndn::MakeNameAccessor(&DagServiceDiscoveryApp::m_service), ndn::MakeNameChecker())
     .AddAttribute("Makespan", "Requested service makespan", UintegerValue(0),
@@ -80,7 +82,8 @@ DagServiceDiscoveryApp::StartApplication()
   ndn::App::StartApplication();
   m_isRunning = true;
 
-  m_name = m_prefix.ndn::Name::toUri() + "/serviceDiscovery" + m_service.ndn::Name::toUri();
+  //m_name = m_prefix.ndn::Name::toUri() + "/serviceDiscovery" + m_service.ndn::Name::toUri();
+  m_name = m_prefix.ndn::Name::toUri() + m_SDName.ndn::Name::toUri() + m_service.ndn::Name::toUri();
   
   NS_LOG_DEBUG("serviceDiscoveryAPP is running on node " << GetNode()->GetId());
   NS_LOG_DEBUG("serviceDiscoveryAPP is performing AddRoute on name: " << m_name);
@@ -316,8 +319,10 @@ DagServiceDiscoveryApp::OnInterest(std::shared_ptr<const ndn::Interest> interest
         for (auto& inputIterator : m_dagServTracker[serviceIterator.key()]["inputsRxed"].items())
         {
           has_inputs = true;
-          NS_LOG_DEBUG("ServiceDiscoveryAPP - generating schedulerReleaseFromApp message for " << m_prefix.ndn::Name::toUri() + "/serviceDiscovery" + inputIterator.key() << std::endl);
-          DagServiceDiscoveryApp::SendInterest(m_prefix.ndn::Name::toUri() + "/schedulerRelease", m_prefix.ndn::Name::toUri() + "/serviceDiscovery" + inputIterator.key());
+          //NS_LOG_DEBUG("ServiceDiscoveryAPP - generating schedulerReleaseFromApp message for " << m_prefix.ndn::Name::toUri() + "/serviceDiscovery" + inputIterator.key() << std::endl);
+          //DagServiceDiscoveryApp::SendInterest(m_prefix.ndn::Name::toUri() + "/schedulerRelease", m_prefix.ndn::Name::toUri() + "/serviceDiscovery" + inputIterator.key());
+          NS_LOG_DEBUG("ServiceDiscoveryAPP - generating schedulerReleaseFromApp message for " << m_prefix.ndn::Name::toUri() + m_SDName.ndn::Name::toUri() + inputIterator.key() << std::endl);
+          DagServiceDiscoveryApp::SendInterest(m_prefix.ndn::Name::toUri() + "/schedulerRelease", m_prefix.ndn::Name::toUri() + m_SDName.ndn::Name::toUri() + inputIterator.key());
         }
       }
     }
@@ -373,6 +378,7 @@ DagServiceDiscoveryApp::OnInterest(std::shared_ptr<const ndn::Interest> interest
 
   // generate interests for inputs into hosted services early (shortcut optimization to parallelize workflow)
   if (rxedInterestName == "/shortcutOPT")
+  // we don't currently support shortcut optimization (PIP) for service discovery. I haven't run any "nescoSCOPT" experiments for this (as of June 2026). Only "nesco"
   {
     if (m_service.toUri() != dagObject["head"])
     {
@@ -410,7 +416,8 @@ DagServiceDiscoveryApp::OnInterest(std::shared_ptr<const ndn::Interest> interest
             // generate the interest for this input, sendInterest will prune the DAG and set the head properly
             std::string dagString = dagObject.dump();
             //NS_LOG_DEBUG("\n\nshortcutOPT: Generating interest for " << serviceInput.key() << '\n');
-            DagServiceDiscoveryApp::SendInterest(m_prefix.ndn::Name::toUri() + "/serviceDiscovery" + serviceInput.key(), dagString);
+            //DagServiceDiscoveryApp::SendInterest(m_prefix.ndn::Name::toUri() + "/serviceDiscovery" + serviceInput.key(), dagString);
+            DagServiceDiscoveryApp::SendInterest(m_prefix.ndn::Name::toUri() + m_SDName.ndn::Name::toUri() + serviceInput.key(), dagString);
           }
         }
         m_nameAndDigest = interest->getName();   // store the name with digest so that we can later generate the data packet with the same name/digest!
@@ -518,7 +525,8 @@ DagServiceDiscoveryApp::OnInterest(std::shared_ptr<const ndn::Interest> interest
               strcpy(dagStringParameter, updatedDagString.c_str());
               size_t length = strlen(dagStringParameter);
               //add modified object as a parameter to the new interest
-              auto new_interest = std::make_shared<ndn::Interest>(m_prefix.ndn::Name::toUri() + "/serviceDiscovery" + (std::string)x.key());
+              //auto new_interest = std::make_shared<ndn::Interest>(m_prefix.ndn::Name::toUri() + "/serviceDiscovery" + (std::string)x.key());
+              auto new_interest = std::make_shared<ndn::Interest>(m_prefix.ndn::Name::toUri() + m_SDName.ndn::Name::toUri() + (std::string)x.key());
               //Ptr<UniformRandomVariable> rand = CreateObject<UniformRandomVariable>();
               //new_interest->setNonce(rand->GetValue(0, std::numeric_limits<uint32_t>::max()));
               //new_interest->setInterestLifetime(ndn::time::seconds(10));
@@ -534,6 +542,7 @@ DagServiceDiscoveryApp::OnInterest(std::shared_ptr<const ndn::Interest> interest
 
               // generate the interest for this input
               //DagServiceDiscoveryApp::SendInterest(m_prefix.ndn::Name::toUri() + "/serviceDiscovery" + serviceInputNameAndHash, updatedDagString);
+              //DagServiceDiscoveryApp::SendInterest(m_prefix.ndn::Name::toUri() + m_SDName.ndn::Name::toUri() + serviceInputNameAndHash, updatedDagString);
               NS_LOG_DEBUG("ServiceDiscoveryAPP: Sending Interest packet for " << *new_interest);
               // Call trace (for logging purposes)
               m_transmittedInterests(new_interest, this, m_face);

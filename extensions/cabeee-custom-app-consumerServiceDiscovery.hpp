@@ -72,6 +72,7 @@ private:
   bool m_isRunning;
   ndn::Name m_prefix;
   ndn::Name m_service;
+  ndn::Name m_SDName;
   uint16_t m_orchestrate;
   uint16_t m_serviceDiscovery;
   uint16_t m_resourceAllocation;
@@ -80,10 +81,16 @@ private:
   std::string m_dagPath;
   Time m_appStartTime;
   bool m_SDrunning;
+  bool m_WFrunning;
   Time m_SDstartTimeOffset;
+  Time m_SDstartTime;
   Time m_SDendTime;
   Time m_WFstartTimeOffset;
+  Time m_WFstartTime;
   Time m_WFendTime;
+  double m_frequency; // how many interests per second on average?
+  uint16_t m_numInterests; // total number of interests to generate
+  uint16_t m_interestNum; // to keep track of how many interests we've generated
 };
 
 } // namespace ns3
