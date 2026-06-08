@@ -579,11 +579,12 @@ DagForwarderApp::OnData(std::shared_ptr<const ndn::Data> data)
 
   //NS_LOG_DEBUG("Now parsing it into JSON...");
   json dataPacketContents = json::parse(dataPacketString);
-  //NS_LOG_DEBUG("Data received: " << dataPacketContents);
+  NS_LOG_DEBUG("Data packet contents: " << dataPacketContents);
 
   int64_t serviceInput = 0;
   int64_t serviceOutput = 0;
   serviceInput = dataPacketContents["serviceOutput"];
+  NS_LOG_DEBUG("Data received (serviceInput): " << serviceInput);
   //uint64_t makespanNS = 0;
   //makespanNS = dataPacketContents["makespanNS"]; // we don't really do anything with the previous service's makespan here.
 
@@ -640,19 +641,42 @@ DagForwarderApp::OnData(std::shared_ptr<const ndn::Data> data)
   }
 */
 
+  NS_LOG_DEBUG("Forwarder dagServTracker data structure before marking as received: " << std::setw(2) << m_dagServTracker);
+
   //TODO-done: complete loops below that get the index value and populate the service result
   //for each instance of fullRxedDataNameAndHash in m_dagServTracker
+  NS_LOG_DEBUG("Checking x.key and y.key of m_dagServTracker");
   for (auto& x : m_dagServTracker.items())
   {
-    //std::cout << "Checking x.key: " << (std::string)x.key() << '\n';
+    NS_LOG_DEBUG("Checking x.key: " << (std::string)x.key());
     for (auto& y : m_dagServTracker[x.key()]["inputIndex"].items())
     {
-      //std::cout << "Checking y.key: " << (std::string)y.key() << '\n';
+      NS_LOG_DEBUG("Checking y.key: " << (std::string)y.key() << " against rxedFullDataNameAndHash: " << rxedFullDataNameAndHash << std::endl);
       if (y.key() == rxedFullDataNameAndHash)
       {
-        char index = y.value().get<char>();
-        m_mapOfVectorOfServiceInputs[rxedFullDataNameAndHash][index] = serviceInput;
+        NS_LOG_DEBUG("We have a match! y.key: " << (std::string)y.key() << " is equal to rxedFullDataNameAndHash: " << rxedFullDataNameAndHash << std::endl);
+        NS_LOG_DEBUG("y.value is  " << y.value() << std::endl);
+        NS_LOG_DEBUG("y.value.get<char>() is  " << static_cast<int>(y.value().get<char>()) << std::endl);
+        int index = static_cast<int>(y.value().get<char>());
+        NS_LOG_DEBUG("index is  " << index << std::endl);
+
+
+
+        //m_mapOfVectorOfServiceInputs[rxedFullDataNameAndHash][index] = serviceInput;
+        //m_mapOfVectorOfServiceInputs[x.key()][index] = serviceInput;
+        // Get a reference to the 1-byte data vector for this service
+        auto& byteVector = m_mapOfVectorOfServiceInputs[x.key()];
+        // Dynamically grow the vector if it isn't large enough for this index yet
+        if (byteVector.size() <= static_cast<size_t>(index)) {
+            byteVector.resize(index + 1);
+        }
+        // Safely store the 1-byte packet data at its correct ordered location
+        byteVector[index] = serviceInput;
+
+
+
         m_dagServTracker[x.key()]["inputsRxed"][rxedFullDataNameAndHash] = 1; // TODO-done: use full name+hash
+        NS_LOG_DEBUG("Forwarder dagServTracker data structure during marking as received: " << std::setw(2) << m_dagServTracker);
       }
     }
 
@@ -667,6 +691,7 @@ DagForwarderApp::OnData(std::shared_ptr<const ndn::Data> data)
       }
     }
 
+    NS_LOG_DEBUG("Forwarder dagServTracker data structure after marking as received: " << std::setw(2) << m_dagServTracker);
 
 
 /*
@@ -707,11 +732,12 @@ DagForwarderApp::OnData(std::shared_ptr<const ndn::Data> data)
       // TODO7: we should use function pointers here, and have each service be a function defined in a separate file. Figure out how to deal with potentially different num of inputs.
 
       serviceOutput = 0;
-      for (auto input : m_mapOfVectorOfServiceInputs[x.value()]) // for (each input)
+      for (auto input : m_mapOfVectorOfServiceInputs[x.key()]) // for (each input)
       //TODO-done: vector above needs to be a map of vectors. key will be full incoming name+hash. This one will need a lookup, since the incoming name+hash is for the INPUT, and the map uses THIS service's name+hash.
       {
         serviceOutput += input;
       }
+      NS_LOG_DEBUG("Service output is: " << serviceOutput);
 
   /*
       if (m_service.ndn::Name::toUri() == "/service1"){
