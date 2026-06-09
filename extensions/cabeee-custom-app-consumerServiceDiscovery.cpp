@@ -288,6 +288,8 @@ CustomAppConsumerServiceDiscovery::SendSDInterest()
 
   NS_LOG_DEBUG("Sending Interest packet for " << *interest);
 
+  NS_LOG_INFO("Staring SD for " << m_service);
+
   // Call trace (for logging purposes)
   m_transmittedInterests(interest, this, m_face);
 
@@ -417,6 +419,8 @@ CustomAppConsumerServiceDiscovery::SendInterest()
 
   NS_LOG_DEBUG("Sending Interest packet for " << *interest);
 
+  NS_LOG_INFO("Staring WF for " << m_service);
+
   // Call trace (for logging purposes)
   m_transmittedInterests(interest, this, m_face);
 
@@ -457,7 +461,7 @@ CustomAppConsumerServiceDiscovery::OnData(std::shared_ptr<const ndn::Data> data)
   //if (data->getName().ndn::Name::getPrefix(-1).getSubName(1,1).ndn::Name::toUri() == "/serviceDiscovery")
   if (data->getName().ndn::Name::getPrefix(-1).getSubName(1,1).ndn::Name::toUri() == m_SDName)
   {
-    if (m_serviceDiscovery == 1)
+    if (m_serviceDiscovery == 1 && m_numInterests == 1)
     {
       NS_LOG_INFO("\n\n      CONSUMER: Service Discovery DATA received for name " << data->getName() << std::endl << "\n\n");
       m_SDendTime = Simulator::Now();
@@ -471,7 +475,7 @@ CustomAppConsumerServiceDiscovery::OnData(std::shared_ptr<const ndn::Data> data)
       json dataPacketContents = json::parse(dataPacketString);
       NS_LOG_INFO("\n\nData received - absolute EFT:   " << dataPacketContents["EFT"] << " nanoseconds\n");
       int64_t workflowLatency_ns = dataPacketContents["EFT"].get<int64_t>() - m_WFstartTimeOffset.ToInteger(ns3::Time::NS);
-      NS_LOG_INFO("\n\n  Service Latency estimated by SD: " << workflowLatency_ns/1000 << " microseconds.\n\n");
+      NS_LOG_INFO("\n\n  Service Latency estimated by SD: " << workflowLatency_ns/1000 << " microseconds. " << workflowLatency_ns/1000000 << " milliseconds.\n\n");
 
       // IF this is an SD data packet, then begin the normal consumer workflow request (call CustomAppConsumerServiceDiscovery::SendInterest())
       //CustomAppConsumerServiceDiscovery::SendInterest();
@@ -491,9 +495,9 @@ CustomAppConsumerServiceDiscovery::OnData(std::shared_ptr<const ndn::Data> data)
         return;
       }
     }
-    else if (m_serviceDiscovery == 2)
+    else if (m_serviceDiscovery == 2 && m_numInterests > 1)
     {
-      NS_LOG_INFO("\n\n      CONSUMER: Service Discovery DATA # " << m_interestNum << "/" << m_numInterests << " received for name " << data->getName() << std::endl << "\n\n");
+      NS_LOG_INFO("\n\n      CONSUMER: Service Discovery DATA # " << m_interestNum << "/" << m_numInterests << " received for name " << data->getName() << " for consumer service " << m_service.ndn::Name::toUri()  << std::endl << "\n\n");
       m_SDendTime = Simulator::Now();
       Time serviceDiscoveryLatency = m_SDendTime - m_SDstartTime;
       NS_LOG_INFO("\n  Service Discovery Latency: " <<  serviceDiscoveryLatency.GetMilliSeconds() << " milliseconds." << std::endl);
@@ -504,9 +508,11 @@ CustomAppConsumerServiceDiscovery::OnData(std::shared_ptr<const ndn::Data> data)
       dataPacketString = (const char *)data->getContent().value();
       json dataPacketContents = json::parse(dataPacketString);
       NS_LOG_INFO("\n\nData received - absolute EFT:   " << dataPacketContents["EFT"] << " nanoseconds\n");
-      int64_t workflowLatency_ns = dataPacketContents["EFT"].get<int64_t>() - m_WFstartTime.ToInteger(ns3::Time::NS);
-      NS_LOG_INFO("\n\n  Service Latency estimated by SD: " << workflowLatency_ns/1000 << " microseconds.\n\n");
+      //int64_t workflowLatency_ns = dataPacketContents["EFT"].get<int64_t>() - m_WFstartTime.ToInteger(ns3::Time::NS);
+      int64_t workflowLatency_ns = dataPacketContents["EFT"].get<int64_t>() - m_WFstartTimeOffset.ToInteger(ns3::Time::NS);
+      NS_LOG_INFO("\n\n  Service Latency estimated by SD: " << workflowLatency_ns/1000 << " microseconds. " << workflowLatency_ns/1000000 << " milliseconds.\n\n");
 
+      NS_LOG_INFO("Ending SD for " << m_service);
 
       // IF this is an SD data packet for m_serviceDiscovery == 2, then begin the workflow request (call CustomAppConsumerServiceDiscovery::SendInterest())
       m_SDrunning = false;
@@ -515,7 +521,7 @@ CustomAppConsumerServiceDiscovery::OnData(std::shared_ptr<const ndn::Data> data)
     }
 
   }
-  // else, it's the final workflow data packet, so just report the result and stop the simulation timer
+  // else, it's a final workflow data packet, so just report the result and see if there are more requests to be made
   else
   {
     if (m_numInterests == 1) // we are running an experiment with only 1 WF request (not Poisson Process)
@@ -584,6 +590,7 @@ CustomAppConsumerServiceDiscovery::OnData(std::shared_ptr<const ndn::Data> data)
 
       std::cout << std::endl;
 
+      NS_LOG_INFO("Ending WF for " << m_service);
 
       // now that the previous workflow interest has been satisfied, we can schedule the next one. We wait so that we don't have more
       // than one active request. Otherwise, we would need a more complex way of measuring the latency of concurrently running requests.
@@ -596,7 +603,14 @@ CustomAppConsumerServiceDiscovery::OnData(std::shared_ptr<const ndn::Data> data)
         randomWaitTime->SetAttribute("Bound", DoubleValue(50 * 1.0 / m_frequency));   // borrowed from ndn-consumer-cbr for exponential wait (Poisson process)
         // call the next SD request INSTEAD of the next WF request.
         //Simulator::Schedule(Seconds(randomWaitTime->GetValue()), &CustomAppConsumerServiceDiscovery::SendInterest, this); // wait random time before starting next interest. Time is relative from the current time, not from 0.
-        Simulator::Schedule(Seconds(randomWaitTime->GetValue()), &CustomAppConsumerServiceDiscovery::SendSDInterest, this); // wait random time before starting next interest. Time is relative from the current time, not from 0.
+        if (m_serviceDiscovery == 0)
+        {
+          Simulator::Schedule(Seconds(randomWaitTime->GetValue()), &CustomAppConsumerServiceDiscovery::SendInterest, this); // wait random time before starting next WF interest. Time is relative from the current time, not from 0.
+        }
+        if (m_serviceDiscovery == 2)
+        {
+          Simulator::Schedule(Seconds(randomWaitTime->GetValue()), &CustomAppConsumerServiceDiscovery::SendSDInterest, this); // wait random time before starting next SD interest. Time is relative from the current time, not from 0.
+        }
       }
       //else{
         //Simulator::Stop(Simulator::Now()); // end the simulation as soon as we receive this data packet, no need to keep going. This only applies if this is the ONLY consumer in our simulation

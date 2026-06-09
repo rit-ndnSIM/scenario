@@ -311,22 +311,25 @@ main(int argc, char* argv[])
                 if (serviceDiscoveryFlag > 0) {
                     if (serviceDiscoveryFlag == 1) {
                         appHelper.SetAttribute("SDName", StringValue("/serviceDiscovery"));
+                        appHelper.SetAttribute("ResourceAllocation", UintegerValue(resourceAllocationFlag));
+                        appHelper.SetAttribute("AllocationReuse", UintegerValue(allocationReuseFlag));
+                        appHelper.SetAttribute("ScheduleCompaction", UintegerValue(scheduleCompactionFlag));
                     }
                     if (serviceDiscoveryFlag == 2) {
                         appHelper.SetAttribute("SDName", StringValue("/serviceDiscovery2"));
                     }
-                    if (scenario_json.contains("poissonConsumerFrequency")) {
-                        appHelper.SetAttribute("Frequency", DoubleValue(scenario_json.at("poissonConsumerFrequency")));
-                    }
-                    if (scenario_json.contains("poissonConsumerNumInterests")) {
-                        appHelper.SetAttribute("NumInterests", UintegerValue(scenario_json.at("poissonConsumerNumInterests")));
-                    }
-                    appHelper.SetAttribute("ServiceDiscovery", UintegerValue(serviceDiscoveryFlag));
-                    appHelper.SetAttribute("ResourceAllocation", UintegerValue(resourceAllocationFlag));
-                    appHelper.SetAttribute("AllocationReuse", UintegerValue(allocationReuseFlag));
-                    appHelper.SetAttribute("ScheduleCompaction", UintegerValue(scheduleCompactionFlag));
                     appHelper.SetAttribute("SDstartTimeOffset", TimeValue(Seconds(startTimeOffsetSD)));
                     appHelper.SetAttribute("WFstartTimeOffset", TimeValue(Seconds(startTimeOffsetWF)));
+                }
+                appHelper.SetAttribute("ServiceDiscovery", UintegerValue(serviceDiscoveryFlag));
+                if (scenario_json.contains("poissonConsumerFrequency")) {
+                    if (verbose) {
+                        std::cout << "Now setting poisson consumer frequency for " << (srv_name) << " to " << scenario_json.at("poissonConsumerFrequency") << std::endl;
+                    }
+                    appHelper.SetAttribute("Frequency", DoubleValue(scenario_json.at("poissonConsumerFrequency")));
+                }
+                if (scenario_json.contains("poissonConsumerNumInterests")) {
+                    appHelper.SetAttribute("NumInterests", UintegerValue(scenario_json.at("poissonConsumerNumInterests")));
                 }
             }
             if (Prefix == "orchA") {
