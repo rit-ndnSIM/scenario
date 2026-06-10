@@ -75,6 +75,7 @@ private:
   ndn::Name m_SDName;
   uint16_t m_orchestrate;
   uint16_t m_serviceDiscovery;
+  uint16_t m_resourceUtilization;
   uint16_t m_resourceAllocation;
   uint16_t m_allocationReuse;
   uint16_t m_scheduleCompaction;

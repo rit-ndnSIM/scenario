@@ -26,6 +26,7 @@ def main():
     parser.add_argument('-o', '--output', type=Path, default='/dev/stdout', help="Scenario json output")
     parser.add_argument('-f', '--force', action='store_true', default=False, help="overwrite files")
     parser.add_argument('-sd', '--serviceDiscovery', type=int, default=0, help="perform service discovery")
+    parser.add_argument('-ru', '--resourceUtilization', type=int, default=0, help="consider resource utilization")
     parser.add_argument('-ra', '--resourceAllocation', type=int, default=0, help="perform resource allocation")
     parser.add_argument('-ar', '--allocationReuse', type=int, default=0, help="perform allocation reuse")
     parser.add_argument('-sc', '--scheduleCompaction', type=int, default=0, help="perform schedule compaction")
@@ -87,6 +88,7 @@ def main():
         'prefix': prefix,
         'topofile': str(args.topo_txt),
         'serviceDiscovery': (args.serviceDiscovery),
+        'resourceUtilization': (args.resourceUtilization),
         'resourceAllocation': (args.resourceAllocation),
         'allocationReuse': (args.allocationReuse),
         'scheduleCompaction': (args.scheduleCompaction),

@@ -52,7 +52,8 @@ export NS_LOG="$LOGS"
 #TYPE="fwdOptSDSweep20_5x8"
 #TYPE="cascon_random_test"
 #TYPE="linearWFs_SD20"
-TYPE="fwdOptSD2Sweep20"
+#TYPE="fwdOptSD2Sweep20_test"
+TYPE="fwdOptSD2Sweep20_5x8"
 
 
 #export GEN_ALLOCATION_GRAPHS="true"
@@ -88,7 +89,8 @@ mkdir -p "$SCENARIO_TRACE_DIR"
 
 # --- 1. Setup CSV Header ---
 #header="Example, SD Interest Packets Generated, SD Data Packets Generated, SD Interest Packets Transmitted, SD Data Packets Transmitted, WF Interest Packets Generated, WF Data Packets Generated, WF Interest Packets Transmitted, WF Data Packets Transmitted, Critical-Path-Metric, CPM-t_exec(ns), SD Latency (us), SD Estimated WF Service Latency (us), WF Service Latency (us), Total Node Usage Time (us), Average Node Utilization (%), Coefficient of Variation (load distribution), Final Result, Time, ns-3 commit, pybindgen commit, scenario commit, ndnSIM commit"
-header="Example, SD Interest Packets Generated, SD Data Packets Generated, SD Interest Packets Transmitted, SD Data Packets Transmitted, WF Interest Packets Generated, WF Data Packets Generated, WF Interest Packets Transmitted, WF Data Packets Transmitted, Critical-Path-Metric, CPM-t_exec(ns), SD Latency (us), SD Estimated WF Service Latency (us), WF Service Latency (us), Total Node Usage Time (us), Average Node Utilization (%), Coefficient of Variation (load distribution), Total Cache Hits, Total Cache Misses, Avg Cache Usage, Total KB Transferred, Final Result, Time, ns-3 commit, pybindgen commit, scenario commit, ndnSIM commit"
+#header="Example, SD Interest Packets Generated, SD Data Packets Generated, SD Interest Packets Transmitted, SD Data Packets Transmitted, WF Interest Packets Generated, WF Data Packets Generated, WF Interest Packets Transmitted, WF Data Packets Transmitted, Critical-Path-Metric, CPM-t_exec(ns), SD Latency (us), SD Estimated WF Service Latency (us), WF Service Latency (us), Total Node Usage Time (us), Average Node Utilization (%), Coefficient of Variation (load distribution), Total Cache Hits, Total Cache Misses, Avg Cache Usage, Total KB Transferred, Final Result, Time, ns-3 commit, pybindgen commit, scenario commit, ndnSIM commit"
+header="Example, SD Interest Packets Generated, SD Data Packets Generated, SD Interest Packets Transmitted, SD Data Packets Transmitted, WF Interest Packets Generated, WF Data Packets Generated, WF Interest Packets Transmitted, WF Data Packets Transmitted, Critical-Path-Metric, CPM-t_exec(ns), SD Latency (us), SD Estimated WF Service Latency (us), WF Service Latency (us), Total Node Usage Time (us), Average Node Utilization (%), Coefficient of Variation (load distribution), Total Cache Hits, Total Cache Misses, Avg Cache Usage, Total KB Transferred, Min Service Latency(us), Low Quartile Service Latency(us), Mid Quartile Service Latency(us), High Quartile Service Latency(us), Max Service Latency(us), Total Service Latency(us), Avg Service Latency(us), Requests Fulfilled, Result Sum, Final Result, Time, ns-3 commit, pybindgen commit, scenario commit, ndnSIM commit"
 
 # Function to write sorted placeholder rows into the CSV file
 populate_blank_scenarios() {
@@ -203,7 +205,7 @@ run_simulation() {
     result="${result:-N.A.}"
 
     local packets=$( \
-        python3 "$SCENARIO_DIR/process_nfd_logs_SD.py" --graph "$GEN_ALLOCATION_GRAPHS" --logfile "$scenario_log" --output "$USAGE_ALLOCATION_GRAPHS_DIR/${scenario}.png" | sed -n \
+        python3 "$SCENARIO_DIR/process_nfd_logs_SD2.py" --logfile "$scenario_log" --output "$USAGE_ALLOCATION_GRAPHS_DIR/${scenario}.png" --graph "$GEN_ALLOCATION_GRAPHS" | sed -n \
         -e 's/^SD Interest Packets Generated: \([0-9]*\) interests$/\1,/p' \
         -e 's/^SD Data Packets Generated: \([0-9]*\) data$/\1,/p' \
         -e 's/^SD Interest Packets Transmitted: \([0-9]*\) interests$/\1,/p' \
@@ -212,6 +214,15 @@ run_simulation() {
         -e 's/^WF Data Packets Generated: \([0-9]*\) data$/\1,/p' \
         -e 's/^WF Interest Packets Transmitted: \([0-9]*\) interests$/\1,/p' \
         -e 's/^WF Data Packets Transmitted: \([0-9]*\) data/\1,/p' \
+        -e 's/^Global workflow min latency: \([0-9.]*\) microseconds$/\1,/p' \
+        -e 's/^Global workflow low latency: \([0-9.]*\) microseconds$/\1,/p' \
+        -e 's/^Global workflow mid latency: \([0-9.]*\) microseconds$/\1,/p' \
+        -e 's/^Global workflow high latency: \([0-9.]*\) microseconds$/\1,/p' \
+        -e 's/^Global workflow max latency: \([0-9.]*\) microseconds$/\1,/p' \
+        -e 's/^Global workflow total latency: \([0-9.]*\) microseconds$/\1,/p' \
+        -e 's/^Global workflow avg latency: \([0-9.]*\) microseconds$/\1,/p' \
+        -e 's/^Global workflow total requests fulfilled: \([0-9.]*\) total requests$/\1,/p' \
+        -e 's/^Global workflow final answers sum: \([0-9.]*\) numerical$/\1,/p' \
         -e 's/^Overall Total Busy Time (All Nodes): \([0-9.]*\) microseconds/\1,/p' \
         -e 's/^Average Utilization (All Nodes): \([0-9.]*\)%$/\1,/p' \
         -e 's/^Coefficient of Variation (load distribution): \([0-9.]*\)/\1,/p' \
@@ -227,11 +238,20 @@ run_simulation() {
     local WFdata_gen="${packetArray[5]:-N.A.}"
     local WFinterest_trans="${packetArray[6]:-N.A.}"
     local WFdata_trans="${packetArray[7]:-N.A.}"
-    local totalNodeUsageTime="${packetArray[8]:-N.A.}"
-    local avgNodeUsage="${packetArray[9]:-N.A.}"
-    local coeffVariation="${packetArray[10]:-N.A.}"
 
+    local global_wf_min_latency="${packetArray[8]:-N.A.}"
+    local global_wf_low_latency="${packetArray[9]:-N.A.}"
+    local global_wf_mid_latency="${packetArray[10]:-N.A.}"
+    local global_wf_high_latency="${packetArray[11]:-N.A.}"
+    local global_wf_max_latency="${packetArray[12]:-N.A.}"
+    local global_wf_total_latency="${packetArray[13]:-N.A.}"
+    local global_wf_avg_latency="${packetArray[14]:-N.A.}"
+    local global_wf_requests_fulfilled="${packetArray[15]:-N.A.}"
+    local global_wf_final_answers_sum="${packetArray[16]:-N.A.}"
 
+    local totalNodeUsageTime="${packetArray[17]:-N.A.}"
+    local avgNodeUsage="${packetArray[18]:-N.A.}"
+    local coeffVariation="${packetArray[19]:-N.A.}"
 
 
     # --- Trace Analysis (with existence checks) ---
@@ -286,7 +306,9 @@ run_simulation() {
     fi
 
     #local row="$scenario, $SDinterest_gen, $SDdata_gen, $SDinterest_trans, $SDdata_trans, $WFinterest_gen, $WFdata_gen, $WFinterest_trans, $WFdata_trans, $cpm, $cpm_t, $SDlatency, $estimatedWFLatency, $WFlatency, $totalNodeUsageTime, $avgNodeUsage, $coeffVariation, $result, $now, $ns_3_hash, $pybindgen_hash, $scenario_hash, $ndnsim_hash"
-    local row="$scenario, $SDinterest_gen, $SDdata_gen, $SDinterest_trans, $SDdata_trans, $WFinterest_gen, $WFdata_gen, $WFinterest_trans, $WFdata_trans, $cpm, $cpm_t, $SDlatency, $estimatedWFLatency, $WFlatency, $totalNodeUsageTime, $avgNodeUsage, $coeffVariation, $totalHits, $totalMisses, $avgCacheUsage, $totalKB, $result, $now, $ns_3_hash, $pybindgen_hash, $scenario_hash, $ndnsim_hash"
+    #local row="$scenario, $SDinterest_gen, $SDdata_gen, $SDinterest_trans, $SDdata_trans, $WFinterest_gen, $WFdata_gen, $WFinterest_trans, $WFdata_trans, $cpm, $cpm_t, $SDlatency, $estimatedWFLatency, $WFlatency, $totalNodeUsageTime, $avgNodeUsage, $coeffVariation, $totalHits, $totalMisses, $avgCacheUsage, $totalKB, $result, $now, $ns_3_hash, $pybindgen_hash, $scenario_hash, $ndnsim_hash"
+    local row="$scenario, $SDinterest_gen, $SDdata_gen, $SDinterest_trans, $SDdata_trans, $WFinterest_gen, $WFdata_gen, $WFinterest_trans, $WFdata_trans, $cpm, $cpm_t, $SDlatency, $estimatedWFLatency, $WFlatency, $totalNodeUsageTime, $avgNodeUsage, $coeffVariation, $totalHits, $totalMisses, $avgCacheUsage, $totalKB, $global_wf_min_latency, $global_wf_low_latency, $global_wf_mid_latency, $global_wf_high_latency, $global_wf_max_latency, $global_wf_total_latency, $global_wf_avg_latency, $global_wf_requests_fulfilled, $global_wf_final_answers_sum, $result, $now, $ns_3_hash, $pybindgen_hash, $scenario_hash, $ndnsim_hash"
+
 
     # Lock the CSV file writing process to prevent data corruption
     #sem --id csv_lock update_csv "$scenario" "$row" "$csv_out"

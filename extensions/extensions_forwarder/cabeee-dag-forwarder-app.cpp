@@ -91,7 +91,7 @@ DagForwarderApp::StartApplication()
   //ndn::Face::setInterestFilter("/nesco/shortcutOPT", std::bind(&DagForwarderApp::OnInterest, this, _2));
   //m_face->setInterestFilter("/nesco/shortcutOPT", &DagForwarderApp::OnInterest);
 
-  m_nameUri = m_service.ndn::Name::toUri();
+  //m_nameUri = m_service.ndn::Name::toUri();
 
   //m_inputTotal = 0;
   //m_numRxedInputs = 0;
@@ -116,7 +116,7 @@ DagForwarderApp::StopApplication()
 
 //void
 std::string
-DagForwarderApp::SendInterest(const std::string& interestName, std::string dagString)
+DagForwarderApp::SendInterest(const std::string& interestName, std::string dagString, bool actualSend)
 {
   if (!m_isRunning)
   {
@@ -134,7 +134,7 @@ DagForwarderApp::SendInterest(const std::string& interestName, std::string dagSt
   auto interest = std::make_shared<ndn::Interest>(m_prefix.ndn::Name::toUri() + interestName);
   Ptr<UniformRandomVariable> rand = CreateObject<UniformRandomVariable>();
   interest->setNonce(rand->GetValue(0, std::numeric_limits<uint32_t>::max()));
-  interest->setInterestLifetime(ndn::time::seconds(10));
+  interest->setInterestLifetime(ndn::time::seconds(540));
   interest->setMustBeFresh(true);
 
 
@@ -279,15 +279,17 @@ DagForwarderApp::SendInterest(const std::string& interestName, std::string dagSt
   interest->setApplicationParameters((const uint8_t *)dagStringParameter, length);
 
 
+  if (actualSend)
+  {
+    NS_LOG_DEBUG("Forwarder: Sending Interest packet for " << *interest);
 
-  NS_LOG_DEBUG("Forwarder: Sending Interest packet for " << *interest);
+    // Call trace (for logging purposes)
+    m_transmittedInterests(interest, this, m_face);
 
-  // Call trace (for logging purposes)
-  m_transmittedInterests(interest, this, m_face);
+    m_appLink->onReceiveInterest(*interest);
+  }
 
-  m_appLink->onReceiveInterest(*interest);
-
-  //TODO-done: return the full name+hash? This way we can capture it to write it into the dagServTracker entry in OnInterest()
+  // return the full name+hash. This way we can capture it to write it into the dagServTracker entry in OnInterest()
   return interest->getName().toUri();
 }
 
@@ -349,7 +351,7 @@ DagForwarderApp::OnInterest(std::shared_ptr<const ndn::Interest> interest)
   //NS_LOG_DEBUG("Interest parameter sensor feeds " << (dagObject["dag"]["/sensor"].size()) << " services: " << dagObject["dag"]["/sensor"]);
   //NS_LOG_DEBUG("Interest parameter s1 feeds " << (dagObject["dag"]["/S1"].size()) << " services: " << dagObject["dag"]["/S1"]);
 
-  //std::cout << "Full DAG as received: " << std::setw(2) << m_dagObject << '\n';
+  //std::cout << "Full DAG as received: " << std::setw(2) << dagObject << '\n';
   NS_LOG_DEBUG("\n\nFull DAG as received: " << std::setw(2) << dagObject << '\n');
 
 
@@ -367,27 +369,39 @@ DagForwarderApp::OnInterest(std::shared_ptr<const ndn::Interest> interest)
   std::string rxedFullInterestNameAndHash = interest->getName().toUri();
 
 
-
-  if (m_dagObject.empty() && m_service.toUri() == dagObject["head"])
+  //TODO: figure out if I need to use dagObject from the incoming interest vs keep this single m_dagObject. With multiple workflows possible, I don't think I want to have m_dagObject. It's gonna need to change!
+  //TODO: were we storing it so that we could use it later on? Perhaps during onData()??
+/*
+  if (dagObject.empty() && m_service.toUri() == dagObject["head"])
   {
-    // store the m_dagObject that we will use for regular forwarding (not for shortcut optimization)
-    m_dagObject = json::parse(dagString);
+    // store the dagObject that we will use for regular forwarding (not for shortcut optimization)
+    dagObject = json::parse(dagString);
   }
+*/
 
 
   // generate interests for inputs into hosted services early (shortcut optimization to parallelize workflow)
   if (rxedInterestName == "/shortcutOPT")
   {
-    if (m_dagObject.empty())  // if we received a shortcutOPT interest before the very first regular interest, the data structure won't exist. We simply create it with the received pDAG.
+/*
+    if (dagObject.empty())  // if we received a shortcutOPT interest before the very first regular interest, the data structure won't exist. We simply create it with the received pDAG.
     {
-      m_dagObject = json::parse(dagString);
+      dagObject = json::parse(dagString);
     }
+*/
     if (m_service.toUri() != dagObject["head"])
     {
       // only if we haven't already received a request for the service
-      if (m_dagServTracker.empty()) // if we haven't generated an interest for this service, the dagServTracker will be empty
+      //if (m_dagServTracker.empty()) // if we haven't generated an interest for this service, the dagServTracker will be empty
+      if (!m_dagServTracker.contains(rxedFullInterestNameAndHash))
       {
-        NS_LOG_DEBUG("\n\nshortcutOPT: We are hosting service " << m_service.toUri() << ", looking for this service in the DAG!" << std::endl);
+        NS_LOG_DEBUG("\n\nshortcutOPT: We are hosting service " << m_service.toUri() << ", looking for this service in the DAG and generating interests for their inputs!" << std::endl);
+
+
+
+
+        // TODO: combine two for loops below. First SEND the interests, then create the dagServTracker entry.
+
         for (auto& x : dagObject["dag"].items())
         {
           //std::cout << "Checking x.key: " << (std::string)x.key() << '\n';
@@ -399,6 +413,35 @@ DagForwarderApp::OnInterest(std::shared_ptr<const ndn::Interest> interest)
             {
               //std::cout << " FOUND IT!!" << std::endl;
               //std::cout << "Forwarder dagServTracker data structure before: " << std::setw(2) << m_dagServTracker << '\n';
+
+
+              // perform two fake SendInterest() so that we can get the fullNameAndHash of the interest that would be generated for this service (not /shortcutOPT), and the interest for its input
+              std::string dagString = dagObject.dump();
+              std::string shortcutOptServiceFullNameAndHash;
+              std::string shortcutOptInputFullNameAndHash;
+              shortcutOptServiceFullNameAndHash = DagForwarderApp::SendInterest(y.key(), dagString, false);
+              shortcutOptInputFullNameAndHash = DagForwarderApp::SendInterest(x.key(), dagString, false);
+
+              if (!m_dagServTracker.contains(shortcutOptServiceFullNameAndHash))
+              {
+                //create entry and add this input and mark as sent
+                m_dagServTracker[shortcutOptServiceFullNameAndHash]["inputsRxed"][shortcutOptInputFullNameAndHash] = 0;
+                shortcutOptInputFullNameAndHash = DagForwarderApp::SendInterest(x.key(), dagString, true);
+              }
+              else
+              {
+                if (!m_dagServTracker[shortcutOptServiceFullNameAndHash]["inputsRxed"].contains(shortcutOptInputFullNameAndHash))
+                {
+                  //create entry and add this input and mark as sent
+                  m_dagServTracker[shortcutOptServiceFullNameAndHash]["inputsRxed"][shortcutOptInputFullNameAndHash] = 0;
+                  shortcutOptInputFullNameAndHash = DagForwarderApp::SendInterest(x.key(), dagString, true);
+                  m_mapOfVectorOfServiceInputs[shortcutOptServiceFullNameAndHash].push_back(0);             // for now, just create vector entries for the inputs, so that if they arrive out of order, we can insert at any index location
+                }
+              }
+
+
+
+              /*
               m_dagServTracker[(std::string)y.key()]["inputsRxed"][(std::string)x.key()] = 0; //TODO: use full name+hash like we did below
               //std::cout << "Forwarder dagServTracker data structure after: " << std::setw(2) << m_dagServTracker << '\n';
               //std::cout << "x.key is " << x.key() << ", and y.key is " << y.key() << '\n';
@@ -406,11 +449,13 @@ DagForwarderApp::OnInterest(std::shared_ptr<const ndn::Interest> interest)
               //m_mapOfVectorOfServiceInputs.push_back(0);             // for now, just create vector entries for the inputs, so that if they arrive out of order, we can insert at any index location
               m_mapOfVectorOfServiceInputs[y.key()].push_back(0);             // for now, just create vector entries for the inputs, so that if they arrive out of order, we can insert at any index location
               //TODO: vector above needs to be a map of vectors. key will be full incoming name+hash
+              */
             }
           }
         }
         //std::cout << "Forwarder dagServTracker data structure: " << std::setw(2) << m_dagServTracker << '\n';
 
+        /*
         NS_LOG_DEBUG("\n\nshortcutOPT: Generarating all interests for required inputs..." << '\n');
         // generate all the interests for required inputs
         //for (auto& serviceInput : m_dagServTracker[(std::string)m_nameUri]["inputsRxed"].items())
@@ -424,8 +469,9 @@ DagForwarderApp::OnInterest(std::shared_ptr<const ndn::Interest> interest)
             DagForwarderApp::SendInterest(serviceInput.key(), dagString);
           }
         }
+        */
 
-        m_nameAndDigest = interest->getName();   // store the name with digest so that we can later generate the data packet with the same name/digest!
+        //m_nameAndDigest = interest->getName();   // store the name with digest so that we can later generate the data packet with the same name/digest!
                                                 // TODO6: this has issues - we cannot use the same service in more than one location in the DAG workflow!
                                                 // for this, we would need to be able to store and retrieve unique interests and their digest (perhaps using a fully hierarchical name?)
                                         // right now, this application only has one m_nameAndDigest private variable, and thus can only "store" one service instance.
@@ -434,7 +480,7 @@ DagForwarderApp::OnInterest(std::shared_ptr<const ndn::Interest> interest)
                                     // once a service is fullfilled, we should remove the list items for it to clean up.
 
         //TODO: for now, I just force the single m_nameUri to be the same as the received interest name.
-        m_nameUri = m_service.toUri();
+        //m_nameUri = m_service.toUri();
       }
     }
     //else
@@ -447,10 +493,11 @@ DagForwarderApp::OnInterest(std::shared_ptr<const ndn::Interest> interest)
   {
 
 
-    for (auto& x : m_dagObject["dag"].items())
+    //TODO: figure out if I need to use dagObject from the incoming interest vs keep this single m_dagObject. With multiple workflows possible, I don't think I want to have m_dagObject. It's gonna need to change!
+    for (auto& x : dagObject["dag"].items())
     {
       //std::cout << "Checking x.key: " << (std::string)x.key() << '\n';
-      for (auto& y : m_dagObject["dag"][x.key()].items())
+      for (auto& y : dagObject["dag"][x.key()].items())
       {
         //std::cout << "Checking y.key: " << (std::string)y.key() << '\n';
         //if (y.key() == m_nameUri)
@@ -468,9 +515,9 @@ DagForwarderApp::OnInterest(std::shared_ptr<const ndn::Interest> interest)
 
 
           // generate the interest for this input
-          std::string dagString = m_dagObject.dump();
+          std::string dagString = dagObject.dump();
           std::string inputServiceFullNameAndHash;
-          inputServiceFullNameAndHash = DagForwarderApp::SendInterest(x.key(), dagString);
+          inputServiceFullNameAndHash = DagForwarderApp::SendInterest(x.key(), dagString, true);
           m_dagServTracker[rxedFullInterestNameAndHash]["inputsRxed"][inputServiceFullNameAndHash] = 0;
           m_dagServTracker[rxedFullInterestNameAndHash]["inputIndex"][inputServiceFullNameAndHash] = y.value();
           m_mapOfVectorOfServiceInputs[inputServiceFullNameAndHash].push_back(0); // for now, just create vector entries for the inputs, so that if they arrive out of order, we can insert at any index location
@@ -494,10 +541,10 @@ DagForwarderApp::OnInterest(std::shared_ptr<const ndn::Interest> interest)
       if (serviceInput.value() == 0)
       {
         // generate the interest for this input
-        std::string dagString = m_dagObject.dump();
-        //DagForwarderApp::SendInterest(serviceInput.key(), dagString);
+        std::string dagString = dagObject.dump();
+        //DagForwarderApp::SendInterest(serviceInput.key(), dagString, true);
         std::string fullNameAndHashSent;
-        fullNameAndHashSent = DagForwarderApp::SendInterest(serviceInput.key(), dagString);
+        fullNameAndHashSent = DagForwarderApp::SendInterest(serviceInput.key(), dagString, true);
         // TODO-done: now with the full name, replace the simplename in m_dagServTracker. We first use move (transfers the value efficiently by reassigning the pointer, without making an unnecessary deep copy), then delete the old entry.
         auto oldEntry = m_dagServTracker.find(interest->getName());
         m_dagServTracker[fullNameAndHashSent] = std::move(m_dagServTracker[interest->getName()]);
@@ -507,7 +554,7 @@ DagForwarderApp::OnInterest(std::shared_ptr<const ndn::Interest> interest)
 */
 
 
-    m_nameAndDigest = interest->getName();  // store the name with digest so that we can later generate the data packet with the same name/digest!
+    //m_nameAndDigest = interest->getName();  // store the name with digest so that we can later generate the data packet with the same name/digest!
                                             // TODO6: this has issues - we cannot use the same service in more than one location in the DAG workflow!
                                             // for this, we would need to be able to store and retrieve unique interests and their digest (perhaps using a fully hierarchical name?)
                                     // right now, this application only has one m_nameAndDigest private variable, and thus can only "store" one service instance.
@@ -516,7 +563,7 @@ DagForwarderApp::OnInterest(std::shared_ptr<const ndn::Interest> interest)
                                 // once a service is fullfilled, we should remove the list items for it to clean up.
 
     //TODO: for now, I just force the single m_nameUri to be the same as the received interest name.
-    m_nameUri = rxedInterestName;
+    //m_nameUri = rxedInterestName;
 
 
   }
@@ -602,7 +649,7 @@ DagForwarderApp::OnData(std::shared_ptr<const ndn::Data> data)
   /*
   auto dagParameterFromData = data->getApplicationParameters();
   std::string dagString = std::string(reinterpret_cast<const char*>(dagParameterFromData.value()), dagParameterFromData.value_size());
-  m_dagObject = json::parse(dagString);
+  dagObject = json::parse(dagString);
   NS_LOG_DEBUG("Interest parameter head: " << dagObject["head"] << ", m_name attribute: " << m_name.ndn::Name::toUri());
   std::string head = dagObject["head"];
   */
@@ -613,11 +660,11 @@ DagForwarderApp::OnData(std::shared_ptr<const ndn::Data> data)
   }
 /*
   char index = -1;
-  for (auto& x : m_dagObject["dag"].items())
+  for (auto& x : dagObject["dag"].items())
   {
     if (x.key() == rxedDataName)
     {
-      for (auto& y : m_dagObject["dag"][x.key()].items())
+      for (auto& y : dagObject["dag"][x.key()].items())
       {
         if (y.key() == m_nameUri)
         //if (y.key() == head)
@@ -631,7 +678,7 @@ DagForwarderApp::OnData(std::shared_ptr<const ndn::Data> data)
   if (index < 0)
   {
     std::cout << "  ERROR!! index for m_mapOfVectorOfServiceInputs cannot be negative! Something went wrong!!" << '\n';
-    NS_LOG_DEBUG("\n\nERROR. index for m_mapOfVectorOfServiceInputs cannot be negative. rxedDataName: " << rxedDataName << ", m_nameUri: " << m_nameUri << ". Full m_dagObject: " << std::setw(2) << m_dagObject << '\n');
+    NS_LOG_DEBUG("\n\nERROR. index for m_mapOfVectorOfServiceInputs cannot be negative. rxedDataName: " << rxedDataName << ", m_nameUri: " << m_nameUri << ". Full dagObject: " << std::setw(2) << dagObject << '\n');
   }
   else
   {

@@ -3,10 +3,11 @@
 set -e
 
 # Generate a single timestamp to be used for all files in this run
-export name="new_experiment_name"
+export name="fwdOptSD2Sweep20_5x8"
 export TIMESTAMP=$(date +%Y%m%d-%H%M%S)
 export workdir="$PWD/generated_scenarios/$name"
 mkdir -p "$workdir"
+mkdir -p "../${name}/"
 
 generate_wf_linear() {
     # generate linear workflow
@@ -73,8 +74,9 @@ generate_tp_st() {
     snsrs="$3"
     usrs="$4"
     cs="$5"
-    wf="$6"
-    ser="$7"
+    delay="$6"
+    wf="$7"
+    ser="$8"
     # Create zero-padded versions
     padded_nodes=$(printf "%03d" "$nodes")
     padded_edges=$(printf "%03d" "$edges")
@@ -82,7 +84,7 @@ generate_tp_st() {
     padded_usrs=$(printf "%03d" "$usrs")
     padded_cs=$(printf "%06d" "$cs")
     output="${TIMESTAMP}-${ser}--tp_st4${wf}-${padded_nodes}rtr-${padded_snsrs}snsr-${padded_usrs}usr-${padded_edges}edge-${padded_cs}cs.json"
-    ./gentopo.py -o "$workdir/$output" "$type" -n "$nodes" -e "$edges" -s "$snsrs" -u "$usrs" --cs-size "$cs"
+    ./gentopo.py -o "$workdir/$output" "$type" -n "$nodes" -e "$edges" -s "$snsrs" -u "$usrs" --cs-size "$cs" --delay "$delay"
     echo "$output"
 }
 generate_tp_mesh() {
@@ -92,15 +94,16 @@ generate_tp_mesh() {
     usrs="$3"
     prob="$4"
     cs="$5"
-    wf="$6"
-    ser="$7"
+    delay="$6"
+    wf="$7"
+    ser="$8"
     # Create zero-padded versions
     padded_nodes=$(printf "%03d" "$nodes")
     padded_snsrs=$(printf "%03d" "$snsrs")
     padded_usrs=$(printf "%03d" "$usrs")
     padded_cs=$(printf "%06d" "$cs")
     output="${TIMESTAMP}-${ser}--tp_mesh4${wf}-${padded_nodes}rtr-${padded_snsrs}snsr-${padded_usrs}usr-${padded_cs}cs.json"
-    ./gentopo.py -o "$workdir/$output" "$type" -n "$nodes" -s "$snsrs" -u "$usrs" -p "$prob" --cs-size "$cs"
+    ./gentopo.py -o "$workdir/$output" "$type" -n "$nodes" -s "$snsrs" -u "$usrs" -p "$prob" --cs-size "$cs" --delay "$delay"
     echo "$output"
 }
 generate_tp_sos() {
@@ -110,15 +113,16 @@ generate_tp_sos() {
     usrs="$3"
     branches="$4"
     cs="$5"
-    wf="$6"
-    ser="$7"
+    delay="$6"
+    wf="$7"
+    ser="$8"
     # Create zero-padded versions
     padded_nodes=$(printf "%03d" "$nodes")
     padded_snsrs=$(printf "%03d" "$snsrs")
     padded_usrs=$(printf "%03d" "$usrs")
     padded_cs=$(printf "%06d" "$cs")
     output="${TIMESTAMP}-${ser}--tp_sos4${wf}-${padded_nodes}rtr-${padded_snsrs}snsr-${padded_usrs}usr-${padded_cs}cs.json"
-    ./gentopo.py -o "$workdir/$output" "$type" -n "$nodes" -s "$snsrs" -u "$usrs" -b "$branches" --cs-size "$cs"
+    ./gentopo.py -o "$workdir/$output" "$type" -n "$nodes" -s "$snsrs" -u "$usrs" -b "$branches" --cs-size "$cs" --delay "$delay"
     echo "$output"
 }
 generate_tp_mt() {
@@ -128,15 +132,16 @@ generate_tp_mt() {
     usrs="$3"
     tier_counts="$4"
     cs="$5"
-    wf="$6"
-    ser="$7"
+    delay="$6"
+    wf="$7"
+    ser="$8"
     # Create zero-padded versions
     padded_nodes=$(printf "%03d" "$nodes")
     padded_snsrs=$(printf "%03d" "$snsrs")
     padded_usrs=$(printf "%03d" "$usrs")
     padded_cs=$(printf "%06d" "$cs")
     output="${TIMESTAMP}-${ser}--tp_mt4${wf}-${padded_nodes}rtr-${padded_snsrs}snsr-${padded_usrs}usr-${padded_cs}cs.json"
-    ./gentopo.py -o "$workdir/$output" "$type" -n "$nodes" -s "$snsrs" -u "$usrs" --tiers "$tier_counts" --cs-size "$cs"
+    ./gentopo.py -o "$workdir/$output" "$type" -n "$nodes" -s "$snsrs" -u "$usrs" --tiers "$tier_counts" --cs-size "$cs" --delay "$delay"
     echo "$output"
 }
 
@@ -145,9 +150,29 @@ generate_hs() {
     tp="$2"
     snsrs="$3"
     usrs="$4"
-    makespanMin="$5"
-    makespanMax="$6"
+    makespanMinNS="$5"
+    makespanMaxNS="$6"
     ser="$7"
+    hostRatio="$8"
+    prev_hs="$9"
+
+    hostRatio_string=$(printf "%03.1f" "$hostRatio")
+    # we use jq to count how many items are under the "router" key in the JSON topology file
+    count=$(jq '.router | length' "generated_scenarios/${name}/${tp}")
+    #echo "number of routers:"
+    #echo $count
+    #echo "hostRatio string is:"
+    #echo $hostRatio_string
+    # Use 'bc' for floating point multiplication
+    # We use 'printf' to ensure the output is an integer or a specific precision
+    #minHosts=$(echo "$count * $hostRatio" | bc)
+    #maxHosts=$(echo "$count * $hostRatio" | bc)
+    # We need these to be whole numbers (integers), so we pipe to printf or use cut:
+    minHosts=$(echo "($count * $hostRatio) / 1" | bc)
+    maxHosts=$(echo "($count * $hostRatio) / 1" | bc)
+    if [ "$minHosts" -lt 1 ]; then minHosts=1; fi
+    if [ "$maxHosts" -lt 1 ]; then maxHosts=1; fi
+
 
     ## Strip the timestamp from the input filenames before building the new name
     ## ${wf#*-} removes the date, then ${inner#*-} removes the time.
@@ -170,14 +195,18 @@ generate_hs() {
     tp_clean=${tp_temp#*--}
 
     #output="${TIMESTAMP}-hs-${1%.json}-${2%.json}.json"
-    output="${TIMESTAMP}-${ser}--hs-${wf_clean%.json}-${tp_clean%.json}.json"
+    output="${TIMESTAMP}-${ser}-hR_${hostRatio_string}--hs-${wf_clean%.json}-${tp_clean%.json}.json"
     ./genhosting.py --output "$workdir/$output" uniform \
         --workflow "$workdir/$wf" \
         --topology "$workdir/$tp" \
         -s "$snsrs" \
         -u "$usrs" \
-        --makespan-min "$makespanMin" \
-        --makespan-max "$makespanMax"
+        --makespan-min "$makespanMinNS" \
+        --makespan-max "$makespanMaxNS" \
+        --min-hosts "$minHosts" \
+        --max-hosts "$maxHosts" \
+        ${prev_hs:+--base-hosting "generated_scenarios/${name}/${prev_hs}"}
+    # Note: ${prev_hs:+--base-hosting ...} is a shell shorthand that only adds the flag if $prev_hs is not empty.
     echo "$output"
 }
 
@@ -190,9 +219,10 @@ run_category_task() {
 # Define the sweep arrays
     run=$1
     wf_topo_pair=$2
-    num_services_list="5 10 20 40"
-    num_nodes_list="2 4 8 16 32"
+    num_services_list="5"
+    num_nodes_list="8"
     edgeratio_list="0.5"
+    hostRatio_list="0 0.2 0.4 0.6 0.8 1"
     VISUALIZE=false
 
     workflowCategory=${wf_topo_pair%%:*}
@@ -224,8 +254,9 @@ run_category_task() {
                     tiers=$(echo "scale=0; $num_nodes / 6" | bc -l)
                     if [ "$tiers" -lt 2 ]; then tiers=2; fi
                     cs_size=0
+                    delay="1ms"
                     echo "---   Topology: Multi-Tiered, nodes=$num_nodes, sensors=$sensors, users=$users, tiers=$tiers ---"
-                    tp="$(generate_tp_mt ${num_nodes} ${sensors} ${users} ${tiers} ${cs_size} ${workflowCategory} ${padded_catCode})"
+                    tp="$(generate_tp_mt ${num_nodes} ${sensors} ${users} ${tiers} ${cs_size} ${delay} ${workflowCategory} ${padded_catCode})"
                     ;;
                 "mesh")
                     # Use 'bc' for floating point division and piping to 'read' to handle the result
@@ -239,8 +270,9 @@ run_category_task() {
                     users=1
                     prob=0.1
                     cs_size=0
+                    delay="1ms"
                     echo "---   Topology: Mesh, nodes=$num_nodes, sensors=$sensors, users=$users ---"
-                    tp="$(generate_tp_mesh ${num_nodes} ${sensors} ${users} ${prob} ${cs_size} ${workflowCategory} ${padded_catCode})"
+                    tp="$(generate_tp_mesh ${num_nodes} ${sensors} ${users} ${prob} ${cs_size} ${delay} ${workflowCategory} ${padded_catCode})"
                     ;;
                 "star_of_stars")
                     # Use 'bc' for floating point division and piping to 'read' to handle the result
@@ -256,8 +288,9 @@ run_category_task() {
                     branches=$(echo "scale=0; $num_nodes / 6" | bc -l)
                     if [ "$branches" -lt 1 ]; then branches=1; fi
                     cs_size=0
+                    delay="1ms"
                     echo "---   Topology: Star-of-Stars, nodes=$num_nodes, sensors=$sensors, users=$users ---"
-                    tp="$(generate_tp_sos ${num_nodes} ${sensors} ${users} ${branches} ${cs_size} ${workflowCategory} ${padded_catCode})"
+                    tp="$(generate_tp_sos ${num_nodes} ${sensors} ${users} ${branches} ${cs_size} ${delay} ${workflowCategory} ${padded_catCode})"
                     ;;
                 "spanning_tree")
                     # Use 'bc' for floating point division and piping to 'read' to handle the result
@@ -273,8 +306,9 @@ run_category_task() {
                     if [ "$sensors" -lt 1 ]; then sensors=1; fi
                     users=1
                     cs_size=0
+                    delay="1ms"
                     echo "---   Topology: Spanning Tree, nodes=$num_nodes, edges=$edges, sensors=$sensors, users=$users ---"
-                    tp="$(generate_tp_st ${num_nodes} ${edges} ${sensors} ${users} ${cs_size} ${workflowCategory} ${padded_catCode})"
+                    tp="$(generate_tp_st ${num_nodes} ${edges} ${sensors} ${users} ${cs_size} ${delay} ${workflowCategory} ${padded_catCode})"
                     ;;
             esac
             generated_topos="$generated_topos $tp"
@@ -334,74 +368,191 @@ run_category_task() {
         generated_wfs="$generated_wfs $wf"
     done
 
+
     # 3. Combinations
     for tp in $generated_topos; do
         for wf in $generated_wfs; do
-            # Hosting Selection
-            sensors=1
-            users=1
-            makespanMin=0
-            makespanMax=0
-            hs="$(generate_hs "$wf" "$tp" ${sensors} ${users} ${makespanMin} ${makespanMax} ${padded_catCode})"
+            prev_hs=""
+            # Generate hostings (sweep through hosting ratios, adding hosts to services as we increase the ratio - retain hosting from previous iteration)
+            for hostRatio in $hostRatio_list; do
+                # Hosting Selection
+                sensors=1
+                users=1
+                makespanMinNS=8000000
+                makespanMaxNS=8000000
+                hs="$(generate_hs "$wf" "$tp" ${sensors} ${users} ${makespanMinNS} ${makespanMaxNS} ${padded_catCode} ${hostRatio} ${prev_hs})"
+                hostRatio_string=$(printf "%03.1f" "$hostRatio")
+                prev_hs=${hs}
 
-            # Clean the hs name
-            #hs_clean=${hs#*-}
-            #hs_clean=${hs_clean#*-}
-            # Strip the Timestamp (Date and Time)
-            # ${hs#*-} removes '20260309-', ${inner#*-} removes '012651-'
-            hs_temp=${hs#*-}
-            hs_temp=${hs_temp#*-}
-            # Strip the Serial Number (e.g., '0001--')
-            # This removes everything from the start up to the double hyphen
-            hs_clean=${hs_temp#*--}
+                # Clean the hs name
+                #hs_clean=${hs#*-}
+                #hs_clean=${hs_clean#*-}
+                # Strip the Timestamp (Date and Time)
+                # ${hs#*-} removes '20260309-', ${inner#*-} removes '012651-'
+                hs_temp=${hs#*-}
+                hs_temp=${hs_temp#*-}
+                # Strip the Serial Number (e.g., '0001--')
+                # This removes everything from the start up to the double hyphen
+                hs_clean=${hs_temp#*--}
 
 
-            #prefixes="nescoSCOPT orchA orchB"
-            prefixes="nescoSCOPT"
-            for prefix in $prefixes; do
-                output_filename="$workdir/${TIMESTAMP}-${padded_catCode}--sn-${topoCategory}-${workflowCategory}-${prefix}-${hs_clean#hs-}"
-            
-                ./build_scenario.py -f \
-                    --workflow "$workdir/$wf" \
-                    --topo-json "$workdir/$tp" \
-                    --topo-txt "$workdir/${tp%.json}.txt" \
-                    --hosting "$workdir/$hs" \
-                    --output "${output_filename}" \
-                    --prefix ${prefix} \
-                    --serviceDiscovery 0 \
-                    --resourceAllocation 0 \
-                    --allocationReuse 0 \
-                    --scheduleCompaction 0 \
-                    --startTimeOffsetSD 0 \
-                    --startTimeOffsetWF 0 \
-                    --simulationEndTime 200
+                #prefixes="nescoSCOPT orchA orchB"
+                prefixes="nesco"
+                for prefix in $prefixes; do
 
-                cp "${output_filename}" ../$name/
-            done
 
-            if [ "$VISUALIZE" = true ]; then
-                # 1. Extracting Node count (looking for 'NNNrtr')
-                # This takes the string like '...-004rtr-...', strips 'rtr', and removes leading zeros
-                current_nodes=$(echo "$tp" | grep -oE '[0-9]{3}rtr' | sed 's/rtr//' | sed 's/^0*//')
+                    output_filename="$workdir/${padded_catCode}-hR_${hostRatio_string}--sn-${topoCategory}-${workflowCategory}-${prefix}--1-noSD2-multicast.json"
+                    strategy="multicast"
+                    cs_size=0
 
-                # 2. Extracting Service count (looking for 'SSSsrv')
-                # This takes the string like '...-020srv-...', strips 'srv', and removes leading zeros
-                current_servs=$(echo "$wf" | grep -oE '[0-9]{3}srv' | sed 's/srv//' | sed 's/^0*//')
+                
+                    ./build_scenario.py -f \
+                        --workflow "$workdir/$wf" \
+                        --topo-json "$workdir/$tp" \
+                        --topo-txt "$workdir/${tp%.json}.txt" \
+                        --hosting "$workdir/$hs" \
+                        --output "${output_filename}" \
+                        --prefix ${prefix} \
+                        --strategy ${strategy} \
+                        --cs-size ${cs_size} \
+                        --serviceDiscovery 0 \
+                        --resourceUtilization 0 \
+                        --resourceAllocation 0 \
+                        --allocationReuse 0 \
+                        --scheduleCompaction 0 \
+                        --startTimeOffsetSD 1 \
+                        --startTimeOffsetWF 2 \
+                        --simulationEndTime 3
 
-                # Handle cases where grep might fail (set to 100 if empty so we skip visualization)
-                current_nodes=${current_nodes:-100}
-                current_servs=${current_servs:-100}
+                    cp "${output_filename}" ../$name/
 
-                echo "Detected: $current_nodes nodes, $current_servs services"
+                    output_filename="$workdir/${padded_catCode}-hR_${hostRatio_string}--sn-${topoCategory}-${workflowCategory}-${prefix}--2-noSD2-bestRoute.json"
+                    strategy="best-route"
+                    cs_size=0
 
-                if [ "$current_nodes" -lt 9 ] && [ "$current_servs" -lt 21 ]; then
-                    echo "---         Visualizing: nodes=$current_nodes,  services=$current_servs. ---"
-                    ./genvisuals_top_down_hosting_colors.py "${output_filename}" > /dev/null 2>&1 || true
-                    ./genvisuals_top_down_hosting_colors_hierarchical-topo.py "${output_filename}" > /dev/null 2>&1 || true
-                else
-                    echo "---         Skipping visualization: too many nodes ($current_nodes) or services ($current_servs). We don't visualize large graphs ---"
+                    ./build_scenario.py -f \
+                        --workflow "$workdir/$wf" \
+                        --topo-json "$workdir/$tp" \
+                        --topo-txt "$workdir/${tp%.json}.txt" \
+                        --hosting "$workdir/$hs" \
+                        --output "${output_filename}" \
+                        --prefix ${prefix} \
+                        --strategy ${strategy} \
+                        --cs-size ${cs_size} \
+                        --serviceDiscovery 0 \
+                        --resourceUtilization 0 \
+                        --resourceAllocation 0 \
+                        --allocationReuse 0 \
+                        --scheduleCompaction 0 \
+                        --startTimeOffsetSD 1 \
+                        --startTimeOffsetWF 2 \
+                        --simulationEndTime 3
+
+                    cp "${output_filename}" ../$name/
+
+
+                    output_filename="$workdir/${padded_catCode}-hR_${hostRatio_string}--sn-${topoCategory}-${workflowCategory}-${prefix}--3-SD2-noUtilization.json"
+                    strategy="best-route"
+                    cs_size=0
+
+                    ./build_scenario.py -f \
+                        --workflow "$workdir/$wf" \
+                        --topo-json "$workdir/$tp" \
+                        --topo-txt "$workdir/${tp%.json}.txt" \
+                        --hosting "$workdir/$hs" \
+                        --output "${output_filename}" \
+                        --prefix ${prefix} \
+                        --strategy ${strategy} \
+                        --cs-size ${cs_size} \
+                        --serviceDiscovery 2 \
+                        --resourceUtilization 0 \
+                        --resourceAllocation 0 \
+                        --allocationReuse 0 \
+                        --scheduleCompaction 0 \
+                        --startTimeOffsetSD 1 \
+                        --startTimeOffsetWF 2 \
+                        --simulationEndTime 3
+
+                    cp "${output_filename}" ../$name/
+
+                    output_filename="$workdir/${padded_catCode}-hR_${hostRatio_string}--sn-${topoCategory}-${workflowCategory}-${prefix}--4-SD2-utilization-noCaching.json"
+                    strategy="best-route"
+                    cs_size=0
+
+                    ./build_scenario.py -f \
+                        --workflow "$workdir/$wf" \
+                        --topo-json "$workdir/$tp" \
+                        --topo-txt "$workdir/${tp%.json}.txt" \
+                        --hosting "$workdir/$hs" \
+                        --output "${output_filename}" \
+                        --prefix ${prefix} \
+                        --strategy ${strategy} \
+                        --cs-size ${cs_size} \
+                        --serviceDiscovery 2 \
+                        --resourceUtilization 1 \
+                        --resourceAllocation 0 \
+                        --allocationReuse 0 \
+                        --scheduleCompaction 0 \
+                        --startTimeOffsetSD 1 \
+                        --startTimeOffsetWF 2 \
+                        --simulationEndTime 3
+
+                    cp "${output_filename}" ../$name/
+
+                    output_filename="$workdir/${padded_catCode}-hR_${hostRatio_string}--sn-${topoCategory}-${workflowCategory}-${prefix}--5-SD2-utilization-caching.json"
+                    strategy="best-route"
+                    cs_size=1000
+
+                    ./build_scenario.py -f \
+                        --workflow "$workdir/$wf" \
+                        --topo-json "$workdir/$tp" \
+                        --topo-txt "$workdir/${tp%.json}.txt" \
+                        --hosting "$workdir/$hs" \
+                        --output "${output_filename}" \
+                        --prefix ${prefix} \
+                        --strategy ${strategy} \
+                        --cs-size ${cs_size} \
+                        --serviceDiscovery 2 \
+                        --resourceUtilization 1 \
+                        --resourceAllocation 0 \
+                        --allocationReuse 0 \
+                        --scheduleCompaction 0 \
+                        --startTimeOffsetSD 1 \
+                        --startTimeOffsetWF 2 \
+                        --simulationEndTime 3
+
+                    cp "${output_filename}" ../$name/
+
+
+
+
+
+                done
+
+                if [ "$VISUALIZE" = true ]; then
+                    # 1. Extracting Node count (looking for 'NNNrtr')
+                    # This takes the string like '...-004rtr-...', strips 'rtr', and removes leading zeros
+                    current_nodes=$(echo "$tp" | grep -oE '[0-9]{3}rtr' | sed 's/rtr//' | sed 's/^0*//')
+
+                    # 2. Extracting Service count (looking for 'SSSsrv')
+                    # This takes the string like '...-020srv-...', strips 'srv', and removes leading zeros
+                    current_servs=$(echo "$wf" | grep -oE '[0-9]{3}srv' | sed 's/srv//' | sed 's/^0*//')
+
+                    # Handle cases where grep might fail (set to 100 if empty so we skip visualization)
+                    current_nodes=${current_nodes:-100}
+                    current_servs=${current_servs:-100}
+
+                    echo "Detected: $current_nodes nodes, $current_servs services"
+
+                    if [ "$current_nodes" -lt 9 ] && [ "$current_servs" -lt 21 ]; then
+                        echo "---         Visualizing: nodes=$current_nodes,  services=$current_servs. ---"
+                        ./genvisuals_top_down_hosting_colors.py "${output_filename}" > /dev/null 2>&1 || true
+                        ./genvisuals_top_down_hosting_colors_hierarchical-topo.py "${output_filename}" > /dev/null 2>&1 || true
+                    else
+                        echo "---         Skipping visualization: too many nodes ($current_nodes) or services ($current_servs). We don't visualize large graphs ---"
+                    fi
                 fi
-            fi
+            done
         done
     done
 }
@@ -413,7 +564,7 @@ export -f run_category_task
 # --- EXECUTION ---
 
 # Total number of runs (each will get it's own JSON and thus its own row in the CSV file - MATLAB will average them all)
-NUM_RUNS=100
+NUM_RUNS=20
 
 # Define specific pairs as "workflow:topology"
 wf_topo_pairs="linear:multi_tiered map_reduce:star_of_stars map_reduce:mesh wavefront:mesh"

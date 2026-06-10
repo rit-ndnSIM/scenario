@@ -70,18 +70,18 @@ public:
 private:
   //void
   std::string
-  SendInterest(const std::string& interestName, std::string);
+  SendInterest(const std::string& interestName, std::string, bool);
   
 private:
   bool m_isRunning;
   ndn::Name m_prefix;
   ndn::Name m_name;
-  std::string m_nameUri;
-  ndn::Name m_nameAndDigest; //TODO: get rid of this variable. Instead, we'll store the nameAndDigest in the dagServTracker itself. Or do it how I did it in OrchA.
+  //std::string m_nameUri;
+//  ndn::Name m_nameAndDigest; //TODO: get rid of this variable. Instead, we'll store the nameAndDigest in the dagServTracker itself. Or do it how I did it in OrchA.
   ndn::Name m_service;
   uint64_t m_makespan;
   json m_dagServTracker; // with this data structure, we can keep track of WHICH inputs have arrived, rather than just the NUMBER of inputs. (in case one inputs arrives multiple times)
-  json m_dagObject;
+  //json m_dagObject;
   //int m_numRxedInputs;
   //int m_inputTotal;
   //std::map <std::string, std::vector<ndn::Block> > m_mapOfRxedBlocks;

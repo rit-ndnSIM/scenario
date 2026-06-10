@@ -20,51 +20,6 @@ def process_latency_file(file_path):
     )
 
 
-    '''
-    # List to store all extracted trial results
-    trial_results = []
-
-    try:
-        # Open the file and process line by line
-        with open(file_path, 'r') as file:
-            for line in file:
-                match = re.search(latency_pattern, line)
-                if match:
-                    # Extract the trial result (z)
-                    trial_type = match.group(1)
-                    trial_result = int(match.group(2))
-                    trial_results.append(trial_result)
-
-        # If no results were found, handle the empty list case
-        if not trial_results:
-            print("No matching lines were found in the file.")
-            return
-
-        # Calculate statistics
-        total = sum(trial_results)
-        minimum = min(trial_results)
-        low_quartile = np.quantile(trial_results, 0.25)
-        mid_quartile = np.quantile(trial_results, 0.5)
-        high_quartile = np.quantile(trial_results, 0.75)
-        maximum = max(trial_results)
-        average = total / len(trial_results)
-
-        # Print the results
-        print("")
-        print(f"min latency: {minimum} microseconds")
-        print(f"low latency: {low_quartile} microseconds")
-        print(f"mid latency: {mid_quartile} microseconds")
-        print(f"high latency: {high_quartile} microseconds")
-        print(f"max latency: {maximum} microseconds")
-        print(f"total latency: {total} microseconds")
-        print(f"avg latency: {average} microseconds")
-        print("")
-
-    except FileNotFoundError:
-        print(f"Error: The file '{file_path}' was not found.")
-    except Exception as e:
-        print(f"An error occurred: {e}")
-    '''
 
     # Dictionary to store trial results by type
     trial_data = defaultdict(list)

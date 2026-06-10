@@ -554,7 +554,10 @@ run_category_task() {
 export -f run_category_task
 
 # --- EXECUTION ---
+
+# Total number of runs (each will get it's own JSON and thus its own row in the CSV file - MATLAB will average them all)
 NUM_RUNS=20
+
 # Define specific pairs as "workflow:topology"
 # 4 Categories
 #wf_topo_pairs="linear:multi_tiered map_reduce:star_of_stars map_reduce:mesh wavefront:mesh"

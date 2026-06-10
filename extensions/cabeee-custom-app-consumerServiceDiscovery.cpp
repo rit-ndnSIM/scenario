@@ -75,6 +75,8 @@ CustomAppConsumerServiceDiscovery::GetTypeId()
                     ndn::MakeNameAccessor(&CustomAppConsumerServiceDiscovery::m_SDName), ndn::MakeNameChecker())
     .AddAttribute("ServiceDiscovery", "Requested forwarding optimization", UintegerValue(0),
                     MakeUintegerAccessor(&CustomAppConsumerServiceDiscovery::m_serviceDiscovery), MakeUintegerChecker<uint16_t>())
+    .AddAttribute("ResourceUtilization", "Requested forwarding optimization", UintegerValue(0),
+                    MakeUintegerAccessor(&CustomAppConsumerServiceDiscovery::m_resourceUtilization), MakeUintegerChecker<uint16_t>())
     .AddAttribute("ResourceAllocation", "Requested forwarding optimization", UintegerValue(0),
                     MakeUintegerAccessor(&CustomAppConsumerServiceDiscovery::m_resourceAllocation), MakeUintegerChecker<uint16_t>())
     .AddAttribute("AllocationReuse", "Requested forwarding optimization", UintegerValue(0),
@@ -217,6 +219,7 @@ CustomAppConsumerServiceDiscovery::SendSDInterest()
   //std::cout << "SD Start Time in milliseconds: " << timeStringNS << std::endl;
   dagObject["workflowStartTimeNS"] = WFstartTimeOffsetNS;
   dagObject["serviceDiscovery"] = m_serviceDiscovery;
+  dagObject["resourceUtilization"] = m_resourceUtilization;
   dagObject["resourceAllocation"] = m_resourceAllocation;
   dagObject["allocationReuse"] = m_allocationReuse;
   dagObject["scheduleCompaction"] = m_scheduleCompaction;

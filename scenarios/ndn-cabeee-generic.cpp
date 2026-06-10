@@ -103,6 +103,12 @@ main(int argc, char* argv[])
     topologyReader.SetFileName(topofile);
     topologyReader.Read();
 
+    if (scenario_json.contains("poissonConsumerNumInterests")) {
+        if (scenario_json.at("poissonConsumerNumInterests") > 1) {
+            std::cout << "Poisson consumer is being used. Number of interests = " << scenario_json.at("poissonConsumerNumInterests") << ", frequency = " << scenario_json.at("poissonConsumerFrequency") << " interests per second." << std::endl;
+        }
+    }
+
     // Install NDN stack on all nodes
     // TODO: customize policy per router?
     ndn::StackHelper ndnHelper;
@@ -130,11 +136,15 @@ main(int argc, char* argv[])
     std::string Prefix = scenario_json.at("prefix");
 
     int8_t serviceDiscoveryFlag = 0;
+    int8_t resourceUtilizationFlag = 0;
     int8_t resourceAllocationFlag = 0;
     int8_t allocationReuseFlag = 0;
     int8_t scheduleCompactionFlag = 0;
     if (scenario_json.contains("serviceDiscovery")) {
         serviceDiscoveryFlag = scenario_json.at("serviceDiscovery");
+    }
+    if (scenario_json.contains("resourceUtilization")) {
+        resourceUtilizationFlag = scenario_json.at("resourceUtilization");
     }
     if (scenario_json.contains("resourceAllocation")) {
         resourceAllocationFlag = scenario_json.at("resourceAllocation");
@@ -311,6 +321,7 @@ main(int argc, char* argv[])
                 if (serviceDiscoveryFlag > 0) {
                     if (serviceDiscoveryFlag == 1) {
                         appHelper.SetAttribute("SDName", StringValue("/serviceDiscovery"));
+                        appHelper.SetAttribute("ResourceUtilization", UintegerValue(resourceUtilizationFlag));
                         appHelper.SetAttribute("ResourceAllocation", UintegerValue(resourceAllocationFlag));
                         appHelper.SetAttribute("AllocationReuse", UintegerValue(allocationReuseFlag));
                         appHelper.SetAttribute("ScheduleCompaction", UintegerValue(scheduleCompactionFlag));
