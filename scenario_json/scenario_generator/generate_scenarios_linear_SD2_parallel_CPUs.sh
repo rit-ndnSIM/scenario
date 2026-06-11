@@ -403,98 +403,106 @@ run_category_task() {
                     cs_size=0
 
                 
-                    ./build_scenario.py -f \
-                        --workflow "$workdir/$wf" \
-                        --topo-json "$workdir/$tp" \
-                        --topo-txt "$workdir/${tp%.json}.txt" \
-                        --hosting "$workdir/$hs" \
-                        --output "${output_filename}" \
-                        --prefix ${prefix} \
-                        --strategy ${strategy} \
-                        --cs-size ${cs_size} \
-                        --serviceDiscovery 0 \
-                        --resourceUtilization 0 \
-                        --resourceAllocation 0 \
-                        --allocationReuse 0 \
-                        --scheduleCompaction 0 \
-                        --startTimeOffsetSD 1 \
-                        --startTimeOffsetWF 2 \
-                        --simulationEndTime 3
+#                    ./build_scenario.py -f \
+#                        --workflow "$workdir/$wf" \
+#                        --topo-json "$workdir/$tp" \
+#                        --topo-txt "$workdir/${tp%.json}.txt" \
+#                        --hosting "$workdir/$hs" \
+#                        --output "${output_filename}" \
+#                        --prefix ${prefix} \
+#                        --strategy ${strategy} \
+#                        --cs-size ${cs_size} \
+#                        --serviceDiscovery 0 \
+#                        --resourceUtilization 0 \
+#                        --resourceAllocation 0 \
+#                        --allocationReuse 0 \
+#                        --scheduleCompaction 0 \
+#                        --startTimeOffsetSD 1 \
+#                        --startTimeOffsetWF 2 \
+#                        --simulationEndTime 1000 \
+#                        --poissonConsumerFrequency 100 \
+#                        --poissonConsumerNumInterests 100
 
-                    cp "${output_filename}" ../$name/
+#                    cp "${output_filename}" ../$name/
 
-                    output_filename="$workdir/${padded_catCode}-hR_${hostRatio_string}--sn-${topoCategory}-${workflowCategory}-${prefix}--2-noSD2-bestRoute.json"
-                    strategy="best-route"
-                    cs_size=0
+#                    output_filename="$workdir/${padded_catCode}-hR_${hostRatio_string}--sn-${topoCategory}-${workflowCategory}-${prefix}--2-noSD2-bestRoute.json"
+#                    strategy="best-route"
+#                    cs_size=0
 
-                    ./build_scenario.py -f \
-                        --workflow "$workdir/$wf" \
-                        --topo-json "$workdir/$tp" \
-                        --topo-txt "$workdir/${tp%.json}.txt" \
-                        --hosting "$workdir/$hs" \
-                        --output "${output_filename}" \
-                        --prefix ${prefix} \
-                        --strategy ${strategy} \
-                        --cs-size ${cs_size} \
-                        --serviceDiscovery 0 \
-                        --resourceUtilization 0 \
-                        --resourceAllocation 0 \
-                        --allocationReuse 0 \
-                        --scheduleCompaction 0 \
-                        --startTimeOffsetSD 1 \
-                        --startTimeOffsetWF 2 \
-                        --simulationEndTime 3
+#                    ./build_scenario.py -f \
+#                        --workflow "$workdir/$wf" \
+#                        --topo-json "$workdir/$tp" \
+#                        --topo-txt "$workdir/${tp%.json}.txt" \
+#                        --hosting "$workdir/$hs" \
+#                        --output "${output_filename}" \
+#                        --prefix ${prefix} \
+#                        --strategy ${strategy} \
+#                        --cs-size ${cs_size} \
+#                        --serviceDiscovery 0 \
+#                        --resourceUtilization 0 \
+#                        --resourceAllocation 0 \
+#                        --allocationReuse 0 \
+#                        --scheduleCompaction 0 \
+#                        --startTimeOffsetSD 1 \
+#                        --startTimeOffsetWF 2 \
+#                        --simulationEndTime 1000 \
+#                        --poissonConsumerFrequency 100 \
+#                        --poissonConsumerNumInterests 100
 
-                    cp "${output_filename}" ../$name/
+#                    cp "${output_filename}" ../$name/
 
 
-                    output_filename="$workdir/${padded_catCode}-hR_${hostRatio_string}--sn-${topoCategory}-${workflowCategory}-${prefix}--3-SD2-noUtilization.json"
-                    strategy="best-route"
-                    cs_size=0
+#                    output_filename="$workdir/${padded_catCode}-hR_${hostRatio_string}--sn-${topoCategory}-${workflowCategory}-${prefix}--3-SD2-noUtilization.json"
+#                    strategy="best-route"
+#                    cs_size=0
 
-                    ./build_scenario.py -f \
-                        --workflow "$workdir/$wf" \
-                        --topo-json "$workdir/$tp" \
-                        --topo-txt "$workdir/${tp%.json}.txt" \
-                        --hosting "$workdir/$hs" \
-                        --output "${output_filename}" \
-                        --prefix ${prefix} \
-                        --strategy ${strategy} \
-                        --cs-size ${cs_size} \
-                        --serviceDiscovery 2 \
-                        --resourceUtilization 0 \
-                        --resourceAllocation 0 \
-                        --allocationReuse 0 \
-                        --scheduleCompaction 0 \
-                        --startTimeOffsetSD 1 \
-                        --startTimeOffsetWF 2 \
-                        --simulationEndTime 3
+#                    ./build_scenario.py -f \
+#                        --workflow "$workdir/$wf" \
+#                        --topo-json "$workdir/$tp" \
+#                        --topo-txt "$workdir/${tp%.json}.txt" \
+#                        --hosting "$workdir/$hs" \
+#                        --output "${output_filename}" \
+#                        --prefix ${prefix} \
+#                        --strategy ${strategy} \
+#                        --cs-size ${cs_size} \
+#                        --serviceDiscovery 2 \
+#                        --resourceUtilization 0 \
+#                        --resourceAllocation 0 \
+#                        --allocationReuse 0 \
+#                        --scheduleCompaction 0 \
+#                        --startTimeOffsetSD 1 \
+#                        --startTimeOffsetWF 2 \
+#                        --simulationEndTime 1000 \
+#                        --poissonConsumerFrequency 100 \
+#                        --poissonConsumerNumInterests 100
 
-                    cp "${output_filename}" ../$name/
+#                    cp "${output_filename}" ../$name/
 
-                    output_filename="$workdir/${padded_catCode}-hR_${hostRatio_string}--sn-${topoCategory}-${workflowCategory}-${prefix}--4-SD2-utilization-noCaching.json"
-                    strategy="best-route"
-                    cs_size=0
+#                    output_filename="$workdir/${padded_catCode}-hR_${hostRatio_string}--sn-${topoCategory}-${workflowCategory}-${prefix}--4-SD2-utilization-noCaching.json"
+#                    strategy="best-route"
+#                    cs_size=0
 
-                    ./build_scenario.py -f \
-                        --workflow "$workdir/$wf" \
-                        --topo-json "$workdir/$tp" \
-                        --topo-txt "$workdir/${tp%.json}.txt" \
-                        --hosting "$workdir/$hs" \
-                        --output "${output_filename}" \
-                        --prefix ${prefix} \
-                        --strategy ${strategy} \
-                        --cs-size ${cs_size} \
-                        --serviceDiscovery 2 \
-                        --resourceUtilization 1 \
-                        --resourceAllocation 0 \
-                        --allocationReuse 0 \
-                        --scheduleCompaction 0 \
-                        --startTimeOffsetSD 1 \
-                        --startTimeOffsetWF 2 \
-                        --simulationEndTime 3
+#                    ./build_scenario.py -f \
+#                        --workflow "$workdir/$wf" \
+#                        --topo-json "$workdir/$tp" \
+#                        --topo-txt "$workdir/${tp%.json}.txt" \
+#                        --hosting "$workdir/$hs" \
+#                        --output "${output_filename}" \
+#                        --prefix ${prefix} \
+#                        --strategy ${strategy} \
+#                        --cs-size ${cs_size} \
+#                        --serviceDiscovery 2 \
+#                        --resourceUtilization 1 \
+#                        --resourceAllocation 0 \
+#                        --allocationReuse 0 \
+#                        --scheduleCompaction 0 \
+#                        --startTimeOffsetSD 1 \
+#                        --startTimeOffsetWF 2 \
+#                        --simulationEndTime 1000 \
+#                        --poissonConsumerFrequency 100 \
+#                        --poissonConsumerNumInterests 100
 
-                    cp "${output_filename}" ../$name/
+#                    cp "${output_filename}" ../$name/
 
                     output_filename="$workdir/${padded_catCode}-hR_${hostRatio_string}--sn-${topoCategory}-${workflowCategory}-${prefix}--5-SD2-utilization-caching.json"
                     strategy="best-route"
@@ -516,7 +524,9 @@ run_category_task() {
                         --scheduleCompaction 0 \
                         --startTimeOffsetSD 1 \
                         --startTimeOffsetWF 2 \
-                        --simulationEndTime 3
+                        --simulationEndTime 1000 \
+                        --poissonConsumerFrequency 100 \
+                        --poissonConsumerNumInterests 100
 
                     cp "${output_filename}" ../$name/
 
@@ -561,7 +571,7 @@ export -f run_category_task
 # --- EXECUTION ---
 
 # Total number of runs (each will get it's own JSON and thus its own row in the CSV file - MATLAB will average them all)
-NUM_RUNS=100
+NUM_RUNS=20
 
 # Define specific pairs as "workflow:topology"
 # 4 Categories

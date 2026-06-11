@@ -1,0 +1,302 @@
+#!/usr/bin/env python3
+
+import os
+import sys
+import json
+import math
+import shutil
+import hashlib
+import subprocess
+import itertools
+from datetime import datetime
+from concurrent.futures import ProcessPoolExecutor, as_completed
+import random
+
+# ==========================================
+# ⚙️ GLOBAL CONFIGURATION
+# ==========================================
+NAME = "fwdOptSD2Sweep20_5x8"
+TIMESTAMP = datetime.now().strftime("%Y%m%d-%H%M%S")
+WORKDIR = os.path.join(os.getcwd(), "generated_scenarios", NAME)
+OUTDIR = os.path.join(os.getcwd(), "..", NAME)
+
+# Total number of runs (each will get it's own JSON and thus its own row in the CSV file - MATLAB will average them all)
+NUM_RUNS = 20
+
+NUM_SERVICES_LIST = [5]
+NUM_NODES_LIST = [8]
+EDGERATIO_LIST = [0.5]
+HOSTRATIO_LIST = [0.0, 0.2, 0.4, 0.6, 0.8, 1.0]
+
+# Consumer options
+POISSON_FREQ = 100
+POISSON_NUM_INTERESTS = 100
+POISSON_NUM_CONSUMERS = 100
+
+VISUALIZE = False
+
+# Define specific pairs as "workflow:topology"
+WF_TOPO_PAIRS = [
+    "linear:multi_tiered",
+    "map_reduce:star_of_stars",
+    "map_reduce:mesh",
+    "wavefront:mesh"
+]
+
+PREFIXES = ["nesco"]
+
+
+
+
+# ==========================================
+# 🛠️ HELPER FUNCTIONS
+# ==========================================
+def run_cmd(cmd):
+    """Executes a command safely and throws an exception if it fails."""
+    cmd_str = [str(arg) for arg in cmd]
+    try:
+        subprocess.run(cmd_str, check=True, stdout=subprocess.DEVNULL)
+    except subprocess.CalledProcessError as e:
+        print(f"\n[❌ CRASH] Command failed: {' '.join(cmd_str)}", file=sys.stderr)
+        raise
+
+def get_cat_id(pair):
+    """Mimics the bash: echo "$wf_topo_pair" | cksum | cut -c1-3"""
+    # Using md5 for a consistent, deterministic 3-digit hash
+    return str(int(hashlib.md5(pair.encode()).hexdigest(), 16))[:3]
+
+
+
+
+# ==========================================
+# 🏗️ GENERATOR COMMAND WRAPPERS
+# ==========================================
+def generate_wf_messy(servs, prods, cons, layers, skips, ser):
+    output_name = f"{TIMESTAMP}-{ser}--wf_messy-{servs:03d}srv-{prods:03d}prod-{cons:03d}con-{skips:03d}skip-agg-{layers:03d}layer.json"
+    output_path = os.path.join(WORKDIR, output_name)
+    
+    cmd = [
+        "./genworkflow.py", "layered",
+        "--num-services", servs,
+        "--num-layers", layers,
+        "--aggregate",
+        "--num-producers", prods,
+        "--num-consumers", cons,
+        "--num-skips", skips,
+        "--output", output_path
+    ]
+    run_cmd(cmd)
+    return output_name
+
+def generate_tp(tp_type, nodes, snsrs, usrs, cs, delay, wf_cat, ser, extra_args):
+    output_name = f"{TIMESTAMP}-{ser}--tp_{tp_type}4{wf_cat}-{nodes:03d}rtr-{snsrs:03d}snsr-{usrs:03d}usr-{cs:06d}cs.json"
+    output_path = os.path.join(WORKDIR, output_name)
+    
+    cmd = [
+        "./gentopo.py", "-o", output_path, tp_type,
+        "-n", nodes, "-s", snsrs, "-u", usrs,
+        "--cs-size", cs, "--delay", delay
+    ] + extra_args
+    run_cmd(cmd)
+    return output_name
+
+def generate_hs(wf_filenames, tp_filename, snsrs, usrs, makespanMinNS, makespanMaxNS, ser, hostRatio, prev_hs):
+    tp_path = os.path.join(WORKDIR, tp_filename)
+    
+    with open(tp_path, 'r') as f:
+        tp_data = json.load(f)
+        count = len(tp_data.get('router', []))
+        
+    minHosts = max(1, int(count * hostRatio))
+    maxHosts = max(1, int(count * hostRatio))
+
+    tp_clean = tp_filename.split("--")[-1].replace(".json", "")
+    output_name = f"{TIMESTAMP}-{ser}-hR_{hostRatio:03.1f}--hs-merged_wf-{tp_clean}.json"
+    output_path = os.path.join(WORKDIR, output_name)
+
+    wf_full_paths = [os.path.join(WORKDIR, w) for w in wf_filenames]
+
+    cmd = [
+        "./genhosting.py", "--output", output_path, "uniform",
+        "--workflows"
+    ] + wf_full_paths + [
+        "--topology", tp_path,
+        "-s", snsrs, "-u", usrs,
+        "--makespan-min", makespanMinNS,
+        "--makespan-max", makespanMaxNS,
+        "--min-hosts", minHosts,
+        "--max-hosts", maxHosts
+    ]
+    
+    if prev_hs:
+        cmd.extend(["--base-hosting", os.path.join(WORKDIR, prev_hs)])
+
+    run_cmd(cmd)
+    return output_name
+
+def build_scenario(out_name, wf_filenames, tp_filename, hs_filename, prefix, strategy, cs_size, sd, ru):
+    tp_path = os.path.join(WORKDIR, tp_filename)
+    tp_txt_path = tp_path.replace(".json", ".txt")
+    hs_path = os.path.join(WORKDIR, hs_filename)
+    out_path = os.path.join(WORKDIR, out_name)
+    wf_full_paths = [os.path.join(WORKDIR, w) for w in wf_filenames]
+
+    cmd = [
+        "./build_scenario.py", "-f",
+        "--topo-json", tp_path,
+        "--topo-txt", tp_txt_path,
+        "--hosting", hs_path,
+        "--output", out_path,
+        "--prefix", prefix,
+        "--strategy", strategy,
+        "--cs-size", cs_size,
+        "--serviceDiscovery", sd,
+        "--resourceUtilization", ru,
+        "--resourceAllocation", 0,
+        "--allocationReuse", 0,
+        "--scheduleCompaction", 0,
+        "--startTimeOffsetSD", 1,
+        "--startTimeOffsetWF", 2,
+        "--simulationEndTime", 1000,
+        "--poissonConsumerFrequency", POISSON_FREQ,
+        "--poissonConsumerNumInterests", POISSON_NUM_INTERESTS,
+        "--workflow"
+    ] + wf_full_paths
+
+    run_cmd(cmd)
+    shutil.copy(out_path, OUTDIR)
+    return out_path
+
+# ==========================================
+# 🧵 THREAD EXECUTION TASK (Replaces GNU Parallel Task)
+# ==========================================
+def run_category_task(run_id, pair, generated_workflows):
+    workflowCategory, topoCategory = pair.split(":")
+    cat_id = get_cat_id(pair)
+    padded_catCode = f"{run_id:03d}-{cat_id}"
+
+    wf_filenames = generated_workflows[workflowCategory]
+
+    for num_nodes in NUM_NODES_LIST:
+        for edgeratio in EDGERATIO_LIST:
+            # Generate Topologies
+            sensors = 1
+            users = 1
+            cs_size = 0
+            delay = "1ms"
+            
+            if topoCategory == "multi_tiered":
+                tiers = max(2, num_nodes // 6)
+                tp = generate_tp("multi_tiered", num_nodes, sensors, users, cs_size, delay, workflowCategory, padded_catCode, ["--tiers", tiers])
+            elif topoCategory == "mesh":
+                tp = generate_tp("mesh", num_nodes, sensors, users, cs_size, delay, workflowCategory, padded_catCode, ["-p", 0.1])
+            elif topoCategory == "star_of_stars":
+                branches = max(1, num_nodes // 6)
+                tp = generate_tp("star_of_stars", num_nodes, sensors, users, cs_size, delay, workflowCategory, padded_catCode, ["-b", branches])
+            elif topoCategory == "spanning_tree":
+                edges = int((num_nodes - 1) * (edgeratio * (num_nodes - 2) + 2) / 2)
+                tp = generate_tp("spanning_tree", num_nodes, sensors, users, cs_size, delay, workflowCategory, padded_catCode, ["-e", edges])
+
+            # Generate Hostings & Scenarios
+            prev_hs = None
+            for hostRatio in HOSTRATIO_LIST:
+                hs_users = 1
+                makespanMinNS = 8000000
+                makespanMaxNS = 8000000
+
+                hs = generate_hs(wf_filenames, tp, sensors, hs_users, makespanMinNS, makespanMaxNS, padded_catCode, hostRatio, prev_hs)
+                prev_hs = hs
+                hr_str = f"{hostRatio:03.1f}"
+
+                for prefix in PREFIXES:
+                    base_name = f"{padded_catCode}-hR_{hr_str}--sn-{topoCategory}-{workflowCategory}-{prefix}"
+
+                    # Scenario 1: noSD2, multicast, cs=0
+                    build_scenario(f"{base_name}--1-noSD2-multicast.json", wf_filenames, tp, hs, prefix, "multicast", 0, sd=0, ru=0)
+                    
+                    # Scenario 2: noSD2, bestRoute, cs=0
+                    build_scenario(f"{base_name}--2-noSD2-bestRoute.json", wf_filenames, tp, hs, prefix, "best-route", 0, sd=0, ru=0)
+                    
+                    # Scenario 3: SD2, bestRoute, noUtil, cs=0
+                    build_scenario(f"{base_name}--3-SD2-noUtilization.json", wf_filenames, tp, hs, prefix, "best-route", 0, sd=2, ru=0)
+                    
+                    # Scenario 4: SD2, bestRoute, Util, noCaching, cs=0
+                    build_scenario(f"{base_name}--4-SD2-utilization-noCaching.json", wf_filenames, tp, hs, prefix, "best-route", 0, sd=2, ru=1)
+                    
+                    # Scenario 5: SD2, bestRoute, Util, Caching, cs=1000
+                    out_path = build_scenario(f"{base_name}--5-SD2-utilization-caching.json", wf_filenames, tp, hs, prefix, "best-route", 1000, sd=2, ru=1)
+
+                    if VISUALIZE and num_nodes < 9 and len(wf_filenames) < 21:
+                        # Best effort visualization
+                        subprocess.run(["./genvisuals_top_down_hosting_colors.py", out_path], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                        subprocess.run(["./genvisuals_top_down_hosting_colors_hierarchical-topo.py", out_path], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
+    return f"Completed Run {run_id} | Pair: {pair}"
+
+# ==========================================
+# 🚀 MAIN PIPELINE
+# ==========================================
+if __name__ == "__main__":
+    os.makedirs(WORKDIR, exist_ok=True)
+    os.makedirs(OUTDIR, exist_ok=True)
+
+    print(f"Pre-generating {POISSON_NUM_CONSUMERS} unique workflows per category...")
+    generated_wfs = { "linear": [], "map_reduce": [], "wavefront": [], "multi_sink": [] }
+    
+    # Extract unique workflow categories from pairs to avoid duplicate generation
+    unique_wf_cats = set([pair.split(":")[0] for pair in WF_TOPO_PAIRS])
+
+    for num_services in NUM_SERVICES_LIST:
+        for wf_cat in unique_wf_cats:
+            for wf_num in range(1, POISSON_NUM_CONSUMERS + 1):
+                wf_code = ""
+                prods = 1
+                cons = 1
+                
+                if wf_cat == "linear":
+                    wf_code = f"ln-{wf_num:03d}"
+                    layers = num_services
+                    skips = 0
+                elif wf_cat == "map_reduce":
+                    wf_code = f"mr-{wf_num:03d}"
+                    layers = 3
+                    skips = 0
+                elif wf_cat == "wavefront":
+                    wf_code = f"wf-{wf_num:03d}"
+                    layers = max(3, int(math.sqrt(num_services)))
+                    skips = max(1, int(layers / 3))
+                elif wf_cat == "multi_sink":
+                    wf_code = f"ms-{wf_num:03d}"
+                    layers = max(1, int(num_services / 3))
+                    skips = 2
+
+                layers = random.randint(layers-1, layers+1)
+                layers = max(3, layers)
+                skips = random.randint(skips-1, skips+1)
+                skips = max(0, skips)
+
+                wf = generate_wf_messy(num_services, prods, cons, layers, skips, wf_code)
+                generated_wfs[wf_cat].append(wf)
+
+    # Cross Product: 20 runs x 4 categories
+    tasks = list(itertools.product(range(1, NUM_RUNS + 1), WF_TOPO_PAIRS))
+    total_tasks = len(tasks)
+    
+    print(f"Distributing {total_tasks} simulation tasks across all CPU cores...")
+    
+    # ProcessPoolExecutor perfectly replicates GNU parallel, utilizing all available CPU cores
+    with ProcessPoolExecutor() as executor:
+        futures = []
+        for run_id, pair in tasks:
+            futures.append(executor.submit(run_category_task, run_id, pair, generated_wfs))
+
+        completed = 0
+        for future in as_completed(futures):
+            completed += 1
+            try:
+                result = future.result()
+                print(f"[{completed}/{total_tasks}] {result}")
+            except Exception as e:
+                print(f"[{completed}/{total_tasks}] Task failed with error: {e}")
+
+    print("\nAll scenarios generated successfully.")

@@ -21,7 +21,7 @@ def main():
     parser.add_argument('-c', '--cs-size', type=int, default=0, help="content store size to enable caching")
     parser.add_argument('-x', '--topo-txt', type=Path, required=True, help="Topology txt file to use")
     parser.add_argument('-t', '--topo-json', type=Path, help="Topology json file to use")
-    parser.add_argument('-w', '--workflow', type=Path, required=True, help="DAG workflow json")
+    parser.add_argument('-w', '--workflow', nargs='+', required=True, help="DAG workflow json file(s)")
     parser.add_argument('-g', '--hosting', type=Path, required=True, help="Hosting json")
     parser.add_argument('-o', '--output', type=Path, default='/dev/stdout', help="Scenario json output")
     parser.add_argument('-f', '--force', action='store_true', default=False, help="overwrite files")
@@ -33,11 +33,38 @@ def main():
     parser.add_argument('-stosd', '--startTimeOffsetSD', type=int, default=0, help="start time offset for service discovery")
     parser.add_argument('-stowf', '--startTimeOffsetWF', type=int, default=2, help="start time offset for workflow")
     parser.add_argument('-set', '--simulationEndTime', type=int, default=200, help="set simulation end time")
+    parser.add_argument('-pcf', '--poissonConsumerFrequency', type=int, default=1, help="set consumer Poisson rate")
+    parser.add_argument('-pni', '--poissonConsumerNumInterests', type=int, default=1, help="set consumer Poisson number of interests to generate (total)")
 
     args = parser.parse_args()
 
-    with open(args.workflow) as f:
-        workflow = json.load(f)
+    # Dynamic containers to assemble data from all 100 workflow files
+    services = []
+    dags_dict = {}
+    seen_services = set()
+
+    # Loop through every workflow file path passed from Bash
+    for idx, workflow_path in enumerate(args.workflow, start=1):
+        with open(workflow_path) as f:
+            workflow_data = json.load(f)
+            
+            # Extract and deduplicate services across files
+            if 'services' in workflow_data:
+                for service in workflow_data['services']:
+                    service_name = service.get('name')
+                    
+                    # 🌟 FIX 1: Make consumer names unique so they aren't deleted as duplicates
+                    if service.get('type') == 'consumer':
+                        service_name = f"{service_name}{idx}"
+                        service['name'] = service_name
+
+                    if service_name not in seen_services:
+                        seen_services.add(service_name)
+                        services.append(service)
+            
+            # Map each workflow's DAG to a unique key (dag1, dag2, dag3...)
+            if 'dag' in workflow_data:
+                dags_dict[f'dag{idx}'] = workflow_data['dag']
 
     with open(args.hosting) as f:
         hosting = json.load(f)
@@ -58,9 +85,6 @@ def main():
     prefix = args.prefix
     strategy = args.strategy
     cs_size = args.cs_size
-    services = workflow['services']
-    dag = workflow['dag']
-
 
     # Add the serviceDiscovery entry if the flag is set to 1
     if args.serviceDiscovery == 1:
@@ -69,21 +93,26 @@ def main():
             "type": "service",
             "strategy": "/localhost/nfd/strategy/best-route"
         })
+    # Add the serviceDiscovery entry if the flag is set to 2
+    if args.serviceDiscovery == 2:
+        services.append({
+            "name": "/serviceDiscovery2",
+            "type": "service",
+            "strategy": "/localhost/nfd/strategy/best-route"
+        })
 
-    # update the strategy with the command line input
+    # Update the strategy with the command line input
     strategy_path = f"/localhost/nfd/strategy/{strategy}"
     for s in services:
         s['strategy'] = strategy_path
 
-    # update the cs_size with the command line input
+    # Update the cs_size with the command line input
     routers = topology['router']
     for r in routers:
         if not r['node'].startswith("user"):
             r['cs-size'] = cs_size
 
-
-    # TODO: should support multiple workflows for multiple consumers? the bones are there but little extra work
-    # is single workflow with multiple consumers acceptable?
+    # Construct the final merged scenario dictionary
     scenario = {
         'prefix': prefix,
         'topofile': str(args.topo_txt),
@@ -95,13 +124,12 @@ def main():
         'startTimeOffsetSD': (args.startTimeOffsetSD),
         'startTimeOffsetWF': (args.startTimeOffsetWF),
         'simulationEndTime': (args.simulationEndTime),
-        #'workflowFile': str(args.workflow),
+        'poissonConsumerFrequency': (args.poissonConsumerFrequency),
+        'poissonConsumerNumInterests': (args.poissonConsumerNumInterests),
         **topology,
         'services': services,
         **hosting,
-        'dag': {
-            'dag1': dag,
-        }
+        'dag': dags_dict  # Contains dag1, dag2 ... dag100 nested cleanly
     }
 
     if not os.path.exists(args.output) or args.force:

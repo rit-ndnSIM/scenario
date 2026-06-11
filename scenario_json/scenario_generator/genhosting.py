@@ -22,8 +22,16 @@ def uniform(args):
         with open(args.base_hosting) as f:
             base_assignments = json.load(f).get("routerHosting", [])
 
-    with open(args.workflow) as f:
-        workflow = graph.Workflow.from_dict(json.load(f))
+    # Load all workflows and track their respective execution paths
+    workflows = []
+    workflow_paths = []
+    for wf_path in args.workflows:
+        with open(wf_path) as f:
+            workflows.append(graph.Workflow.from_dict(json.load(f)))
+            workflow_paths.append(wf_path)
+
+    #with open(args.workflow) as f:
+    #    workflow = graph.Workflow.from_dict(json.load(f))
 
     with open(args.topology) as f:
         topology = graph.Topology.from_dict(json.load(f))
@@ -33,12 +41,25 @@ def uniform(args):
 
     # Pass the base_assignments to the generator
     #hosting = gen_uniform_hosting(workflow, topology, args.sensor_list, args.user_list, args.min_hosts, args.max_hosts)
-    hosting = gen_uniform_hosting(workflow, topology, args.sensor_list, args.user_list, args.min_hosts, args.max_hosts, base_assignments)
+    hosting = gen_uniform_hosting(workflows, workflow_paths, topology, args.sensor_list, args.user_list, args.min_hosts, args.max_hosts, base_assignments)
 
-    services = workflow.get_services()
-    consumers = workflow.get_consumers()
-    producers = workflow.get_producers()
+    # Compile a unique structural inventory of components across all parallel DAG contexts
+    all_services = set()
+    all_consumers = set()
+    all_producers = set()
+    for idx, wf in enumerate(workflows, start=1):
+        wf_consumers = set(wf.get_consumers())
+        
+        # Filter out consumers from the general service pool
+        all_services.update(set(wf.get_services()) - wf_consumers)
+        
+        # Append index to make the consumer name globally unique
+        for c in wf_consumers:
+            all_consumers.add(f"{c}{idx}")
+            
+        all_producers.update(wf.get_producers())
 
+    '''
     for item in hosting:
         if item['service'] in services:
             start, stop = random.choice(tuple(zip(args.start_times, args.stop_times)))
@@ -49,6 +70,18 @@ def uniform(args):
             item.update({"workflowFile": str(args.workflow), "dag": "dag1", "start": 0, "end": -1 })
         elif item['service'] in producers:
             #item.update({"start": 0, "end": -1 })
+            item.update({"start": 0, "end": -1, 'makespanNS': 1000000})
+    '''
+    for item in hosting:
+        srv_name = item['service']
+        if srv_name in all_services:
+            start, stop = random.choice(tuple(zip(args.start_times, args.stop_times)))
+            makespan = random.randint(args.makespan_min, args.makespan_max)
+            item.update({'start': start, 'end': stop, 'makespanNS': makespan})
+        elif srv_name in all_consumers:
+            # Metadata maps directly during initial provisioning inside gen_uniform_hosting
+            pass
+        elif srv_name in all_producers:
             item.update({"start": 0, "end": -1, 'makespanNS': 1000000})
 
     return { "routerHosting": hosting }
@@ -99,7 +132,6 @@ def gen_uniform_hosting(workflow, topology, sensors=["sensor"], users=["user"], 
             hosting.append({ "router": router, "service": service })
 
     return hosting
-'''
 
 def gen_uniform_hosting(workflow, topology, sensors=["sensor"], users=["user"], min_hosts=1, max_hosts=None, base_assignments=[]):
     routers = topology.get_nodes()
@@ -147,7 +179,97 @@ def gen_uniform_hosting(workflow, topology, sensors=["sensor"], users=["user"], 
                     hosting.append({ "router": router, "service": service })
 
     return hosting
+'''
+def gen_uniform_hosting(workflows, workflow_paths, topology, sensors=["sensor"], users=["user"], min_hosts=1, max_hosts=None, base_assignments=[]):
+    routers = topology.get_nodes()
 
+    if not all(node in routers for node in (*sensors, *users)):
+        raise ValueError("all sensors and users must be in the topology")
+
+    if min_hosts < 1:
+        raise ValueError("min_hosts must be at least 1")
+    if max_hosts is not None and min_hosts > max_hosts:
+        raise ValueError("min_hosts cannot be greater than max_hosts")
+
+    # Build maps tracking consumer profiles and shared infrastructure services
+    consumers = []
+    consumer_meta_map = {}
+    global_services = set()
+    global_producers = []
+
+    for idx, (wf, path) in enumerate(zip(workflows, workflow_paths), start=1):
+        wf_consumers = list(wf.get_consumers())
+        
+        # Append the idx so the dictionary doesn't overwrite 100 times!
+        for c in wf_consumers:
+            unique_c = f"{c}{idx}"
+            consumers.append(unique_c)
+            consumer_meta_map[unique_c] = {
+                "workflowFile": str(path),
+                "dag": f"dag{idx}",
+                "start": 0,
+                "end": -1
+            }
+            
+        # Add remaining services to global pools
+        global_services.update(set(wf.get_services()) - set(wf_consumers))
+        global_producers.extend(list(wf.get_producers()))
+
+
+    # Clean deduplication pass on core infrastructure asset labels
+    global_producers = list(set(global_producers))
+
+    if len(consumers) < len(users):
+        raise ValueError("cannot have more users than consumers")
+
+    if len(global_producers) < len(sensors):
+        raise ValueError("cannot have more sensors than producers")
+
+    if base_assignments:
+        hosting = list(base_assignments)
+    else:
+        hosting = []
+        
+        # Reverse stack layout for sequential array pops
+        consumers.reverse()
+        global_producers.reverse()
+
+        for user in users:
+            c_service = consumers.pop()
+            entry = { "router": user, "service": c_service }
+            entry.update(consumer_meta_map[c_service])
+            hosting.append(entry)
+
+        #for consumer in reversed(consumers):
+        for consumer in consumers:
+            entry = { "router": random.choice(users), "service": consumer }
+            entry.update(consumer_meta_map[consumer])
+            hosting.append(entry)
+
+        for sensor in sensors:
+            hosting.append({ "router": sensor, "service": global_producers.pop() })
+
+        for producer in global_producers:
+            hosting.append({ "router": random.choice(sensors), "service": producer })
+
+    if max_hosts is None or max_hosts > len(routers):
+        max_hosts = len(routers)
+
+    for service in global_services:
+        current_routers = {h['router'] for h in hosting if h['service'] == service}
+        current_count = len(current_routers)
+        target_hosts = random.randint(min_hosts, max_hosts)
+        
+        if target_hosts > current_count:
+            needed = target_hosts - current_count
+            available_routers = sorted(list(set(routers) - current_routers))
+            
+            if available_routers:
+                new_routers = random.sample(available_routers, min(needed, len(available_routers)))
+                for router in new_routers:
+                    hosting.append({ "router": router, "service": service })
+
+    return hosting
 
 def combine(args):
     hosting = []
@@ -168,7 +290,7 @@ def main():
     uni_parser = subparsers.add_parser('uniform', help="distribute services uniformly")
     uni_parser.set_defaults(algorithm=uniform)
     uni_parser.add_argument('-t', '--topology', type=Path, required=True, help="topology json file input")
-    uni_parser.add_argument('-w', '--workflow', type=Path, required=True, help="workflow json file input")
+    uni_parser.add_argument('-w', '--workflows', nargs='+', required=True, help="workflow json file input(s)")
 
     sensors_group = uni_parser.add_mutually_exclusive_group()
     sensors_group.add_argument('--sensor-list', nargs='+', type=str, default=['sensor'], help="list of sensor routers")
