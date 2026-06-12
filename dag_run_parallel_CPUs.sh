@@ -73,7 +73,7 @@ export FORCE_MAKESPAN=0    # Set to override service makespanNS settings in JSON
 
 export NDNSIM_HOME="$HOME/ndnSIM"
 export SCENARIO_DIR="$HOME/ndnSIM/scenario"
-export SCENARIO_LOGS_DIR="$SCENARIO_DIR/scenario_logs"
+export SCENARIO_LOGS_DIR="$SCENARIO_DIR/scenario_logs/$TYPE"
 export SCENARIO_TRACE_DIR="$SCENARIO_DIR/trace_results/$TYPE"
 export WORKFLOW_DIR="$HOME/ndnSIM/scenario/workflows"
 export TOPOLOGY_DIR="$HOME/ndnSIM/scenario/topologies"
@@ -197,7 +197,7 @@ run_simulation() {
 
     # Run simulation, logging output to a unique file
     #"$SCENARIO_DIR/waf" --run="ndn-cabeee-generic --scenario=$scenario_json --verbose=true" > "$scenario_log" 2>&1
-    #"$SCENARIO_DIR/waf" --run="ndn-cabeee-generic --scenario=$scenario_json --verbose=false --overrideTrace=$force_trace --traceDir=$SCENARIO_TRACE_DIR --overrideMakespan=$force_makespan" > "$scenario_log" 2>&1
+    "$SCENARIO_DIR/waf" --run="ndn-cabeee-generic --scenario=$scenario_json --verbose=false --overrideTrace=$force_trace --traceDir=$SCENARIO_TRACE_DIR --overrideMakespan=$force_makespan" > "$scenario_log" 2>&1
 
     # Parse logs
     local estimatedWFLatency=$(grep "Service Latency estimated by SD:" "$scenario_log" | tail -n 1 | sed -n 's/^\s*Service Latency estimated by SD: \([0-9\.]*\) microseconds.$/\1/p')

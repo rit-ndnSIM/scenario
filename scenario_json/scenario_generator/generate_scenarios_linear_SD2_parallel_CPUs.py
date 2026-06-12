@@ -15,7 +15,7 @@ import random
 # ==========================================
 # GLOBAL CONFIGURATION
 # ==========================================
-NAME = "fwdOptSD2Sweep20_5x8"
+NAME = "linearWFs_SD2Sweep20_5x8"
 TIMESTAMP = datetime.now().strftime("%Y%m%d-%H%M%S")
 WORKDIR = os.path.join(os.getcwd(), "generated_scenarios", NAME)
 OUTDIR = os.path.join(os.getcwd(), "..", NAME)
@@ -26,7 +26,8 @@ NUM_RUNS = 20
 NUM_SERVICES_LIST = [5]
 NUM_NODES_LIST = [8]
 EDGERATIO_LIST = [0.5]
-HOSTRATIO_LIST = [0.0, 0.2, 0.4, 0.6, 0.8, 1.0]
+#HOSTRATIO_LIST = [0.0, 0.2, 0.4, 0.6, 0.8, 1.0]
+HOSTRATIO_LIST = [0.0, 0.2, 0.4]
 
 # Consumer options
 POISSON_FREQ = 100
@@ -38,12 +39,12 @@ VISUALIZE = False
 # Define specific pairs as "workflow:topology"
 WF_TOPO_PAIRS = [
     "linear:multi_tiered",
-    "map_reduce:star_of_stars",
-    "map_reduce:mesh",
-    "wavefront:mesh"
+    "linear:star_of_stars",
+    "linear:mesh",
+    "linear:spanning_tree"
 ]
 
-PREFIX_LIST = ["nesco"]
+PREFIX_LIST = ["nesco", "icnfc", "ndnfcp", "or3", "ifcns"]
 
 
 
@@ -80,6 +81,24 @@ def generate_wf_messy(servs, prods, cons, layers, skips, ser, shuffle=False):
         "--num-services", servs,
         "--num-layers", layers,
         "--aggregate",
+        "--num-producers", prods,
+        "--num-consumers", cons,
+        "--num-skips", skips,
+        "--output", output_path
+    ]
+    if shuffle:
+        cmd.append("--shuffle-services")
+    run_cmd(cmd)
+    return output_name
+
+def generate_wf_linear(servs, prods, cons, layers, skips, ser, shuffle=False):
+    output_name = f"{TIMESTAMP}-{ser}--wf_linear-{servs:03d}srv-{prods:03d}prod-{cons:03d}con-{skips:03d}skip-agg-{layers:03d}layer.json"
+    output_path = os.path.join(WORKDIR, output_name)
+    
+    cmd = [
+        "./genworkflow.py", "layered",
+        "--num-services", servs,
+        "--num-layers", layers,
         "--num-producers", prods,
         "--num-consumers", cons,
         "--num-skips", skips,
@@ -214,16 +233,16 @@ def run_category_task(run_id, pair, generated_workflows):
                     base_name = f"{padded_catCode}-hR_{hr_str}--sn-{topoCategory}-{workflowCategory}-{prefix}"
 
                     # Scenario 1: noSD2, multicast, cs=0
-                    build_scenario(f"{base_name}--1-noSD2-multicast.json", wf_filenames, tp, hs, prefix, "multicast", 0, sd=0, ru=0)
+                    #build_scenario(f"{base_name}--1-noSD2-multicast.json", wf_filenames, tp, hs, prefix, "multicast", 0, sd=0, ru=0)
                     
                     # Scenario 2: noSD2, bestRoute, cs=0
-                    build_scenario(f"{base_name}--2-noSD2-bestRoute.json", wf_filenames, tp, hs, prefix, "best-route", 0, sd=0, ru=0)
+                    #build_scenario(f"{base_name}--2-noSD2-bestRoute.json", wf_filenames, tp, hs, prefix, "best-route", 0, sd=0, ru=0)
                     
                     # Scenario 3: SD2, bestRoute, noUtil, cs=0
-                    build_scenario(f"{base_name}--3-SD2-noUtilization.json", wf_filenames, tp, hs, prefix, "best-route", 0, sd=2, ru=0)
+                    #build_scenario(f"{base_name}--3-SD2-noUtilization.json", wf_filenames, tp, hs, prefix, "best-route", 0, sd=2, ru=0)
                     
                     # Scenario 4: SD2, bestRoute, Util, noCaching, cs=0
-                    build_scenario(f"{base_name}--4-SD2-utilization-noCaching.json", wf_filenames, tp, hs, prefix, "best-route", 0, sd=2, ru=1)
+                    #build_scenario(f"{base_name}--4-SD2-utilization-noCaching.json", wf_filenames, tp, hs, prefix, "best-route", 0, sd=2, ru=1)
                     
                     # Scenario 5: SD2, bestRoute, Util, Caching, cs=1000
                     out_path = build_scenario(f"{base_name}--5-SD2-utilization-caching.json", wf_filenames, tp, hs, prefix, "best-route", 1000, sd=2, ru=1)
@@ -257,27 +276,38 @@ if __name__ == "__main__":
                 
                 if wf_cat == "linear":
                     wf_code = f"ln-{wf_num:03d}"
-                    layers = num_services
+                    layers = num_services + 2
                     skips = 0
+                    wf = generate_wf_linear(num_services, prods, cons, layers, skips, wf_code, shuffle=True)
                 elif wf_cat == "map_reduce":
                     wf_code = f"mr-{wf_num:03d}"
                     layers = 3
+                    layers = random.randint(layers-1, layers+1)
+                    layers = max(3, layers)
                     skips = 0
+                    skips = random.randint(skips-1, skips+1)
+                    skips = max(0, skips)
+                    wf = generate_wf_messy(num_services, prods, cons, layers, skips, wf_code, shuffle=True)
                 elif wf_cat == "wavefront":
                     wf_code = f"wf-{wf_num:03d}"
                     layers = max(3, int(math.sqrt(num_services)))
+                    layers = random.randint(layers-1, layers+1)
+                    layers = max(3, layers)
                     skips = max(1, int(layers / 3))
+                    skips = random.randint(skips-1, skips+1)
+                    skips = max(0, skips)
+                    wf = generate_wf_messy(num_services, prods, cons, layers, skips, wf_code, shuffle=True)
                 elif wf_cat == "multi_sink":
                     wf_code = f"ms-{wf_num:03d}"
                     layers = max(1, int(num_services / 3))
+                    layers = random.randint(layers-1, layers+1)
+                    layers = max(3, layers)
                     skips = 2
+                    skips = random.randint(skips-1, skips+1)
+                    skips = max(0, skips)
+                    wf = generate_wf_messy(num_services, prods, cons, layers, skips, wf_code, shuffle=True)
 
-                layers = random.randint(layers-1, layers+1)
-                layers = max(3, layers)
-                skips = random.randint(skips-1, skips+1)
-                skips = max(0, skips)
 
-                wf = generate_wf_messy(num_services, prods, cons, layers, skips, wf_code, shuffle=True)
                 generated_wfs[wf_cat].append(wf)
 
     # Cross Product: 20 runs x 4 categories

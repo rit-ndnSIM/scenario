@@ -33,7 +33,7 @@ def connect_layers(workflow, above, below):
 
 
 def layered(args):
-    workflow = gen_layered_dag(args.num_services, args.num_producers, args.num_consumers, args.num_layers, args.num_skips, args.aggregate, args.split)
+    workflow = gen_layered_dag(args.num_services, args.num_producers, args.num_consumers, args.num_layers, args.num_skips, args.aggregate, args.split, args.shuffle_services)
 
     with open(args.output, "w") as f:
         json.dump(workflow.get_dict(), f, indent=None if args.compact_output else 4)
@@ -54,7 +54,7 @@ def separate(args):
             json.dump(workflow.get_dict(), f, indent=None if args.compact_output else 4)
 
 
-def gen_layered_dag(num_services, num_producers=1, num_consumers=1, num_layers=5, num_skips=0, aggregate=False, split=False):
+def gen_layered_dag(num_services, num_producers=1, num_consumers=1, num_layers=5, num_skips=0, aggregate=False, split=False, shuffle_services=False):
     if num_services < 0:
         raise ValueError("number of services must be nonnegative")
 
@@ -81,6 +81,8 @@ def gen_layered_dag(num_services, num_producers=1, num_consumers=1, num_layers=5
 
     layers = [[] for _ in range(num_layers)]
     services = [f"/service{i}" for i in range(num_services)]
+    if shuffle_services:
+        random.shuffle(services)
     skips = [f"skip{i}" for i in range(num_skips)]
 
     producers = strlist("/sensor", num_producers)
@@ -184,6 +186,7 @@ def main():
     lay_parser.add_argument('-s', '--num-skips', type=int, default=0, help="number of skip nodes")
     lay_parser.add_argument('-a', '--aggregate', action='store_true', default=False, help='add aggregators before consumer')
     lay_parser.add_argument('-t', '--split', action='store_true', default=False, help='add splitters after producers')
+    lay_parser.add_argument('--shuffle-services', action='store_true', default=False, help='randomize the order of intermediate services')
 
     # i really wannna call this "split" but that shadows --split and i can't think of a better name
     sep_parser = subparsers.add_parser('separate', help="separate workflow into one for each consumer")
