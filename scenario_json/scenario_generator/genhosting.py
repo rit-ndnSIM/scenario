@@ -82,7 +82,9 @@ def uniform(args):
             # Metadata maps directly during initial provisioning inside gen_uniform_hosting
             pass
         elif srv_name in all_producers:
-            item.update({"start": 0, "end": -1, 'makespanNS': 1000000})
+            #makespan = 1000000
+            makespan = random.randint(args.makespan_min, args.makespan_max)
+            item.update({"start": 0, "end": -1, 'makespanNS': makespan})
 
     return { "routerHosting": hosting }
 

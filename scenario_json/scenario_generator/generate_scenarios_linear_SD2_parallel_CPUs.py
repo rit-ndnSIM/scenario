@@ -15,24 +15,43 @@ import random
 # ==========================================
 # GLOBAL CONFIGURATION
 # ==========================================
-NAME = "linearWFs_SD2Sweep20_5x8"
+#NAME = "linearWFs_SD2Sweep_20runsx100reqx100cons_5servx8nodes"
+NAME = "linearWFs_SD2Sweep_1runsx20reqx20cons_5servx6nodes"
 TIMESTAMP = datetime.now().strftime("%Y%m%d-%H%M%S")
 WORKDIR = os.path.join(os.getcwd(), "generated_scenarios", NAME)
 OUTDIR = os.path.join(os.getcwd(), "..", NAME)
 
-# Total number of runs (each will get it's own JSON and thus its own row in the CSV file - MATLAB will average them all)
-NUM_RUNS = 20
+# This removes the folder and everything inside it permanently
+shutil.rmtree(WORKDIR)
+shutil.rmtree(OUTDIR)
 
+# Total number of runs (each will get it's own JSON and thus its own row in the CSV file - MATLAB will average them all)
+#NUM_RUNS = 20
+NUM_RUNS = 1
+
+#NUM_SERVICES_LIST = [5]
+#NUM_NODES_LIST = [8]
 NUM_SERVICES_LIST = [5]
-NUM_NODES_LIST = [8]
+NUM_NODES_LIST = [6]
 EDGERATIO_LIST = [0.5]
 #HOSTRATIO_LIST = [0.0, 0.2, 0.4, 0.6, 0.8, 1.0]
 HOSTRATIO_LIST = [0.0, 0.2, 0.4]
 
+LINK_DELAY_AVG_MS = 1
+LINK_DELAY_VARIATION_PCT = 0.50  # percent variation.
+#CCR_LIST = [0.1, 0.5, 1, 2, 10]  # CCR is communication to computation ratio
+CCR_LIST = [0.1, 1, 10]  # CCR is communication to computation ratio
+MAKESPAN_VARIATION_PCT = 0.50  # percent variation.
+
 # Consumer options
-POISSON_FREQ = 100
-POISSON_NUM_INTERESTS = 100
-POISSON_NUM_CONSUMERS = 100
+POISSON_FREQ = 100 # wait on average 10ms between receiving results from prev WF, and generating SD2 request for next WF.
+#POISSON_NUM_INTERESTS = 100
+#POISSON_NUM_CONSUMERS = 100
+POISSON_NUM_INTERESTS = 20
+POISSON_NUM_CONSUMERS = 20
+
+START_TIME_OFFSET_SD = 1
+START_TIME_OFFSET_WF = 2
 
 VISUALIZE = False
 
@@ -44,7 +63,9 @@ WF_TOPO_PAIRS = [
     "linear:spanning_tree"
 ]
 
-PREFIX_LIST = ["nesco", "icnfc", "ndnfcp", "or3", "ifcns"]
+#PREFIX_LIST = ["nesco", "icnfc", "ndnfcp", "or3", "ifcns"]
+#PREFIX_LIST = ["nesco", "icnfc", "ndnfcp", "or3"]
+PREFIX_LIST = ["nesco", "or3"]
 
 
 
@@ -58,7 +79,7 @@ def run_cmd(cmd):
     try:
         subprocess.run(cmd_str, check=True, stdout=subprocess.DEVNULL)
     except subprocess.CalledProcessError as e:
-        print(f"\n[❌ CRASH] Command failed: {' '.join(cmd_str)}", file=sys.stderr)
+        print(f"\n[CRASH] Command failed: {' '.join(cmd_str)}", file=sys.stderr)
         raise
 
 def get_cat_id(pair):
@@ -109,14 +130,14 @@ def generate_wf_linear(servs, prods, cons, layers, skips, ser, shuffle=False):
     run_cmd(cmd)
     return output_name
 
-def generate_tp(tp_type, nodes, snsrs, usrs, cs, delay, wf_cat, ser, extra_args):
+def generate_tp(tp_type, nodes, snsrs, usrs, cs, delay_avg, delay_var, wf_cat, ser, extra_args):
     output_name = f"{TIMESTAMP}-{ser}--tp_{tp_type}4{wf_cat}-{nodes:03d}rtr-{snsrs:03d}snsr-{usrs:03d}usr-{cs:06d}cs.json"
     output_path = os.path.join(WORKDIR, output_name)
     
     cmd = [
         "./gentopo.py", "-o", output_path, tp_type,
         "-n", nodes, "-s", snsrs, "-u", usrs,
-        "--cs-size", cs, "--delay", delay
+        "--cs-size", cs, "--delay-avg", delay_avg, "--delay-var", delay_var
     ] + extra_args
     run_cmd(cmd)
     return output_name
@@ -155,7 +176,7 @@ def generate_hs(wf_filenames, tp_filename, snsrs, usrs, makespanMinNS, makespanM
     run_cmd(cmd)
     return output_name
 
-def build_scenario(out_name, wf_filenames, tp_filename, hs_filename, prefix, strategy, cs_size, sd, ru):
+def build_scenario(out_name, wf_filenames, tp_filename, hs_filename, prefix, strategy, cs_size, sim_end, sd, ru):
     tp_path = os.path.join(WORKDIR, tp_filename)
     tp_txt_path = tp_path.replace(".json", ".txt")
     hs_path = os.path.join(WORKDIR, hs_filename)
@@ -176,9 +197,9 @@ def build_scenario(out_name, wf_filenames, tp_filename, hs_filename, prefix, str
         "--resourceAllocation", 0,
         "--allocationReuse", 0,
         "--scheduleCompaction", 0,
-        "--startTimeOffsetSD", 1,
-        "--startTimeOffsetWF", 2,
-        "--simulationEndTime", 1000,
+        "--startTimeOffsetSD", START_TIME_OFFSET_SD,
+        "--startTimeOffsetWF", START_TIME_OFFSET_WF,
+        "--simulationEndTime", sim_end,
         "--poissonConsumerFrequency", POISSON_FREQ,
         "--poissonConsumerNumInterests", POISSON_NUM_INTERESTS,
         "--workflow"
@@ -204,53 +225,74 @@ def run_category_task(run_id, pair, generated_workflows):
             sensors = 1
             users = 1
             cs_size = 0
-            delay = "1ms"
+            delay_avg_str = f"{LINK_DELAY_AVG_MS}ms"
+            delay_var = LINK_DELAY_VARIATION_PCT
             
             if topoCategory == "multi_tiered":
                 tiers = max(2, num_nodes // 6)
-                tp = generate_tp("multi_tiered", num_nodes, sensors, users, cs_size, delay, workflowCategory, padded_catCode, ["--tiers", tiers])
+                tp = generate_tp("multi_tiered", num_nodes, sensors, users, cs_size, delay_avg_str, delay_var, workflowCategory, padded_catCode, ["--tiers", tiers])
             elif topoCategory == "mesh":
-                tp = generate_tp("mesh", num_nodes, sensors, users, cs_size, delay, workflowCategory, padded_catCode, ["-p", 0.1])
+                tp = generate_tp("mesh", num_nodes, sensors, users, cs_size, delay_avg_str, delay_var, workflowCategory, padded_catCode, ["-p", 0.1])
             elif topoCategory == "star_of_stars":
                 branches = max(1, num_nodes // 6)
-                tp = generate_tp("star_of_stars", num_nodes, sensors, users, cs_size, delay, workflowCategory, padded_catCode, ["-b", branches])
+                tp = generate_tp("star_of_stars", num_nodes, sensors, users, cs_size, delay_avg_str, delay_var, workflowCategory, padded_catCode, ["-b", branches])
             elif topoCategory == "spanning_tree":
                 edges = int((num_nodes - 1) * (edgeratio * (num_nodes - 2) + 2) / 2)
-                tp = generate_tp("spanning_tree", num_nodes, sensors, users, cs_size, delay, workflowCategory, padded_catCode, ["-e", edges])
+                tp = generate_tp("spanning_tree", num_nodes, sensors, users, cs_size, delay_avg_str, delay_var, workflowCategory, padded_catCode, ["-e", edges])
 
-            # Generate Hostings & Scenarios
-            prev_hs = None
-            for hostRatio in HOSTRATIO_LIST:
-                hs_users = 1
-                makespanMinNS = 8000000
-                makespanMaxNS = 8000000
+            # Sweep CCR and Generate Hostings & Scenarios
+            for ccr in CCR_LIST:
+                # Reset previous hosting structure across different CCR runs
+                prev_hs = None
+                ccr_str = f"CCR_{ccr}".replace('.', 'p')  # e.g., CCR_0p5 avoids dots in filenames
 
-                hs = generate_hs(wf_filenames, tp, sensors, hs_users, makespanMinNS, makespanMaxNS, padded_catCode, hostRatio, prev_hs)
-                prev_hs = hs
-                hr_str = f"{hostRatio:03.1f}"
+                link_delay_ns = LINK_DELAY_AVG_MS * 1_000_000
+                avg_makespan_ns = link_delay_ns / ccr
+                makespanMinNS = int(avg_makespan_ns * (1.0 - MAKESPAN_VARIATION_PCT))
+                makespanMaxNS = int(avg_makespan_ns * (1.0 + MAKESPAN_VARIATION_PCT))
 
-                for prefix in PREFIX_LIST:
-                    base_name = f"{padded_catCode}-hR_{hr_str}--sn-{topoCategory}-{workflowCategory}-{prefix}"
+                # Sweep host ratio incrementally 
+                for hostRatio in HOSTRATIO_LIST:
+                    hs_users = 1
 
-                    # Scenario 1: noSD2, multicast, cs=0
-                    #build_scenario(f"{base_name}--1-noSD2-multicast.json", wf_filenames, tp, hs, prefix, "multicast", 0, sd=0, ru=0)
+                    hs_code = f"{padded_catCode}-{ccr_str}"
+                    hs = generate_hs(wf_filenames, tp, sensors, hs_users, makespanMinNS, makespanMaxNS, hs_code, hostRatio, prev_hs)
+                    prev_hs = hs
+                    hr_str = f"{hostRatio:03.1f}"
+
+                    sim_end_time = POISSON_NUM_CONSUMERS * POISSON_NUM_INTERESTS * max(NUM_SERVICES_LIST) * makespanMaxNS/1_000_000_000
+                    sim_end_time = math.ceil(sim_end_time * 10) + START_TIME_OFFSET_WF # extra buffer room to finish simulation
+
+                    for prefix in PREFIX_LIST:
+                        base_name = f"{padded_catCode}-hR_{hr_str}-{ccr_str}--sn-{topoCategory}-{workflowCategory}-{prefix}"
+
+                        # Scenario 1: noSD2, multicast, cs=0
+                        #out_path = build_scenario(f"{base_name}--1-noSD2-multicast.json", wf_filenames, tp, hs, prefix, "multicast", 0, sim_end_time, sd=0, ru=0)
                     
-                    # Scenario 2: noSD2, bestRoute, cs=0
-                    #build_scenario(f"{base_name}--2-noSD2-bestRoute.json", wf_filenames, tp, hs, prefix, "best-route", 0, sd=0, ru=0)
-                    
-                    # Scenario 3: SD2, bestRoute, noUtil, cs=0
-                    #build_scenario(f"{base_name}--3-SD2-noUtilization.json", wf_filenames, tp, hs, prefix, "best-route", 0, sd=2, ru=0)
-                    
-                    # Scenario 4: SD2, bestRoute, Util, noCaching, cs=0
-                    #build_scenario(f"{base_name}--4-SD2-utilization-noCaching.json", wf_filenames, tp, hs, prefix, "best-route", 0, sd=2, ru=1)
-                    
-                    # Scenario 5: SD2, bestRoute, Util, Caching, cs=1000
-                    out_path = build_scenario(f"{base_name}--5-SD2-utilization-caching.json", wf_filenames, tp, hs, prefix, "best-route", 1000, sd=2, ru=1)
+                        if prefix == "icnfc":
+                            # Scenario 2: noSD2, bestRoute, cs=0
+                            out_path = build_scenario(f"{base_name}--2-noSD2-bestRoute.json", wf_filenames, tp, hs, prefix, "best-route", 0, sim_end_time, sd=0, ru=0)
 
-                    if VISUALIZE and num_nodes < 9 and len(wf_filenames) < 21:
-                        # Best effort visualization
-                        subprocess.run(["./genvisuals_top_down_hosting_colors.py", out_path], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-                        subprocess.run(["./genvisuals_top_down_hosting_colors_hierarchical-topo.py", out_path], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                        if prefix == "ndnfcp":
+                            # Scenario 2b: noSD2, bestRoute, cs=1000
+                            out_path = build_scenario(f"{base_name}--2-noSD2-bestRoute.json", wf_filenames, tp, hs, prefix, "best-route", 0, sim_end_time, sd=1000, ru=0)
+                    
+                        if prefix == "or3":
+                            # Scenario 3: SD2, bestRoute, noUtil, noUtil, cs=0
+                            out_path = build_scenario(f"{base_name}--3-SD2-noUtilization.json", wf_filenames, tp, hs, prefix, "best-route", 0, sim_end_time, sd=2, ru=0)
+                    
+                        if prefix == "nesco":
+                            # Scenario 4: SD2, bestRoute, Util, noCaching, cs=0
+                            out_path = build_scenario(f"{base_name}--4-SD2-utilization-noCaching.json", wf_filenames, tp, hs, prefix, "best-route", 0, sim_end_time, sd=2, ru=1)
+                            # Scenario 5: SD2, bestRoute, Util, Caching, cs=1000
+                            out_path = build_scenario(f"{base_name}--5-SD2-utilization-caching.json", wf_filenames, tp, hs, prefix, "best-route", 1000, sim_end_time, sd=2, ru=1)
+
+
+
+                        if VISUALIZE and num_nodes < 9 and len(wf_filenames) < 21:
+                            # Best effort visualization
+                            subprocess.run(["./genvisuals_top_down_hosting_colors.py", out_path], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                            subprocess.run(["./genvisuals_top_down_hosting_colors_hierarchical-topo.py", out_path], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
     return f"Completed Run {run_id} | Pair: {pair}"
 

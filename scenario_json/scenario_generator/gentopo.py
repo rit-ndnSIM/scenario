@@ -12,6 +12,28 @@ import sys
 import json
 from itertools import combinations
 
+
+def get_randomized_delay(delay_avg_str, delay_var_pct):
+    if delay_var_pct <= 0.0:
+        return delay_avg_str
+        
+    # Extract the numeric value and the unit (e.g., "1ms" -> "1" and "ms")
+    match = re.match(r"([\d\.]+)([a-zA-Z]+)", str(delay_avg_str).strip())
+    if not match:
+        return delay_avg_str  # Fallback if the format is weird
+        
+    avg_val = float(match.group(1))
+    unit = match.group(2)
+    
+    # Calculate random bounds
+    variation = avg_val * delay_var_pct
+    min_val = avg_val - variation
+    max_val = avg_val + variation
+    
+    # Generate random float and format string to 3 decimal places
+    rand_val = random.uniform(min_val, max_val)
+    return f"{rand_val:.3f}{unit}"
+
 def bottleneck(args):
     # Combines two existing topology JSON files by adding a single link between them.
     # Load the two topologies
@@ -33,10 +55,11 @@ def bottleneck(args):
 
     # Create the bottleneck link
     topo1.add(r1, r2)
+    edge_delay = get_randomized_delay(args.delay_avg, args.delay_var)
     topo1.update_edge_metadata(r1, r2, **{
         'capacity': args.bandwidth,
         'metric': args.metric,
-        'delay': args.delay,
+        'delay': edge_delay,
         'queue': args.queue,
     })
 
@@ -97,10 +120,11 @@ def star_of_stars(args):
         topo.update_metadata(node, **meta)
 
     for n, m in topo.get_connections():
+        edge_delay = get_randomized_delay(args.delay_avg, args.delay_var)
         topo.update_edge_metadata(n, m, **{
             'capacity': args.bandwidth,
             'metric': args.metric,
-            'delay': args.delay,
+            'delay': edge_delay,
             'queue': args.queue,
         })
 
@@ -150,10 +174,11 @@ def mesh(args):
         topo.update_metadata(node, **meta)
         
     for n, m in topo.get_connections():
+        edge_delay = get_randomized_delay(args.delay_avg, args.delay_var)
         topo.update_edge_metadata(n, m, **{
             'capacity': args.bandwidth,
             'metric': args.metric,
-            'delay': args.delay,
+            'delay': edge_delay,
             'queue': args.queue,
         })
         
@@ -458,10 +483,11 @@ def multi_tiered(args):
         topo.update_metadata(node, **meta)
         
     for n, m in topo.get_connections():
+        edge_delay = get_randomized_delay(args.delay_avg, args.delay_var)
         topo.update_edge_metadata(n, m, **{
             'capacity': args.bandwidth,
             'metric': args.metric,
-            'delay': args.delay,
+            'delay': edge_delay,
             'queue': args.queue,
         })
 
@@ -518,10 +544,11 @@ def spanning_tree(args):
         # TODO: override with random generation
 
     for n, m in topo.get_connections():
+        edge_delay = get_randomized_delay(args.delay_avg, args.delay_var)
         topo.update_edge_metadata(n, m, **{
             'capacity': args.bandwidth,
             'metric': args.metric,
-            'delay': args.delay,
+            'delay': edge_delay,
             'queue': args.queue,
         })
 
@@ -665,7 +692,8 @@ def main():
     shared_parser.add_argument('--mpi', type=int)
     shared_parser.add_argument('--bandwidth', type=str, default="10Mbps")
     shared_parser.add_argument('--metric', type=str, default="1")
-    shared_parser.add_argument('--delay', type=str, default="1ms")
+    shared_parser.add_argument('--delay-avg', type=str, default="1ms")
+    shared_parser.add_argument('--delay-var', type=float, default="0.0")
     shared_parser.add_argument('--queue', type=str, default="100000")
 
     subparsers = parser.add_subparsers(title='algorithm')
