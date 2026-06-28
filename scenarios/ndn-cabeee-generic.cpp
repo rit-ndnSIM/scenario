@@ -67,6 +67,7 @@ main(int argc, char* argv[])
     bool verbose = false;
     float overrideTrace = 0;
     uint64_t overrideMakespan = 0;
+    uint64_t overrideFreshness = 0;
 
     CommandLine cmd;
     cmd.AddValue("scenario", "json scenario file to use", scenario_file);
@@ -74,6 +75,7 @@ main(int argc, char* argv[])
     cmd.AddValue("verbose", "increase verbosity", verbose);
     cmd.AddValue("overrideTrace", "override rateTrace, csTrace and csUsage interval to this number of seconds", overrideTrace);
     cmd.AddValue("overrideMakespan", "override service makespan value to this number of nanoseconds", overrideMakespan);
+    cmd.AddValue("overrideFreshness", "override data packet freshness value to this number of seconds", overrideFreshness);
     cmd.Parse(argc, argv);
 
     if (scenario_file == "") {
@@ -91,6 +93,7 @@ main(int argc, char* argv[])
         std::cout << "Trace directory is: " << trace_dir << std::endl;
         std::cout << "Trace override is: " << overrideTrace << std::endl;
         std::cout << "Makespan override is: " << overrideMakespan << std::endl;
+        std::cout << "Freshness override is: " << overrideFreshness << std::endl;
     }
 
     const json scenario_json = json::parse(std::ifstream(scenario_file));
@@ -140,6 +143,10 @@ main(int argc, char* argv[])
     int8_t resourceAllocationFlag = 0;
     int8_t allocationReuseFlag = 0;
     int8_t scheduleCompactionFlag = 0;
+    int8_t producerFreshnessUniformDist = 0;
+    uint64_t producerFreshnessMSmin = 0;
+    uint64_t producerFreshnessMSmax = 0;
+    uint64_t producerFreshnessMS = 60000;
     if (scenario_json.contains("serviceDiscovery")) {
         serviceDiscoveryFlag = scenario_json.at("serviceDiscovery");
     }
@@ -154,6 +161,18 @@ main(int argc, char* argv[])
     }
     if (scenario_json.contains("scheduleCompaction")) {
         scheduleCompactionFlag = scenario_json.at("scheduleCompaction");
+    }
+    if (scenario_json.contains("producerFreshnessUniformDist")) {
+        producerFreshnessUniformDist = scenario_json.at("producerFreshnessUniformDist");
+    }
+    if (scenario_json.contains("producerFreshnessMSmin")) {
+        producerFreshnessMSmin = scenario_json.at("producerFreshnessMSmin");
+    }
+    if (scenario_json.contains("producerFreshnessMSmax")) {
+        producerFreshnessMSmax = scenario_json.at("producerFreshnessMSmax");
+    }
+    if (scenario_json.contains("producerFreshnessMS")) {
+        producerFreshnessMS = scenario_json.at("producerFreshnessMS");
     }
 
     float simulationEndTime = 1000; // set default end time (in case json doesn't specify)
@@ -238,8 +257,19 @@ main(int argc, char* argv[])
         ndn::AppHelper serviceDiscoveryApp("DagServiceDiscoveryApp");
 
         if (type == "producer") {
+            if (overrideFreshness > 0)
+            {
+                producerFreshnessMS = overrideFreshness;
+                producerFreshnessUniformDist = 0;
+                producerFreshnessMSmin = 0;
+                producerFreshnessMSmax = 0;
+            }
             appHelper = ndn::AppHelper("CustomAppProducer");
             appHelper.SetAttribute("Makespan", UintegerValue(makespanNS));
+            appHelper.SetAttribute("FreshnessPeriod_ms", UintegerValue(producerFreshnessMS));
+            appHelper.SetAttribute("UniformFreshness", UintegerValue(producerFreshnessUniformDist));
+            appHelper.SetAttribute("minFreshness_ms", UintegerValue(producerFreshnessMSmin));
+            appHelper.SetAttribute("maxFreshness_ms", UintegerValue(producerFreshnessMSmax));
             if (serviceDiscoveryFlag > 0) {
                 serviceDiscoveryApp = ndn::AppHelper("DagServiceDiscoveryApp");
                 serviceDiscoveryApp.SetPrefix(Prefix);
@@ -267,7 +297,8 @@ main(int argc, char* argv[])
                 ndnGlobalRoutingHelper.AddOrigins(Prefix + "/serviceDiscovery2" + srv_name, rtr_name);
             }
         } else if (type == "service") {
-            if (Prefix == "nesco" || Prefix == "nescoSCOPT"){
+            if (Prefix == "nesco" || Prefix == "nescoSCOPT" ||
+                Prefix == "icnfc" || Prefix == "ndnfcp" || Prefix == "or3"){
                 appHelper = ndn::AppHelper("DagForwarderApp");
                 serviceDiscoveryApp = ndn::AppHelper("DagServiceDiscoveryApp");
             }
@@ -316,7 +347,8 @@ main(int argc, char* argv[])
             //appHelper = ndn::AppHelper("CustomAppConsumer");
             appHelper = ndn::AppHelper("CustomAppConsumerServiceDiscovery");
             appHelper.SetAttribute("Workflow", StringValue(workflow_file));
-            if (Prefix == "nesco" || Prefix == "nescoSCOPT") {
+            if (Prefix == "nesco" || Prefix == "nescoSCOPT" ||
+                Prefix == "icnfc" || Prefix == "ndnfcp" || Prefix == "or3"){
                 appHelper.SetAttribute("Orchestrate", UintegerValue(0));
                 if (serviceDiscoveryFlag > 0) {
                     if (serviceDiscoveryFlag == 1) {
@@ -376,7 +408,8 @@ main(int argc, char* argv[])
             }
             appHelper = ndn::AppHelper("CustomAppConsumer2");
             appHelper.SetAttribute("Workflow", StringValue(workflow_file));
-            if (Prefix == "nesco" || Prefix == "nescoSCOPT") {
+            if (Prefix == "nesco" || Prefix == "nescoSCOPT" ||
+                Prefix == "icnfc" || Prefix == "ndnfcp" || Prefix == "or3"){
                 appHelper.SetAttribute("Orchestrate", UintegerValue(0));
             }
             if (Prefix == "orchA") {

@@ -16,39 +16,46 @@ import random
 # GLOBAL CONFIGURATION
 # ==========================================
 #NAME = "linearWFs_SD2Sweep_20runsx100reqx100cons_5servx8nodes"
-NAME = "linearWFs_SD2Sweep_1runsx20reqx20cons_5servx6nodes"
+#NAME = "linearWFs_SD2Sweep_1runsx20reqx20cons_5servx6nodes"
+NAME = "linearWFs_SD2Sweep_5runsx20reqx20cons_4servx5nodes"
 TIMESTAMP = datetime.now().strftime("%Y%m%d-%H%M%S")
 WORKDIR = os.path.join(os.getcwd(), "generated_scenarios", NAME)
 OUTDIR = os.path.join(os.getcwd(), "..", NAME)
 
 # This removes the folder and everything inside it permanently
-shutil.rmtree(WORKDIR)
-shutil.rmtree(OUTDIR)
+if os.path.exists(WORKDIR):
+    shutil.rmtree(WORKDIR)
+if os.path.exists(OUTDIR):
+    shutil.rmtree(OUTDIR)
 
 # Total number of runs (each will get it's own JSON and thus its own row in the CSV file - MATLAB will average them all)
 #NUM_RUNS = 20
-NUM_RUNS = 1
+NUM_RUNS = 5
 
-#NUM_SERVICES_LIST = [5]
-#NUM_NODES_LIST = [8]
-NUM_SERVICES_LIST = [5]
-NUM_NODES_LIST = [6]
+NUM_SERVICES_LIST = [4]
+NUM_NODES_LIST = [5]
 EDGERATIO_LIST = [0.5]
 #HOSTRATIO_LIST = [0.0, 0.2, 0.4, 0.6, 0.8, 1.0]
 HOSTRATIO_LIST = [0.0, 0.2, 0.4]
 
 LINK_DELAY_AVG_MS = 1
-LINK_DELAY_VARIATION_PCT = 0.50  # percent variation.
+LINK_DELAY_VARIATION_PCT = 0.80  # percent variation.
 #CCR_LIST = [0.1, 0.5, 1, 2, 10]  # CCR is communication to computation ratio
-CCR_LIST = [0.1, 1, 10]  # CCR is communication to computation ratio
-MAKESPAN_VARIATION_PCT = 0.50  # percent variation.
+CCR_LIST = [0.01, 0.1, 1, 10]  # CCR is communication to computation ratio
+MAKESPAN_VARIATION_PCT = 0.80  # percent variation.
 
 # Consumer options
-POISSON_FREQ = 100 # wait on average 10ms between receiving results from prev WF, and generating SD2 request for next WF.
+#POISSON_FREQ = 100 # wait on average 10ms between receiving results from prev WF, and generating SD2 request for next WF.
+POISSON_FREQ = 200 # wait on average 5ms between receiving results from prev WF, and generating SD2 request for next WF.
 #POISSON_NUM_INTERESTS = 100
 #POISSON_NUM_CONSUMERS = 100
 POISSON_NUM_INTERESTS = 20
 POISSON_NUM_CONSUMERS = 20
+
+PRODUCER_FRESHNESS_UNIFORM_DIST = 0 # 0: not random, use hardcoded value. 1: randomly chosen once. 2: randomly chosen each time an interest arrives.
+PRODUCER_FRESHNESS_MS_MIN = 0
+PRODUCER_FRESHNESS_MS_MAX = 0
+PRODUCER_FRESHNESS_MS = 60000
 
 START_TIME_OFFSET_SD = 1
 START_TIME_OFFSET_WF = 2
@@ -65,7 +72,7 @@ WF_TOPO_PAIRS = [
 
 #PREFIX_LIST = ["nesco", "icnfc", "ndnfcp", "or3", "ifcns"]
 #PREFIX_LIST = ["nesco", "icnfc", "ndnfcp", "or3"]
-PREFIX_LIST = ["nesco", "or3"]
+PREFIX_LIST = ["nesco", "icnfc", "or3"]
 
 
 
@@ -202,6 +209,10 @@ def build_scenario(out_name, wf_filenames, tp_filename, hs_filename, prefix, str
         "--simulationEndTime", sim_end,
         "--poissonConsumerFrequency", POISSON_FREQ,
         "--poissonConsumerNumInterests", POISSON_NUM_INTERESTS,
+        "--producerFreshnessUniformDist", PRODUCER_FRESHNESS_UNIFORM_DIST,
+        "--producerFreshnessMSmin", PRODUCER_FRESHNESS_MS_MIN,
+        "--producerFreshnessMSmax", PRODUCER_FRESHNESS_MS_MAX,
+        "--producerFreshnessMS", PRODUCER_FRESHNESS_MS,
         "--workflow"
     ] + wf_full_paths
 
@@ -244,7 +255,9 @@ def run_category_task(run_id, pair, generated_workflows):
             for ccr in CCR_LIST:
                 # Reset previous hosting structure across different CCR runs
                 prev_hs = None
-                ccr_str = f"CCR_{ccr}".replace('.', 'p')  # e.g., CCR_0p5 avoids dots in filenames
+                #ccr_str = f"CCR_{ccr}".replace('.', 'p')  # e.g., CCR_0p5 avoids dots in filenames
+                formatted_float = f"{ccr:05.2f}"
+                ccr_str = f"CCR_{formatted_float.replace('.', 'p')}"
 
                 link_delay_ns = LINK_DELAY_AVG_MS * 1_000_000
                 avg_makespan_ns = link_delay_ns / ccr

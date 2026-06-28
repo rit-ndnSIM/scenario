@@ -70,7 +70,7 @@ public:
 private:
   //void
   std::string
-  SendInterest(const std::string& interestName, std::string, bool);
+  PruneDAGandSendInterest(const std::string& interestName, std::string, bool);
   
 private:
   bool m_isRunning;

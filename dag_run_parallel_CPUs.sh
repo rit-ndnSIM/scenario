@@ -53,18 +53,26 @@ export NS_LOG="$LOGS"
 #TYPE="cascon_random_test"
 #TYPE="linearWFs_SD20"
 #TYPE="fwdOptSD2Sweep20_test"
-TYPE="fwdOptSD2Sweep20_5x8"
+#TYPE="fwdOptSD2Sweep20_5x8"
+#TYPE="fwdOptSD2Sweep_5runsx10reqx100cons_5servx8nodes"
+#TYPE="fwdOptSD2Sweep_1runsx5reqx100cons_4servx6nodes"
+#TYPE="fwdOptSD2Sweep_1runsx5reqx3cons_3servx4nodes"
 #TYPE="linearSD2Sweep20_5x8"
+#TYPE="linearWFs_SD2Sweep_1runsx5reqx3cons_4servx5nodes"
+#TYPE="linearWFs_SD2Sweep_1runsx20reqx20cons_5servx6nodes"
+#TYPE="linearWFs_SD2Sweep_5runsx20reqx20cons_4servx5nodes"
+TYPE="fwdOptSD2Sweep_5runsx20reqx20cons_4servx5nodes"
 
 
 #export GEN_ALLOCATION_GRAPHS="true"
 export GEN_ALLOCATION_GRAPHS="false"
-#export FORCE_RERUN_ALL="true"   # Set to "true" to run everything. Set to "false" to only run missing/failed scenarios.
-export FORCE_RERUN_ALL="false"   # Set to "true" to run everything. Set to "false" to only run missing/failed scenarios.
+export FORCE_RERUN_ALL="true"   # Set to "true" to run everything. Set to "false" to only run missing/failed scenarios.
+#export FORCE_RERUN_ALL="false"   # Set to "true" to run everything. Set to "false" to only run missing/failed scenarios.
 export FORCE_TRACE=0    # Set to override trace settings in JSON file. This value is the trace interval in seconds.
 #export FORCE_TRACE=0.1    # Set to override trace settings in JSON file. This value is the trace interval in seconds.
 #export FORCE_MAKESPAN=20000000    # Set to override service makespanNS settings in JSON file.
 export FORCE_MAKESPAN=0    # Set to override service makespanNS settings in JSON file.
+export FORCE_FRESHNESS=0    # Set to override data packet freshness settings in JSON file.
 
 
 #------------------------------ END OF SETTINGS -----------------------------------
@@ -158,6 +166,7 @@ run_simulation() {
     local csv_file="$3"
     local force_trace="$4"
     local force_makespan="$5"
+    local force_freshness="$6"
     local filename=$(basename "$filepath")
     local scenario="${filename%.*}"
     local scenario_json="$filepath"
@@ -197,7 +206,7 @@ run_simulation() {
 
     # Run simulation, logging output to a unique file
     #"$SCENARIO_DIR/waf" --run="ndn-cabeee-generic --scenario=$scenario_json --verbose=true" > "$scenario_log" 2>&1
-    "$SCENARIO_DIR/waf" --run="ndn-cabeee-generic --scenario=$scenario_json --verbose=false --overrideTrace=$force_trace --traceDir=$SCENARIO_TRACE_DIR --overrideMakespan=$force_makespan" > "$scenario_log" 2>&1
+    "$SCENARIO_DIR/waf" --run="ndn-cabeee-generic --scenario=$scenario_json --verbose=false --overrideTrace=$force_trace --traceDir=$SCENARIO_TRACE_DIR --overrideMakespan=$force_makespan --overrideFreshness=$force_freshness" > "$scenario_log" 2>&1
 
     # Parse logs
     local estimatedWFLatency=$(grep "Service Latency estimated by SD:" "$scenario_log" | tail -n 1 | sed -n 's/^\s*Service Latency estimated by SD: \([0-9\.]*\) microseconds.$/\1/p')
@@ -364,7 +373,7 @@ find "$SCENARIO_JSON_DIR" -maxdepth 1 -name "*.json" | awk '
             print "z_no_hR" "\t" $0
         }
     }
-' | sort -V | cut -f2- | parallel --ungroup --jobs 90% run_simulation {} "$FORCE_RERUN_ALL" "$csv_out" "$FORCE_TRACE" "$FORCE_MAKESPAN"
+' | sort -V | cut -f2- | parallel --ungroup --jobs 80% run_simulation {} "$FORCE_RERUN_ALL" "$csv_out" "$FORCE_TRACE" "$FORCE_MAKESPAN" "$FORCE_FRESHNESS"
 
 # Wait for all semaphores to clear just to be safe
 #sem --wait --id csv_lock

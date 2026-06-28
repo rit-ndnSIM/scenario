@@ -223,6 +223,7 @@ CustomAppConsumerServiceDiscovery::SendSDInterest()
   dagObject["resourceAllocation"] = m_resourceAllocation;
   dagObject["allocationReuse"] = m_allocationReuse;
   dagObject["scheduleCompaction"] = m_scheduleCompaction;
+  dagObject["consumerName"] = m_service.ndn::Name::toUri();
 
 
   //std::cout << "Consumer: Full DAG as read: " << std::setw(2) << dagObject << '\n';
@@ -232,7 +233,7 @@ CustomAppConsumerServiceDiscovery::SendSDInterest()
     dagObject["head"] = sinkService;
     //interest->setName(m_prefix.ndn::Name::toUri() + sinkService);
     //interest->setName(m_prefix.ndn::Name::toUri() + "/serviceDiscovery" + sinkService);
-    interest->setName(m_prefix.ndn::Name::toUri() + m_SDName.ndn::Name::toUri() + sinkService);
+    interest->setName(m_prefix.ndn::Name::toUri() + m_SDName.ndn::Name::toUri() + sinkService + m_service.ndn::Name::toUri());
 
     bool consumerFound = false;
     // now we remove the entry that has the sinkService feeding the consumer. It is not needed, and can't be in the dag if we want caching of intermediate results to work.
@@ -291,7 +292,7 @@ CustomAppConsumerServiceDiscovery::SendSDInterest()
 
   NS_LOG_DEBUG("Sending Interest packet for " << *interest);
 
-  NS_LOG_INFO("Staring SD for " << m_service);
+  NS_LOG_INFO("Starting SD for " << m_service);
 
   // Call trace (for logging purposes)
   m_transmittedInterests(interest, this, m_face);
@@ -422,7 +423,7 @@ CustomAppConsumerServiceDiscovery::SendInterest()
 
   NS_LOG_DEBUG("Sending Interest packet for " << *interest);
 
-  NS_LOG_INFO("Staring WF for " << m_service);
+  NS_LOG_INFO("Starting WF for " << m_service);
 
   // Call trace (for logging purposes)
   m_transmittedInterests(interest, this, m_face);
@@ -465,6 +466,7 @@ CustomAppConsumerServiceDiscovery::OnData(std::shared_ptr<const ndn::Data> data)
   if (data->getName().ndn::Name::getPrefix(-1).getSubName(1,1).ndn::Name::toUri() == m_SDName)
   {
     if (m_serviceDiscovery == 1 && m_numInterests == 1)
+    //if ((m_serviceDiscovery == 1 || m_serviceDiscovery == 2) && m_numInterests == 1)
     {
       NS_LOG_INFO("\n\n      CONSUMER: Service Discovery DATA received for name " << data->getName() << std::endl << "\n\n");
       m_SDendTime = Simulator::Now();
@@ -488,17 +490,18 @@ CustomAppConsumerServiceDiscovery::OnData(std::shared_ptr<const ndn::Data> data)
 
       // if we have already started the workflow, report an error. (if current time is past the workflow start time)
       Time timeNow = Simulator::Now();
-      //if (timeNow > (m_WFstartTime + m_appStartTime))
-      if (timeNow > m_WFstartTime)
+      //if (timeNow > (m_WFstartTimeOffset + m_appStartTime))
+      if (timeNow > m_WFstartTimeOffset)
       {
         //NS_LOG_ERROR("\n\n  ERROR!!! Workflow started before Service Discovery process finished!" << "\n\n");
-        NS_LOG_ERROR("\n\n  ERROR!!! (OnData) Workflow started before Service Discovery process finished! Current time: " << Simulator::Now().GetSeconds() << ", WF start time: " << m_WFstartTime.ToInteger(ns3::Time::S) << " seconds." << "\n\n");
+        NS_LOG_ERROR("\n\n  ERROR!!! (OnData) Workflow started before Service Discovery process finished! Current time: " << Simulator::Now().GetSeconds() << ", WF start time: " << m_WFstartTimeOffset.ToInteger(ns3::Time::S) << " seconds." << "\n\n");
         NS_LOG_ERROR("\n\n  TO FIX ERROR: change the worflow start time for this scenario to be a little later, to allow SD to finish." << "\n\n");
         //Simulator::Stop(Simulator::Now()); // end the simulation as soon as we receive this data packet, no need to keep going.
         return;
       }
     }
-    else if (m_serviceDiscovery == 2 && m_numInterests > 1)
+    //else if (m_serviceDiscovery == 2 && m_numInterests > 1)
+    else if (m_serviceDiscovery == 2)
     {
       NS_LOG_INFO("\n\n      CONSUMER: Service Discovery DATA # " << m_interestNum << "/" << m_numInterests << " received for name " << data->getName() << " for consumer service " << m_service.ndn::Name::toUri()  << std::endl << "\n\n");
       m_SDendTime = Simulator::Now();

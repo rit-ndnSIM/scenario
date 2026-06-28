@@ -503,6 +503,8 @@ DagServiceDiscoveryApp::OnInterest(std::shared_ptr<const ndn::Interest> interest
       {
         // we are hosting this service, so look at required inputs, and generate those interests using the pDAG but keep the original interest absolute start time.
 
+        std::string consumerName = dagObject["consumerName"];
+
         // create data structure to keep track of which inputs have arrived. For now, we just create it. We mark them as received in "onData() below".
         for (auto& x : dagObject["dag"].items())
         {
@@ -526,7 +528,8 @@ DagServiceDiscoveryApp::OnInterest(std::shared_ptr<const ndn::Interest> interest
               size_t length = strlen(dagStringParameter);
               //add modified object as a parameter to the new interest
               //auto new_interest = std::make_shared<ndn::Interest>(m_prefix.ndn::Name::toUri() + "/serviceDiscovery" + (std::string)x.key());
-              auto new_interest = std::make_shared<ndn::Interest>(m_prefix.ndn::Name::toUri() + m_SDName.ndn::Name::toUri() + (std::string)x.key());
+              //auto new_interest = std::make_shared<ndn::Interest>(m_prefix.ndn::Name::toUri() + m_SDName.ndn::Name::toUri() + (std::string)x.key());
+              auto new_interest = std::make_shared<ndn::Interest>(m_prefix.ndn::Name::toUri() + m_SDName.ndn::Name::toUri() + (std::string)x.key() + consumerName);
               //Ptr<UniformRandomVariable> rand = CreateObject<UniformRandomVariable>();
               //new_interest->setNonce(rand->GetValue(0, std::numeric_limits<uint32_t>::max()));
               //new_interest->setInterestLifetime(ndn::time::seconds(10));

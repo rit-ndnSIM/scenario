@@ -116,7 +116,7 @@ DagForwarderApp::StopApplication()
 
 //void
 std::string
-DagForwarderApp::SendInterest(const std::string& interestName, std::string dagString, bool actualSend)
+DagForwarderApp::PruneDAGandSendInterest(const std::string& interestName, std::string dagString, bool actualSend)
 {
   if (!m_isRunning)
   {
@@ -145,8 +145,8 @@ DagForwarderApp::SendInterest(const std::string& interestName, std::string dagSt
 
 
 
-  NS_LOG_DEBUG("\nStarting new SendInterest for " << interestName);
-  //std::cout << "\n\n\n\n\n\n\n\n\n\n\n\nStarting new SendInterest for " << interestName << '\n';
+  NS_LOG_DEBUG("\nStarting new PruneDAGandSendInterest for " << interestName);
+  //std::cout << "\n\n\n\n\n\n\n\n\n\n\n\nStarting new PruneDAGandSendInterest for " << interestName << '\n';
   //std::cout << "Full DAG as received: " << std::setw(2) << dagObject << '\n';
 
 
@@ -399,18 +399,18 @@ DagForwarderApp::OnInterest(std::shared_ptr<const ndn::Interest> interest)
               //std::cout << "Forwarder dagServTracker data structure before: " << std::setw(2) << m_dagServTracker << '\n';
 
 
-              // perform two fake SendInterest() so that we can get the fullNameAndHash of the interest that would be generated for this service (not /shortcutOPT), and the interest for its input
+              // perform two fake PruneDAGandSendInterest() so that we can get the fullNameAndHash of the interest that would be generated for this service (not /shortcutOPT), and the interest for its input
               std::string dagString = dagObject.dump();
               std::string shortcutOptServiceFullNameAndHash;
               std::string shortcutOptInputFullNameAndHash;
-              shortcutOptServiceFullNameAndHash = DagForwarderApp::SendInterest(y.key(), dagString, false);
-              shortcutOptInputFullNameAndHash = DagForwarderApp::SendInterest(x.key(), dagString, false);
+              shortcutOptServiceFullNameAndHash = DagForwarderApp::PruneDAGandSendInterest(y.key(), dagString, false);
+              shortcutOptInputFullNameAndHash = DagForwarderApp::PruneDAGandSendInterest(x.key(), dagString, false);
 
               if (!m_dagServTracker.contains(shortcutOptServiceFullNameAndHash))
               {
                 //create entry and add this input and mark as sent
                 m_dagServTracker[shortcutOptServiceFullNameAndHash]["inputsRxed"][shortcutOptInputFullNameAndHash] = 0;
-                shortcutOptInputFullNameAndHash = DagForwarderApp::SendInterest(x.key(), dagString, true);
+                shortcutOptInputFullNameAndHash = DagForwarderApp::PruneDAGandSendInterest(x.key(), dagString, true);
               }
               else
               {
@@ -418,7 +418,7 @@ DagForwarderApp::OnInterest(std::shared_ptr<const ndn::Interest> interest)
                 {
                   //create entry and add this input and mark as sent
                   m_dagServTracker[shortcutOptServiceFullNameAndHash]["inputsRxed"][shortcutOptInputFullNameAndHash] = 0;
-                  shortcutOptInputFullNameAndHash = DagForwarderApp::SendInterest(x.key(), dagString, true);
+                  shortcutOptInputFullNameAndHash = DagForwarderApp::PruneDAGandSendInterest(x.key(), dagString, true);
                   m_mapOfVectorOfServiceInputs[shortcutOptServiceFullNameAndHash].push_back(0);             // for now, just create vector entries for the inputs, so that if they arrive out of order, we can insert at any index location
                 }
               }
@@ -447,10 +447,10 @@ DagForwarderApp::OnInterest(std::shared_ptr<const ndn::Interest> interest)
         {
           if (serviceInput.value() == 0)
           {
-            // generate the interest for this input, sendInterest will prune the DAG and set the head properly
+            // generate the interest for this input, PruneDAGandsendInterest will prune the DAG and set the head properly
             std::string dagString = dagObject.dump();
             NS_LOG_DEBUG("\n\nshortcutOPT: Generating interest for " << serviceInput.key() << '\n');
-            DagForwarderApp::SendInterest(serviceInput.key(), dagString);
+            DagForwarderApp::PruneDAGandSendInterest(serviceInput.key(), dagString);
           }
         }
         */
@@ -480,7 +480,7 @@ DagForwarderApp::OnInterest(std::shared_ptr<const ndn::Interest> interest)
           // generate the interest for this input
           std::string dagString = dagObject.dump();
           std::string inputServiceFullNameAndHash;
-          inputServiceFullNameAndHash = DagForwarderApp::SendInterest(x.key(), dagString, true);
+          inputServiceFullNameAndHash = DagForwarderApp::PruneDAGandSendInterest(x.key(), dagString, true);
           m_dagServTracker[rxedFullInterestNameAndHash]["inputsRxed"][inputServiceFullNameAndHash] = 0;
           m_dagServTracker[rxedFullInterestNameAndHash]["inputIndex"][inputServiceFullNameAndHash] = y.value();
           m_mapOfVectorOfServiceInputs[inputServiceFullNameAndHash].push_back(0); // for now, just create vector entries for the inputs, so that if they arrive out of order, we can insert at any index location
