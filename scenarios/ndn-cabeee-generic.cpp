@@ -75,7 +75,7 @@ main(int argc, char* argv[])
     cmd.AddValue("verbose", "increase verbosity", verbose);
     cmd.AddValue("overrideTrace", "override rateTrace, csTrace and csUsage interval to this number of seconds", overrideTrace);
     cmd.AddValue("overrideMakespan", "override service makespan value to this number of nanoseconds", overrideMakespan);
-    cmd.AddValue("overrideFreshness", "override data packet freshness value to this number of seconds", overrideFreshness);
+    cmd.AddValue("overrideFreshness", "override data packet freshness value to this number of milliseconds", overrideFreshness);
     cmd.Parse(argc, argv);
 
     if (scenario_file == "") {
@@ -92,8 +92,8 @@ main(int argc, char* argv[])
     {
         std::cout << "Trace directory is: " << trace_dir << std::endl;
         std::cout << "Trace override is: " << overrideTrace << std::endl;
-        std::cout << "Makespan override is: " << overrideMakespan << std::endl;
-        std::cout << "Freshness override is: " << overrideFreshness << std::endl;
+        std::cout << "Makespan override is: " << overrideMakespan << "ns" << std::endl;
+        std::cout << "Freshness override is: " << overrideFreshness << "ms" << std::endl;
     }
 
     const json scenario_json = json::parse(std::ifstream(scenario_file));

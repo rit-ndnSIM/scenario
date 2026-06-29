@@ -35,6 +35,10 @@ def main():
     parser.add_argument('-set', '--simulationEndTime', type=int, default=200, help="set simulation end time")
     parser.add_argument('-pcf', '--poissonConsumerFrequency', type=int, default=1, help="set consumer Poisson rate")
     parser.add_argument('-pni', '--poissonConsumerNumInterests', type=int, default=1, help="set consumer Poisson number of interests to generate (total)")
+    parser.add_argument('-fud', '--producerFreshnessUniformDist', type=int, default=0, help="set producer freshness uniform distribution")
+    parser.add_argument('-fmin', '--producerFreshnessMSmin', type=int, default=1, help="set producer freshness min value in milliseconds")
+    parser.add_argument('-fmax', '--producerFreshnessMSmax', type=int, default=1, help="set producer freshness max value in milliseconds")
+    parser.add_argument('-fresh', '--producerFreshnessMS', type=float, default=1, help="set producer freshness in milliseconds")
 
     args = parser.parse_args()
 
@@ -53,7 +57,7 @@ def main():
                 for service in workflow_data['services']:
                     service_name = service.get('name')
                     
-                    # 🌟 FIX 1: Make consumer names unique so they aren't deleted as duplicates
+                    # FIX 1: Make consumer names unique so they aren't deleted as duplicates
                     if service.get('type') == 'consumer':
                         service_name = f"{service_name}{idx}"
                         service['name'] = service_name
@@ -126,6 +130,10 @@ def main():
         'simulationEndTime': (args.simulationEndTime),
         'poissonConsumerFrequency': (args.poissonConsumerFrequency),
         'poissonConsumerNumInterests': (args.poissonConsumerNumInterests),
+        'producerFreshnessUniformDist': (args.producerFreshnessUniformDist),
+        'producerFreshnessMSmin': (args.producerFreshnessMSmin),
+        'producerFreshnessMSmax': (args.producerFreshnessMSmax),
+        'producerFreshnessMS': (args.producerFreshnessMS),
         **topology,
         'services': services,
         **hosting,

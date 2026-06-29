@@ -92,7 +92,7 @@ CustomAppProducer::StartApplication()
     Ptr<UniformRandomVariable> rand = CreateObject<UniformRandomVariable>();
     m_freshnessPeriod = rand->GetValue(m_freshnessMin, m_freshnessMax);
   }
-  NS_LOG_DEBUG("Freshness set to " << m_freshnessPeriod);
+  NS_LOG_INFO("Freshness set to " << m_freshnessPeriod << "ms");
 
   // Schedule send of first interest
   //Simulator::Schedule(Seconds(1.0), &CustomAppProducer::SendInterest, this);

@@ -73,6 +73,7 @@ export FORCE_TRACE=0    # Set to override trace settings in JSON file. This valu
 #export FORCE_MAKESPAN=20000000    # Set to override service makespanNS settings in JSON file.
 export FORCE_MAKESPAN=0    # Set to override service makespanNS settings in JSON file.
 export FORCE_FRESHNESS=0    # Set to override data packet freshness settings in JSON file.
+#export FORCE_FRESHNESS=1    # Set to override data packet freshness settings in JSON file.
 
 
 #------------------------------ END OF SETTINGS -----------------------------------

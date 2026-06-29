@@ -55,7 +55,6 @@ POISSON_NUM_CONSUMERS = 20
 PRODUCER_FRESHNESS_UNIFORM_DIST = 0 # 0: not random, use hardcoded value. 1: randomly chosen once. 2: randomly chosen each time an interest arrives.
 PRODUCER_FRESHNESS_MS_MIN = 0
 PRODUCER_FRESHNESS_MS_MAX = 0
-PRODUCER_FRESHNESS_MS = 60000
 
 START_TIME_OFFSET_SD = 1
 START_TIME_OFFSET_WF = 2
@@ -183,7 +182,7 @@ def generate_hs(wf_filenames, tp_filename, snsrs, usrs, makespanMinNS, makespanM
     run_cmd(cmd)
     return output_name
 
-def build_scenario(out_name, wf_filenames, tp_filename, hs_filename, prefix, strategy, cs_size, sim_end, sd, ru):
+def build_scenario(out_name, wf_filenames, tp_filename, hs_filename, prefix, strategy, cs_size, sim_end, freshness_ms, sd, ru):
     tp_path = os.path.join(WORKDIR, tp_filename)
     tp_txt_path = tp_path.replace(".json", ".txt")
     hs_path = os.path.join(WORKDIR, hs_filename)
@@ -212,7 +211,7 @@ def build_scenario(out_name, wf_filenames, tp_filename, hs_filename, prefix, str
         "--producerFreshnessUniformDist", PRODUCER_FRESHNESS_UNIFORM_DIST,
         "--producerFreshnessMSmin", PRODUCER_FRESHNESS_MS_MIN,
         "--producerFreshnessMSmax", PRODUCER_FRESHNESS_MS_MAX,
-        "--producerFreshnessMS", PRODUCER_FRESHNESS_MS,
+        "--producerFreshnessMS", freshness_ms,
         "--workflow"
     ] + wf_full_paths
 
@@ -264,6 +263,9 @@ def run_category_task(run_id, pair, generated_workflows):
                 makespanMinNS = int(avg_makespan_ns * (1.0 - MAKESPAN_VARIATION_PCT))
                 makespanMaxNS = int(avg_makespan_ns * (1.0 + MAKESPAN_VARIATION_PCT))
 
+                freshness_ms = 1/POISSON_FREQ * 1_000 # assumes interest gets new freshness when created, thus aggregator data will be very fresh no matter what pDAG looks like.
+                #freshness_ms = max(NUM_SERVICES_LIST) * avg_makespan_ns/1_000_000
+
                 # Sweep host ratio incrementally 
                 for hostRatio in HOSTRATIO_LIST:
                     hs_users = 1
@@ -280,25 +282,25 @@ def run_category_task(run_id, pair, generated_workflows):
                         base_name = f"{padded_catCode}-hR_{hr_str}-{ccr_str}--sn-{topoCategory}-{workflowCategory}-{prefix}"
 
                         # Scenario 1: noSD2, multicast, cs=0
-                        #out_path = build_scenario(f"{base_name}--1-noSD2-multicast.json", wf_filenames, tp, hs, prefix, "multicast", 0, sim_end_time, sd=0, ru=0)
+                        #out_path = build_scenario(f"{base_name}--1-noSD2-multicast.json", wf_filenames, tp, hs, prefix, "multicast", 0, sim_end_time, freshness_ms, sd=0, ru=0)
                     
                         if prefix == "icnfc":
                             # Scenario 2: noSD2, bestRoute, cs=0
-                            out_path = build_scenario(f"{base_name}--2-noSD2-bestRoute.json", wf_filenames, tp, hs, prefix, "best-route", 0, sim_end_time, sd=0, ru=0)
+                            out_path = build_scenario(f"{base_name}--2-noSD2-bestRoute.json", wf_filenames, tp, hs, prefix, "best-route", 0, sim_end_time, freshness_ms, sd=0, ru=0)
 
                         if prefix == "ndnfcp":
                             # Scenario 2b: noSD2, bestRoute, cs=1000
-                            out_path = build_scenario(f"{base_name}--2-noSD2-bestRoute.json", wf_filenames, tp, hs, prefix, "best-route", 0, sim_end_time, sd=1000, ru=0)
+                            out_path = build_scenario(f"{base_name}--2-noSD2-bestRoute.json", wf_filenames, tp, hs, prefix, "best-route", 0, sim_end_time, freshness_ms, sd=1000, ru=0)
                     
                         if prefix == "or3":
                             # Scenario 3: SD2, bestRoute, noUtil, noUtil, cs=0
-                            out_path = build_scenario(f"{base_name}--3-SD2-noUtilization.json", wf_filenames, tp, hs, prefix, "best-route", 0, sim_end_time, sd=2, ru=0)
+                            out_path = build_scenario(f"{base_name}--3-SD2-noUtilization.json", wf_filenames, tp, hs, prefix, "best-route", 0, sim_end_time, freshness_ms, sd=2, ru=0)
                     
                         if prefix == "nesco":
                             # Scenario 4: SD2, bestRoute, Util, noCaching, cs=0
-                            out_path = build_scenario(f"{base_name}--4-SD2-utilization-noCaching.json", wf_filenames, tp, hs, prefix, "best-route", 0, sim_end_time, sd=2, ru=1)
+                            out_path = build_scenario(f"{base_name}--4-SD2-utilization-noCaching.json", wf_filenames, tp, hs, prefix, "best-route", 0, sim_end_time, freshness_ms, sd=2, ru=1)
                             # Scenario 5: SD2, bestRoute, Util, Caching, cs=1000
-                            out_path = build_scenario(f"{base_name}--5-SD2-utilization-caching.json", wf_filenames, tp, hs, prefix, "best-route", 1000, sim_end_time, sd=2, ru=1)
+                            out_path = build_scenario(f"{base_name}--5-SD2-utilization-caching.json", wf_filenames, tp, hs, prefix, "best-route", 1000, sim_end_time, freshness_ms, sd=2, ru=1)
 
 
 
