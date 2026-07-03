@@ -152,7 +152,7 @@ def generate_hs(wf_filenames, tp_filename, snsrs, usrs, makespanMinNS, makespanM
     run_cmd(cmd)
     return output_name
 
-def build_scenario(out_name, wf_filenames, tp_filename, hs_filename, prefix, strategy, cs_size, sim_end, freshness_ms, sd, ru):
+def build_scenario(out_name, wf_filenames, tp_filename, hs_filename, prefix, strategy, cs_size, sim_end, freshness_ms, sd, ru, icnfcM, ndnfcpTMS):
     tp_path = os.path.join(WORKDIR, tp_filename)
     tp_txt_path = tp_path.replace(".json", ".txt")
     hs_path = os.path.join(WORKDIR, hs_filename)
@@ -182,6 +182,8 @@ def build_scenario(out_name, wf_filenames, tp_filename, hs_filename, prefix, str
         "--producerFreshnessMSmin", PRODUCER_FRESHNESS_MS_MIN,
         "--producerFreshnessMSmax", PRODUCER_FRESHNESS_MS_MAX,
         "--producerFreshnessMS", freshness_ms,
+        "--icnfcM", icnfcM,
+        "--ndnfcpTMS", ndnfcpTMS,
         "--workflow"
     ] + wf_full_paths
 
@@ -287,11 +289,11 @@ def run_category_task(run_id, pair):
                             base_name = f"{padded_catCode}-hR_{hr_str}-{ccr_str}--sn-{topoCategory}-{workflowCategory}-{prefix}"
 
                             # Build Scenario Variations
-                            build_scenario(f"{base_name}--1-noSD2-multicast.json", wf_filenames, tp, hs, prefix, "multicast", 0, sim_end_time, freshness_ms, sd=0, ru=0)
-                            build_scenario(f"{base_name}--2-noSD2-bestRoute.json", wf_filenames, tp, hs, prefix, "best-route", 0, sim_end_time, freshness_ms, sd=0, ru=0)
-                            build_scenario(f"{base_name}--3-SD2-noUtilization.json", wf_filenames, tp, hs, prefix, "best-route", 0, sim_end_time, freshness_ms, sd=2, ru=0)
-                            build_scenario(f"{base_name}--4-SD2-utilization-noCaching.json", wf_filenames, tp, hs, prefix, "best-route", 0, sim_end_time, freshness_ms, sd=2, ru=1)
-                            out_path = build_scenario(f"{base_name}--5-SD2-utilization-caching.json", wf_filenames, tp, hs, prefix, "best-route", 1000, sim_end_time, freshness_ms, sd=2, ru=1)
+                            build_scenario(f"{base_name}--1-noSD2-multicast.json", wf_filenames, tp, hs, prefix, "multicast", 0, sim_end_time, freshness_ms, icnfcM=0, ndnfcpTMS=0, sd=0, ru=0)
+                            build_scenario(f"{base_name}--2-noSD2-bestRoute.json", wf_filenames, tp, hs, prefix, "best-route", 0, sim_end_time, freshness_ms, icnfcM=0, ndnfcpTMS=0, sd=0, ru=0)
+                            build_scenario(f"{base_name}--3-SD2-noUtilization.json", wf_filenames, tp, hs, prefix, "best-route", 0, sim_end_time, freshness_ms, icnfcM=0, ndnfcpTMS=0, sd=2, ru=0)
+                            build_scenario(f"{base_name}--4-SD2-utilization-noCaching.json", wf_filenames, tp, hs, prefix, "best-route", 0, sim_end_time, freshness_ms, icnfcM=0, ndnfcpTMS=0, sd=2, ru=1)
+                            out_path = build_scenario(f"{base_name}--5-SD2-utilization-caching.json", wf_filenames, tp, hs, prefix, "best-route", 1000, sim_end_time, freshness_ms, icnfcM=0, ndnfcpTMS=0, sd=2, ru=1)
 
                             # Quick graph visualization logic
                             if VISUALIZE and num_nodes < 9 and num_services < 21:

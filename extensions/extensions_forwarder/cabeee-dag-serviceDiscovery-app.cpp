@@ -453,7 +453,7 @@ DagServiceDiscoveryApp::OnInterest(std::shared_ptr<const ndn::Interest> interest
       json dataPacketContents;
       Time timeNow;
       timeNow = Simulator::Now();
-      // Convert to integer in milliseconds and then to string
+      // Convert to integer in nanoseconds and then to string
       int64_t timeNowNS = timeNow.ToInteger(ns3::Time::NS);
       //std::string timeStringNS = std::to_string(timeNowNS);
       int64_t SDstartTimeNS = dagObject["serviceDiscoveryStartTimeNS"];
@@ -722,7 +722,7 @@ DagServiceDiscoveryApp::OnData(std::shared_ptr<const ndn::Data> data)
     //json dataPacketContents;
     //ns3::Time timeNow;
     timeNow = ns3::Simulator::Now();
-    // Convert to integer in milliseconds and then to string
+    // Convert to integer in nanoseconds and then to string
     int64_t timeNowNS = timeNow.ToInteger(ns3::Time::NS);
     std::string timeStringNS = std::to_string(timeNowNS);
     dataPacketContents.clear();

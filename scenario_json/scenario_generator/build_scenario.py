@@ -39,6 +39,8 @@ def main():
     parser.add_argument('-fmin', '--producerFreshnessMSmin', type=int, default=1, help="set producer freshness min value in milliseconds")
     parser.add_argument('-fmax', '--producerFreshnessMSmax', type=int, default=1, help="set producer freshness max value in milliseconds")
     parser.add_argument('-fresh', '--producerFreshnessMS', type=float, default=1, help="set producer freshness in milliseconds")
+    parser.add_argument('-icnfcM', '--icnfcM', type=int, default=0, help="set number of functions for ICN-FC to use for forwarding analysis")
+    parser.add_argument('-ndnfcpt', '--ndnfcpTMS', type=int, default=0, help="set time in milliseconds for NDN-FC+ to use for service call history analysis")
 
     args = parser.parse_args()
 
@@ -134,6 +136,8 @@ def main():
         'producerFreshnessMSmin': (args.producerFreshnessMSmin),
         'producerFreshnessMSmax': (args.producerFreshnessMSmax),
         'producerFreshnessMS': (args.producerFreshnessMS),
+        'icnfcM': (args.icnfcM),
+        'ndnfcpTMS': (args.ndnfcpTMS),
         **topology,
         'services': services,
         **hosting,

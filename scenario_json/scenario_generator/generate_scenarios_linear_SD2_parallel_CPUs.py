@@ -17,7 +17,7 @@ import random
 # ==========================================
 #NAME = "linearWFs_SD2Sweep_20runsx100reqx100cons_5servx8nodes"
 #NAME = "linearWFs_SD2Sweep_1runsx20reqx20cons_5servx6nodes"
-NAME = "linearWFs_SD2Sweep_5runsx20reqx20cons_4servx5nodes"
+NAME = "linearWFs_SD2Sweep_4runsx20reqx20cons_4servx5nodes"
 TIMESTAMP = datetime.now().strftime("%Y%m%d-%H%M%S")
 WORKDIR = os.path.join(os.getcwd(), "generated_scenarios", NAME)
 OUTDIR = os.path.join(os.getcwd(), "..", NAME)
@@ -30,7 +30,7 @@ if os.path.exists(OUTDIR):
 
 # Total number of runs (each will get it's own JSON and thus its own row in the CSV file - MATLAB will average them all)
 #NUM_RUNS = 20
-NUM_RUNS = 5
+NUM_RUNS = 4
 
 NUM_SERVICES_LIST = [4]
 NUM_NODES_LIST = [5]
@@ -70,8 +70,8 @@ WF_TOPO_PAIRS = [
 ]
 
 #PREFIX_LIST = ["nesco", "icnfc", "ndnfcp", "or3", "ifcns"]
-#PREFIX_LIST = ["nesco", "icnfc", "ndnfcp", "or3"]
-PREFIX_LIST = ["nesco", "icnfc", "or3"]
+PREFIX_LIST = ["nesco", "icnfc", "ndnfcp", "or3"]
+#PREFIX_LIST = ["nesco", "icnfc", "or3"]
 
 
 
@@ -182,7 +182,7 @@ def generate_hs(wf_filenames, tp_filename, snsrs, usrs, makespanMinNS, makespanM
     run_cmd(cmd)
     return output_name
 
-def build_scenario(out_name, wf_filenames, tp_filename, hs_filename, prefix, strategy, cs_size, sim_end, freshness_ms, sd, ru):
+def build_scenario(out_name, wf_filenames, tp_filename, hs_filename, prefix, strategy, cs_size, sim_end, freshness_ms, sd, ru, icnfcM, ndnfcpTMS):
     tp_path = os.path.join(WORKDIR, tp_filename)
     tp_txt_path = tp_path.replace(".json", ".txt")
     hs_path = os.path.join(WORKDIR, hs_filename)
@@ -212,6 +212,8 @@ def build_scenario(out_name, wf_filenames, tp_filename, hs_filename, prefix, str
         "--producerFreshnessMSmin", PRODUCER_FRESHNESS_MS_MIN,
         "--producerFreshnessMSmax", PRODUCER_FRESHNESS_MS_MAX,
         "--producerFreshnessMS", freshness_ms,
+        "--icnfcM", icnfcM,
+        "--ndnfcpTMS", ndnfcpTMS,
         "--workflow"
     ] + wf_full_paths
 
@@ -279,29 +281,29 @@ def run_category_task(run_id, pair, generated_workflows):
                     sim_end_time = math.ceil(sim_end_time * 10) + START_TIME_OFFSET_WF # extra buffer room to finish simulation
 
                     for prefix in PREFIX_LIST:
-                        base_name = f"{padded_catCode}-hR_{hr_str}-{ccr_str}--sn-{topoCategory}-{workflowCategory}-{prefix}"
 
-                        # Scenario 1: noSD2, multicast, cs=0
-                        #out_path = build_scenario(f"{base_name}--1-noSD2-multicast.json", wf_filenames, tp, hs, prefix, "multicast", 0, sim_end_time, freshness_ms, sd=0, ru=0)
-                    
                         if prefix == "icnfc":
-                            # Scenario 2: noSD2, bestRoute, cs=0
-                            out_path = build_scenario(f"{base_name}--2-noSD2-bestRoute.json", wf_filenames, tp, hs, prefix, "best-route", 0, sim_end_time, freshness_ms, sd=0, ru=0)
+                            # Scenario 1: noSD2, bestRoute, cs=0
+                            base_name = f"{padded_catCode}-hR_{hr_str}-{ccr_str}--sn-{topoCategory}-{workflowCategory}-1_{prefix}"
+                            out_path = build_scenario(f"{base_name}--2-noSD2-bestRoute.json", wf_filenames, tp, hs, prefix, "best-route", 0, sim_end_time, freshness_ms, sd=0, ru=0, icnfcM=2, ndnfcpTMS=0)
 
                         if prefix == "ndnfcp":
-                            # Scenario 2b: noSD2, bestRoute, cs=1000
-                            out_path = build_scenario(f"{base_name}--2-noSD2-bestRoute.json", wf_filenames, tp, hs, prefix, "best-route", 0, sim_end_time, freshness_ms, sd=1000, ru=0)
+                            # Scenario 2: noSD2, bestRoute, cs=1000
+                            base_name = f"{padded_catCode}-hR_{hr_str}-{ccr_str}--sn-{topoCategory}-{workflowCategory}-2_{prefix}"
+                            out_path = build_scenario(f"{base_name}--2-noSD2-bestRoute.json", wf_filenames, tp, hs, prefix, "best-route", 1000, sim_end_time, freshness_ms, sd=0, ru=0, icnfcM=0, ndnfcpTMS=500)
                     
                         if prefix == "or3":
                             # Scenario 3: SD2, bestRoute, noUtil, noUtil, cs=0
-                            out_path = build_scenario(f"{base_name}--3-SD2-noUtilization.json", wf_filenames, tp, hs, prefix, "best-route", 0, sim_end_time, freshness_ms, sd=2, ru=0)
+                            base_name = f"{padded_catCode}-hR_{hr_str}-{ccr_str}--sn-{topoCategory}-{workflowCategory}-3_{prefix}"
+                            out_path = build_scenario(f"{base_name}--3-SD2-noUtilization.json", wf_filenames, tp, hs, prefix, "best-route", 0, sim_end_time, freshness_ms, sd=2, ru=0, icnfcM=0, ndnfcpTMS=0)
                     
                         if prefix == "nesco":
                             # Scenario 4: SD2, bestRoute, Util, noCaching, cs=0
-                            out_path = build_scenario(f"{base_name}--4-SD2-utilization-noCaching.json", wf_filenames, tp, hs, prefix, "best-route", 0, sim_end_time, freshness_ms, sd=2, ru=1)
+                            base_name = f"{padded_catCode}-hR_{hr_str}-{ccr_str}--sn-{topoCategory}-{workflowCategory}-4_{prefix}"
+                            out_path = build_scenario(f"{base_name}--4-SD2-utilization-noCaching.json", wf_filenames, tp, hs, prefix, "best-route", 0, sim_end_time, freshness_ms, sd=2, ru=1, icnfcM=0, ndnfcpTMS=0)
                             # Scenario 5: SD2, bestRoute, Util, Caching, cs=1000
-                            out_path = build_scenario(f"{base_name}--5-SD2-utilization-caching.json", wf_filenames, tp, hs, prefix, "best-route", 1000, sim_end_time, freshness_ms, sd=2, ru=1)
-
+                            base_name = f"{padded_catCode}-hR_{hr_str}-{ccr_str}--sn-{topoCategory}-{workflowCategory}-5_{prefix}"
+                            out_path = build_scenario(f"{base_name}--5-SD2-utilization-caching.json", wf_filenames, tp, hs, prefix, "best-route", 1000, sim_end_time, freshness_ms, sd=2, ru=1, icnfcM=0, ndnfcpTMS=0)
 
 
                         if VISUALIZE and num_nodes < 9 and len(wf_filenames) < 21:

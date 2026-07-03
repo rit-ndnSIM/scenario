@@ -147,6 +147,10 @@ main(int argc, char* argv[])
     uint64_t producerFreshnessMSmin = 0;
     uint64_t producerFreshnessMSmax = 0;
     uint64_t producerFreshnessMS = 60000;
+/*
+    uint8_t icnfcM = 2;
+    uint64_t ndnfcpTMS = 500;
+*/
     if (scenario_json.contains("serviceDiscovery")) {
         serviceDiscoveryFlag = scenario_json.at("serviceDiscovery");
     }
@@ -174,6 +178,14 @@ main(int argc, char* argv[])
     if (scenario_json.contains("producerFreshnessMS")) {
         producerFreshnessMS = scenario_json.at("producerFreshnessMS");
     }
+/*
+    if (scenario_json.contains("icnfcM")) {
+        icnfcM = scenario_json.at("icnfcM");
+    }
+    if (scenario_json.contains("ndnfcpTMS")) {
+        ndnfcpTMS = scenario_json.at("ndnfcpTMS");
+    }
+*/
 
     float simulationEndTime = 1000; // set default end time (in case json doesn't specify)
     if (scenario_json.contains("scheduleCompaction")) {

@@ -160,6 +160,16 @@ CustomAppProducer::OnInterest(std::shared_ptr<const ndn::Interest> interest)
   dataPacketContents.clear();
   dataPacketContents["makespanNS"] = m_makespan;
   dataPacketContents["serviceOutput"] = 5;
+
+  // for NDN-FC+, I need to keep track of how many times a service has been called in the past T seconds.
+  // I will achieve this by adding a JSON entry for this call, with the nodeID and the timestamp. This goes downstream in the data packet.
+  // service name is already in the data packet name. nodeID isn't really needed because all I REALLY need to know in the downstream node is the incoming face. Thus, I can just add
+  // something like: dataPacketContents["callTimestamp"] = currentTime;
+  Time timeNow;
+  timeNow = Simulator::Now();
+  int64_t timeNowNS = timeNow.ToInteger(ns3::Time::NS);
+  dataPacketContents["callTimestamp"] = timeNowNS;
+
   NS_LOG_DEBUG("ProducerAPP - Sending Data packet with JSON data packet contents: " << dataPacketContents);
   std::string dataPacketString;
   dataPacketString = dataPacketContents.dump();
