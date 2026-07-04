@@ -723,7 +723,11 @@ if __name__ == "__main__":
     else:
         print(f"Configuration: Output='{target_image_name}', Stop Time=End of File")
 
-    print(f"Graph Generation: {'Enabled' if generate_graph=="true" else 'Disabled'}")
+    #print(f"Graph Generation: {'Enabled' if generate_graph=="true" else 'Disabled'}")
+    if generate_graph=="true":
+        print(f"Graph Generation: Enabled")
+    else:
+        print(f"Graph Generation: Disabled")
 
 
      ## Count the number of Service Discovery interests
