@@ -1,8 +1,8 @@
 {
-  "prefix": "ndnfcp",
+  "prefix": "nesco",
   "topofile": "/home/cabeee/ndnSIM/scenario/scenario_json/debug/debugme2_topo.txt",
-  "serviceDiscovery": 0,
-  "resourceUtilization": 0,
+  "serviceDiscovery": 2,
+  "resourceUtilization": 1,
   "resourceAllocation": 0,
   "allocationReuse": 0,
   "scheduleCompaction": 0,

@@ -70,7 +70,7 @@ public:
 private:
   std::string
   PruneDagWorkflow(const std::string& interestName, std::string);
-  void
+  std::string
   SendInterest(const std::string& interestName, std::string);
   
 private:

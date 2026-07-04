@@ -245,13 +245,14 @@ DagServiceDiscoveryApp::PruneDagWorkflow(const std::string& interestName, std::s
 
 
 
-void
+std::string
 DagServiceDiscoveryApp::SendInterest(const std::string& interestName, std::string dagString)
 {
+  std::string returnString = "";
   if (!m_isRunning)
   {
     NS_LOG_WARN("Warning: trying to send interest while application is stopped!");
-    return;
+    return returnString;
   }
 
   /////////////////////////////////////
@@ -276,10 +277,16 @@ DagServiceDiscoveryApp::SendInterest(const std::string& interestName, std::strin
 
   NS_LOG_DEBUG("ServiceDiscoveryAPP: Sending Interest packet for " << *interest);
 
+
+  returnString = interest->getName().getSubName(2,interest->getName().size()).toUri(); // starting at name element 2, get enough name elements to get us to the end of the name (service name and hash)
+  NS_LOG_DEBUG("ServiceDiscoveryAPP: SendInterest return string is: " << returnString);
+
   // Call trace (for logging purposes)
   m_transmittedInterests(interest, this, m_face);
 
   m_appLink->onReceiveInterest(*interest);
+
+  return returnString;
 }
 
 
@@ -331,7 +338,8 @@ DagServiceDiscoveryApp::OnInterest(std::shared_ptr<const ndn::Interest> interest
       NS_LOG_DEBUG("ServiceDiscoveryAPP - after receiving schedulerRelease message, determined there's no inputs for this service.");
     }
     return;
-  } //else
+  } // end if (schedulerRelease)
+  // else (not schedulerRelease)
 
 
 
@@ -521,7 +529,13 @@ DagServiceDiscoveryApp::OnInterest(std::shared_ptr<const ndn::Interest> interest
               std::string simpleServiceName = x.key();
               updatedDagString = DagServiceDiscoveryApp::PruneDagWorkflow(simpleServiceName, updatedDagString);
 
+              auto dagObject = json::parse(updatedDagString);
+              dagObject["interestGenerationTimestamp"] = Simulator::Now().ToInteger(ns3::Time::NS);
+              updatedDagString = dagObject.dump();
+
               // Create interest with simplename x.key(), then add application parameters, and use the new name&hash for the data structure inputsRxed item.
+
+/*
               // in order to convert from std::string to a char[] datatype we do the following (https://stackoverflow.com/questions/7352099/stdstring-to-char):
               char *dagStringParameter = new char[updatedDagString.length() + 1];
               strcpy(dagStringParameter, updatedDagString.c_str());
@@ -537,7 +551,7 @@ DagServiceDiscoveryApp::OnInterest(std::shared_ptr<const ndn::Interest> interest
 
               new_interest->setApplicationParameters((const uint8_t *)dagStringParameter, length);
               //std::string serviceInputNameAndHash = new_interest->getName().getSubName(0,new_interest->getName().size()).toUri(); // starting at name element 0, get enough name elements to get us to the end of the name (get the full name)
-              std::string serviceInputNameAndHash = new_interest->getName().getSubName(2,new_interest->getName().size()).toUri(); // starting at name element 2, get enough name elements to get us to the end of the name (get the full name)
+              std::string serviceInputNameAndHash = new_interest->getName().getSubName(2,new_interest->getName().size()).toUri(); // starting at name element 2, get enough name elements to get us to the end of the name (service name and hash)
               //NFD_LOG_DEBUG("NFDServiceDiscovery created serviceInputNameAndHash: " << serviceInputNameAndHash);
 
               m_dagServTracker[rxedInterestFullNameAndHash]["inputsRxed"][serviceInputNameAndHash] = 0; // initialize to 0, meaning this input has not been received yet.
@@ -550,6 +564,14 @@ DagServiceDiscoveryApp::OnInterest(std::shared_ptr<const ndn::Interest> interest
               // Call trace (for logging purposes)
               m_transmittedInterests(new_interest, this, m_face);
               m_appLink->onReceiveInterest(*new_interest);
+*/
+
+              std::string serviceInputNameAndHash = DagServiceDiscoveryApp::SendInterest(m_prefix.ndn::Name::toUri() + m_SDName.ndn::Name::toUri() + (std::string)x.key() + consumerName, updatedDagString);
+              
+              m_dagServTracker[rxedInterestFullNameAndHash]["inputsRxed"][serviceInputNameAndHash] = 0; // initialize to 0, meaning this input has not been received yet.
+              m_dagServTracker[rxedInterestFullNameAndHash]["EFT"][serviceInputNameAndHash] = -1; // initialize to -1, meaning it is an invalid EFT value that hasn't been calculated yet.
+
+
 
               //std::cout << "x.key is " << x.key() << ", and y.key is " << y.key() << '\n';
 
