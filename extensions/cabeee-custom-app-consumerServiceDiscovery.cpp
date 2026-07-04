@@ -224,6 +224,7 @@ CustomAppConsumerServiceDiscovery::SendSDInterest()
   dagObject["allocationReuse"] = m_allocationReuse;
   dagObject["scheduleCompaction"] = m_scheduleCompaction;
   dagObject["consumerName"] = m_service.ndn::Name::toUri();
+  dagObject["interestGenerationTimestamp"] = Simulator::Now().ToInteger(ns3::Time::NS);
 
 
   //std::cout << "Consumer: Full DAG as read: " << std::setw(2) << dagObject << '\n';
