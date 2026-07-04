@@ -64,7 +64,8 @@ export NS_LOG="$LOGS"
 #TYPE="linearWFs_SD2Sweep_4runsx20reqx20cons_4servx5nodes"
 #TYPE="fwdOptSD2Sweep_5runsx20reqx20cons_4servx5nodes"
 #TYPE="fwdOptSD2Sweep_4runsx20reqx20cons_4servx5nodes"
-TYPE="linearWFs_SD2Sweep_5runsx20reqx20cons_4servx5nodes_0P6"
+#TYPE="linearWFs_SD2Sweep_5runsx20reqx20cons_4servx5nodes_0P6"
+TYPE="linearWFs_SD2Sweep_20runsx20reqx20cons_5servx6nodes_0P8"
 
 
 #export GEN_ALLOCATION_GRAPHS="true"
