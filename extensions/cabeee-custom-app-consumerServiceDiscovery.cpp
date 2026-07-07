@@ -472,16 +472,16 @@ CustomAppConsumerServiceDiscovery::OnData(std::shared_ptr<const ndn::Data> data)
       NS_LOG_INFO("\n\n      CONSUMER: Service Discovery DATA received for name " << data->getName() << std::endl << "\n\n");
       m_SDendTime = Simulator::Now();
       Time serviceDiscoveryLatency = m_SDendTime - m_SDstartTimeOffset;
-      NS_LOG_INFO("\n  Service Discovery Latency: " <<  serviceDiscoveryLatency.GetMilliSeconds() << " milliseconds." << std::endl);
-      NS_LOG_INFO("\n  Service Discovery Latency: " <<  serviceDiscoveryLatency.GetMicroSeconds() << " microseconds." << std::endl);
-      NS_LOG_INFO("\n  Service Discovery Latency: " <<  serviceDiscoveryLatency.GetNanoSeconds() << " nanoseconds." << std::endl);
+      NS_LOG_INFO("\n  SD Latency: " <<  serviceDiscoveryLatency.GetMilliSeconds() << " milliseconds." << std::endl);
+      NS_LOG_INFO("\n  SD Latency: " <<  serviceDiscoveryLatency.GetMicroSeconds() << " microseconds." << std::endl);
+      NS_LOG_INFO("\n  SD Latency: " <<  serviceDiscoveryLatency.GetNanoSeconds() << " nanoseconds." << std::endl);
 
       std::string dataPacketString;
       dataPacketString = (const char *)data->getContent().value();
       json dataPacketContents = json::parse(dataPacketString);
       NS_LOG_INFO("\n\nData received - absolute EFT:   " << dataPacketContents["EFT"] << " nanoseconds\n");
       int64_t workflowLatency_ns = dataPacketContents["EFT"].get<int64_t>() - m_WFstartTimeOffset.ToInteger(ns3::Time::NS);
-      NS_LOG_INFO("\n\n  Service Latency estimated by SD: " << workflowLatency_ns/1000 << " microseconds. " << workflowLatency_ns/1000000 << " milliseconds.\n\n");
+      NS_LOG_INFO("\n\n  WF Latency estimated by SD: " << workflowLatency_ns/1000 << " microseconds. " << workflowLatency_ns/1000000 << " milliseconds.\n\n");
 
       // IF this is an SD data packet, then begin the normal consumer workflow request (call CustomAppConsumerServiceDiscovery::SendInterest())
       //CustomAppConsumerServiceDiscovery::SendInterest();
@@ -507,9 +507,12 @@ CustomAppConsumerServiceDiscovery::OnData(std::shared_ptr<const ndn::Data> data)
       NS_LOG_INFO("\n\n      CONSUMER: Service Discovery DATA # " << m_interestNum << "/" << m_numInterests << " received for name " << data->getName() << " for consumer service " << m_service.ndn::Name::toUri()  << std::endl << "\n\n");
       m_SDendTime = Simulator::Now();
       Time serviceDiscoveryLatency = m_SDendTime - m_SDstartTime;
-      NS_LOG_INFO("\n  Service Discovery Latency: " <<  serviceDiscoveryLatency.GetMilliSeconds() << " milliseconds." << std::endl);
-      NS_LOG_INFO("\n  Service Discovery Latency: " <<  serviceDiscoveryLatency.GetMicroSeconds() << " microseconds." << std::endl);
-      NS_LOG_INFO("\n  Service Discovery Latency: " <<  serviceDiscoveryLatency.GetNanoSeconds() << " nanoseconds." << std::endl);
+      NS_LOG_INFO("  SD Latency: " <<  serviceDiscoveryLatency.GetMilliSeconds() << " milliseconds." << std::endl);
+      NS_LOG_INFO("  SD Latency: " <<  serviceDiscoveryLatency.GetMicroSeconds() << " microseconds." << std::endl);
+      NS_LOG_INFO("  SD Latency: " <<  serviceDiscoveryLatency.GetNanoSeconds() << " nanoseconds." << std::endl);
+      NS_LOG_INFO("  SD Latency for consumer node " << GetNode()->GetId() << ", service " << m_service.ndn::Name::toUri() << ", interest # " << m_interestNum << "/" << m_numInterests << ": " <<  serviceDiscoveryLatency.GetMilliSeconds() << " milliseconds." << std::endl);
+      NS_LOG_INFO("  SD Latency for consumer node " << GetNode()->GetId() << ", service " << m_service.ndn::Name::toUri() << ", interest # " << m_interestNum << "/" << m_numInterests << ": " <<  serviceDiscoveryLatency.GetMicroSeconds() << " microseconds." << std::endl);
+      NS_LOG_INFO("  SD Latency for consumer node " << GetNode()->GetId() << ", service " << m_service.ndn::Name::toUri() << ", interest # " << m_interestNum << "/" << m_numInterests << ": " <<  serviceDiscoveryLatency.GetNanoSeconds() << " nanoseconds." << std::endl);
 
       std::string dataPacketString;
       dataPacketString = (const char *)data->getContent().value();
@@ -517,7 +520,7 @@ CustomAppConsumerServiceDiscovery::OnData(std::shared_ptr<const ndn::Data> data)
       NS_LOG_INFO("\n\nData received - absolute EFT:   " << dataPacketContents["EFT"] << " nanoseconds\n");
       //int64_t workflowLatency_ns = dataPacketContents["EFT"].get<int64_t>() - m_WFstartTime.ToInteger(ns3::Time::NS);
       int64_t workflowLatency_ns = dataPacketContents["EFT"].get<int64_t>() - m_WFstartTimeOffset.ToInteger(ns3::Time::NS);
-      NS_LOG_INFO("\n\n  Service Latency estimated by SD: " << workflowLatency_ns/1000 << " microseconds. " << workflowLatency_ns/1000000 << " milliseconds.\n\n");
+      NS_LOG_INFO("\n\n  WF Latency estimated by SD: " << workflowLatency_ns/1000 << " microseconds. " << workflowLatency_ns/1000000 << " milliseconds.\n\n");
 
       NS_LOG_INFO("Ending SD for " << m_service);
 
@@ -539,9 +542,9 @@ CustomAppConsumerServiceDiscovery::OnData(std::shared_ptr<const ndn::Data> data)
       m_WFrunning = false;
       m_WFendTime = Simulator::Now();
       Time serviceLatency = m_WFendTime - m_WFstartTime - m_appStartTime;
-      NS_LOG_INFO("\n  Service Latency: " <<  serviceLatency.GetMilliSeconds() << " milliseconds." << std::endl);
-      NS_LOG_INFO("\n  Service Latency: " <<  serviceLatency.GetMicroSeconds() << " microseconds." << std::endl);
-      NS_LOG_INFO("\n  Service Latency: " <<  serviceLatency.GetNanoSeconds() << " nanoseconds." << std::endl);
+      NS_LOG_INFO("\n  WF Latency: " <<  serviceLatency.GetMilliSeconds() << " milliseconds." << std::endl);
+      NS_LOG_INFO("\n  WF Latency: " <<  serviceLatency.GetMicroSeconds() << " microseconds." << std::endl);
+      NS_LOG_INFO("\n  WF Latency: " <<  serviceLatency.GetNanoSeconds() << " nanoseconds." << std::endl);
 
   /*
       // this is a HACK. I need a better way to get to the first byte of the content. Right now, I'm just incrementing the pointer past the TLV type, and size.
@@ -586,16 +589,15 @@ CustomAppConsumerServiceDiscovery::OnData(std::shared_ptr<const ndn::Data> data)
       int64_t finalResult = 0;
       finalResult = dataPacketContents["serviceOutput"];
 
-      //std::cout << "  Final answer for    " << m_service.ndn::Name::toUri() << " " << m_interestNum << "/" << m_numInterests << ": " <<  (int)(*pContent) << std::endl;
-      std::cout << "  Final answer for consumer node    " << GetNode()->GetId() << ", service " << m_service.ndn::Name::toUri() << ", interest # " << m_interestNum << "/" << m_numInterests << ": " <<  finalResult << std::endl;
+      NS_LOG_INFO("  Final answer for consumer node    " << GetNode()->GetId() << ", service " << m_service.ndn::Name::toUri() << ", interest # " << m_interestNum << "/" << m_numInterests << ": " <<  finalResult << std::endl);
 
       m_WFrunning = false;
       m_WFendTime = Simulator::Now();
       Time serviceLatency = m_WFendTime - m_WFstartTime - m_appStartTime;
-      std::cout << "  Service Latency for consumer node " << GetNode()->GetId() << ", service " << m_service.ndn::Name::toUri() << ", interest # " << m_interestNum << "/" << m_numInterests << ": " <<  serviceLatency.GetMilliSeconds() << " milliseconds." << std::endl;
-      std::cout << "  Service Latency for consumer node " << GetNode()->GetId() << ", service " << m_service.ndn::Name::toUri() << ", interest # " << m_interestNum << "/" << m_numInterests << ": " <<  serviceLatency.GetMicroSeconds() << " microseconds." << std::endl;
+      NS_LOG_INFO("  WF Latency for consumer node " << GetNode()->GetId() << ", service " << m_service.ndn::Name::toUri() << ", interest # " << m_interestNum << "/" << m_numInterests << ": " <<  serviceLatency.GetMilliSeconds() << " milliseconds." << std::endl);
+      NS_LOG_INFO("  WF Latency for consumer node " << GetNode()->GetId() << ", service " << m_service.ndn::Name::toUri() << ", interest # " << m_interestNum << "/" << m_numInterests << ": " <<  serviceLatency.GetMicroSeconds() << " microseconds." << std::endl);
+      NS_LOG_INFO("  WF Latency for consumer node " << GetNode()->GetId() << ", service " << m_service.ndn::Name::toUri() << ", interest # " << m_interestNum << "/" << m_numInterests << ": " <<  serviceLatency.GetNanoSeconds() << " nanoseconds." << std::endl);
 
-      std::cout << std::endl;
 
       NS_LOG_INFO("Ending WF for " << m_service);
 

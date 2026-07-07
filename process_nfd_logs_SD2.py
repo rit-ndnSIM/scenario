@@ -67,23 +67,20 @@ def normalize_to_ns(value, unit):
 # Determine the resource utilization
 
 
-# --- Configuration ---
-US_TO_NS = 1000
-
 # --- 1. Define Regex Patterns ---
 NODE_ACTIVITY_PATTERN = re.compile(
-    #r".*?NFDServiceDiscovery - (WF|SD)?resourceAllocation: Service (?P<service_name>\S+) (?P<action>started|finished) running on node (?P<node_id>\d+)\. .*? at (?P<timestamp>\d+) (nanoseconds|microseconds)"
-    r".*?NFDServiceDiscovery - (WF|SD)?resourceAllocation: Service (?P<service_name>\S+) (?P<action>started|finished) running on node (?P<node_id>\d+)\. .*? at (?P<timestamp>\d+) (?P<unit>nanoseconds|microseconds)"
+    #r".*?NFDForwarder - (WF|SD)?resourceAllocation: Service (?P<service_name>\S+) (?P<action>started|finished) running on node (?P<node_id>\d+)\. .*? at (?P<timestamp>\d+) (nanoseconds|microseconds)"
+    r".*?NFDForwarder - (WF|SD)?resourceAllocation: Service (?P<service_name>\S+) (?P<action>started|finished) running on node (?P<node_id>\d+)\. .*? at (?P<timestamp>\d+) (?P<unit>nanoseconds|microseconds)"
 )
 SCHEDULING_PATTERN = re.compile(
-    #r".*?NFDServiceDiscovery - SDresourceAllocation: Service (?P<service_name>\S+) (?P<status>scheduled|no longer scheduled) on node (?P<node_id>\d+) starting at (?P<start_ns>\d+) and ending at (?P<end_ns>\d+) nanoseconds"
-    r".*?NFDServiceDiscovery - SDresourceAllocation: Service (?P<service_name>\S+) (?P<status>scheduled|no longer scheduled) on node (?P<node_id>\d+) starting at (?P<start_time>\d+) and ending at (?P<end_time>\d+) (?P<unit>nanoseconds|microseconds)"
+    #r".*?NFDForwarder - SDresourceAllocation: Service (?P<service_name>\S+) (?P<status>scheduled|no longer scheduled) on node (?P<node_id>\d+) starting at (?P<start_ns>\d+) and ending at (?P<end_ns>\d+) nanoseconds"
+    r".*?NFDForwarder - SDresourceAllocation: Service (?P<service_name>\S+) (?P<status>scheduled|no longer scheduled) on node (?P<node_id>\d+) starting at (?P<start_time>\d+) and ending at (?P<end_time>\d+) (?P<unit>nanoseconds|microseconds)"
 )
 WORKFLOW_START_PATTERN = re.compile(
     r"- workflow start: (?P<start_time>\d+) nanoseconds"
 )
 FINAL_LATENCY_PATTERN = re.compile(
-    r"Service Latency: (?P<latency>\d+) nanoseconds\."
+    r"WF Latency: (?P<latency>\d+) nanoseconds\."
 )
 NFD_NODE_PATTERN = re.compile(
     r"NFD is running on node (?P<node_id>\d+)"
@@ -96,14 +93,17 @@ POISSON_DETECTOR_PATTERN = re.compile(
 FINAL_ANSWER_PATTERN = re.compile(
     r"Final answer for consumer node\s+\d+, service\s+(/[^,]+), interest # \d+/\d+: ([\d\.]+)"
 )
-# Regex for: Service Latency for consumer node 21, service /consumerP, interest # 1/100: 158815 microseconds.
-# Note: We ignore the "milliseconds" line to maintain microsecond precision.
-LATENCY_PATTERN = re.compile(
-    r"Service Latency for consumer node\s+\d+, service\s+(/[^,]+), interest # \d+/\d+: (\d+) microseconds"
+# Regex for: WF Latency for consumer node 21, service /consumerP, interest # 1/100: 158815 nanoseconds.
+# Note: We ignore the "milliseconds" line to maintain nanosecond precision.
+WF_LATENCY_PATTERN = re.compile(
+    r"WF Latency for consumer node\s+\d+, service\s+(/[^,]+), interest # \d+/\d+: (\d+) nanoseconds"
+)
+SD_LATENCY_PATTERN = re.compile(
+    r"SD Latency for consumer node\s+\d+, service\s+(/[^,]+), interest # \d+/\d+: (\d+) nanoseconds"
 )
 
-SD_LATENCY_PATTERN = re.compile(
-    r"^\s*Service Discovery Latency:\s*(?P<latency>\d+)\s+microseconds"
+SD_LATENCY_PATTERN_SINGLE = re.compile(
+    r"^\s*SD Latency:\s*(?P<latency>\d+)\s+nanoseconds"
 )
 
 
@@ -219,15 +219,15 @@ def analyze_and_plot(file_path, output_filename_base, poisson_detected, num_inte
 
     print(f"Analyzing log data{' (stopping at ' + str(stop_time) + 's)' if stop_time else ''}...")
 
-#TODO: if poisson detected, then scan entire file storing info in trial_data (like process_nfd_logs_intervals.py), and print the max, min, avg, quartiles, etc.
-
+    # if poisson detected, then scan entire file storing info in wf_trial_data (like process_nfd_logs_intervals.py), and print the max, min, avg, quartiles, etc.
     if (poisson_detected == True):
 
 
        # Dictionary to store trial results by type
-        trial_data = defaultdict(list)
+        wf_trial_data = defaultdict(list)
+        sd_trial_data = defaultdict(list)
         final_answers = {}
-        
+
         sd_latencies_us = []
 
         try:
@@ -280,18 +280,17 @@ def analyze_and_plot(file_path, output_filename_base, poisson_detected, num_inte
 
 
                 # Look for latency
-                #latency_match = re.search(LATENCY_PATTERN, line)
-                latency_match = LATENCY_PATTERN.search(line)
-                if latency_match:
+                wf_latency_match = WF_LATENCY_PATTERN.search(line)
+                if wf_latency_match:
                     # Extract the type and trial result (z) as a float
-                    trial_type = latency_match.group(1).strip()
-                    trial_result = int(latency_match.group(2))
-                    trial_data[trial_type].append(trial_result)                   
+                    trial_type = wf_latency_match.group(1).strip()
+                    trial_result = int(wf_latency_match.group(2))
+                    wf_trial_data[trial_type].append(trial_result)                   
                     continue
 
-                    #if trial_type not in trial_data:
-                        #trial_data[trial_type] = []
-                    #trial_data[trial_type].append(trial_result)
+                    #if trial_type not in wf_trial_data:
+                        #wf_trial_data[trial_type] = []
+                    #wf_trial_data[trial_type].append(trial_result)
 
                 # Look for Final Answer 
                 #final_answer_match = re.search(FINAL_ANSWER_PATTERN, line)
@@ -305,7 +304,14 @@ def analyze_and_plot(file_path, output_filename_base, poisson_detected, num_inte
                         print(f"Warning: Inconsistent final result for type {trial_type}!")
                     final_answers[trial_type] = final_result
 
-                match_sd_latency = SD_LATENCY_PATTERN.search(line)
+                sd_latency_match = SD_LATENCY_PATTERN.search(line)
+                if sd_latency_match:
+                    trial_type = sd_latency_match.group(1).strip()
+                    trial_result = int(sd_latency_match.group(2))
+                    sd_trial_data[trial_type].append(trial_result)
+                    continue
+
+                match_sd_latency = SD_LATENCY_PATTERN_SINGLE.search(line)
                 if match_sd_latency:
                     sd_latencies_us.append(int(match_sd_latency.group('latency')))
                     continue
@@ -367,47 +373,38 @@ def analyze_and_plot(file_path, output_filename_base, poisson_detected, num_inte
 
 
             # If no results were found, handle the empty dictionary case
-            if not trial_data:
+            if not wf_trial_data:
                 print("No matching lines were found in the file.")
                 return
 
             # Print statistics for each type
-            #for trial_type, trial_results in trial_data.items():
-            for trial_type, trial_results in sorted(trial_data.items()):
+            for trial_type, trial_results in sorted(wf_trial_data.items()):
                 # Calculate statistics
-                total = sum(trial_results)
-                minimum = min(trial_results)
-                low_quartile = np.quantile(trial_results, 0.25)
-                mid_quartile = np.quantile(trial_results, 0.5)
-                high_quartile = np.quantile(trial_results, 0.75)
-                maximum = max(trial_results)
-                average = total / len(trial_results)
+                wf_total = sum(trial_results)
+                wf_minimum = min(trial_results)
+                wf_low_quartile = np.quantile(trial_results, 0.25)
+                wf_mid_quartile = np.quantile(trial_results, 0.5)
+                wf_high_quartile = np.quantile(trial_results, 0.75)
+                wf_maximum = max(trial_results)
+                wf_average = wf_total / len(trial_results)
                 req_fulfilled = len(trial_results)
 
                 
                 print(f"Statistics for type: {trial_type}")
-                #print(f"  Minimum trial result: {minimum:.2f} microseconds")
-                #print(f"  Maximum trial result: {maximum:.2f} microseconds")
-                #print(f"  Total of all trial results: {total:.2f} microseconds")
-                #print(f"  Average trial result: {average:.2f} microseconds")
-                #print(f"  {trial_type} min latency: {int(minimum)} microseconds")
-                #print(f"  {trial_type} max latency: {int(maximum)} microseconds")
-                #print(f"  {trial_type} Total of all trial results: {int(total)} microseconds")
-                #print(f"  {trial_type} Average trial result: {int(average)} microseconds")
+                print(f"  {trial_type} WF min latency: {int(wf_minimum)} nanoseconds")
+                print(f"  {trial_type} WF low latency: {int(wf_low_quartile)} nanoseconds")
+                print(f"  {trial_type} WF mid latency: {int(wf_mid_quartile)} nanoseconds")
+                print(f"  {trial_type} WF high latency: {int(wf_high_quartile)} nanoseconds")
+                print(f"  {trial_type} WF max latency: {int(wf_maximum)} nanoseconds")
+                print(f"  {trial_type} WF total latency: {int(wf_total)} nanoseconds")
+                print(f"  {trial_type} WF avg latency: {int(wf_average)} nanoseconds")
 
-                print(f"  {trial_type} min latency: {int(minimum)} microseconds")
-                print(f"  {trial_type} low latency: {int(low_quartile)} microseconds")
-                print(f"  {trial_type} mid latency: {int(mid_quartile)} microseconds")
-                print(f"  {trial_type} high latency: {int(high_quartile)} microseconds")
-                print(f"  {trial_type} max latency: {int(maximum)} microseconds")
-                print(f"  {trial_type} total latency: {int(total)} microseconds")
-                print(f"  {trial_type} avg latency: {int(average)} microseconds")
                 print(f"  {trial_type} requests fulfilled: {int(req_fulfilled)} total requests")
                 if (req_fulfilled != num_interests):
                     print(f"Warning: Inconsistent number of requests fulfilled!")
                 
                 if trial_type in final_answers:
-                    #print(f"  Final answer: {final_answers[trial_type]:.2f} microseconds")
+                    #print(f"  Final answer: {final_answers[trial_type]:.2f} nanoseconds")
                     print(f"  {trial_type} Final answer: {int(final_answers[trial_type])} numerical")
                 print()
 
@@ -419,7 +416,7 @@ def analyze_and_plot(file_path, output_filename_base, poisson_detected, num_inte
             global_req_fulfilled = 0
 
             # Dynamically loop through whatever consumer data your dictionary captured
-            for t_type, results in trial_data.items():
+            for t_type, results in wf_trial_data.items():
                 all_combined_trials.extend(results)
                 global_req_fulfilled += len(results)
                 global_final_answers_sum += int(final_answers.get(t_type, 0))
@@ -427,17 +424,17 @@ def analyze_and_plot(file_path, output_filename_base, poisson_detected, num_inte
             print("\n## Global Consumer Statistics Summary (All Trials Combined)")
             print("------------------------------------------------------------")
             if all_combined_trials:
-                print(f"Global workflow min latency: {int(np.min(all_combined_trials))} microseconds")
-                print(f"Global workflow low latency: {int(np.quantile(all_combined_trials, 0.25))} microseconds")
-                print(f"Global workflow mid latency: {int(np.median(all_combined_trials))} microseconds")
-                print(f"Global workflow high latency: {int(np.quantile(all_combined_trials, 0.75))} microseconds")
-                print(f"Global workflow max latency: {int(np.max(all_combined_trials))} microseconds")
-                print(f"Global workflow total latency: {int(np.sum(all_combined_trials))} microseconds")
-                print(f"Global workflow avg latency: {int(np.mean(all_combined_trials))} microseconds")
-                print(f"Global workflow total requests fulfilled: {global_req_fulfilled} total requests")
-                print(f"Global workflow final answers sum: {global_final_answers_sum} numerical")
+                print(f"Global WF min latency: {int(np.min(all_combined_trials))} nanoseconds")
+                print(f"Global WF low latency: {int(np.quantile(all_combined_trials, 0.25))} nanoseconds")
+                print(f"Global WF mid latency: {int(np.median(all_combined_trials))} nanoseconds")
+                print(f"Global WF high latency: {int(np.quantile(all_combined_trials, 0.75))} nanoseconds")
+                print(f"Global WF max latency: {int(np.max(all_combined_trials))} nanoseconds")
+                print(f"Global WF total latency: {int(np.sum(all_combined_trials))} nanoseconds")
+                print(f"Global WF avg latency: {int(np.mean(all_combined_trials))} nanoseconds")
+                print(f"Global WF total requests fulfilled: {global_req_fulfilled} total requests")
+                print(f"Global WF final answers sum: {global_final_answers_sum} numerical")
 
-                total_expected_interests = num_interests * len(trial_data)
+                total_expected_interests = num_interests * len(wf_trial_data)
             
                 if global_req_fulfilled != total_expected_interests:
                     print(f"  Warning: Inconsistent number of global requests fulfilled! Expected: {total_expected_interests}")
@@ -445,8 +442,41 @@ def analyze_and_plot(file_path, output_filename_base, poisson_detected, num_inte
                 print("  No trial data discovered to compile global summaries.")
             print()
 
-            global_sd_avg = int(np.mean(sd_latencies_us)) if sd_latencies_us else 0
-            print(f"Global service discovery average latency: {global_sd_avg} microseconds")
+            all_sd_trials = []
+            for t_type, results in sd_trial_data.items():
+                all_sd_trials.extend(results)
+            global_sd_avg = int(np.mean(all_sd_trials)) if all_sd_trials else 0
+            print(f"Global SD average latency: {global_sd_avg} nanoseconds")
+
+            # Compute SDWF (SD + WF) by pairing latencies in arrival order per consumer
+            all_sdwf_trials = []
+            for t_type in sorted(wf_trial_data.keys()):
+                wf_list = wf_trial_data[t_type]
+                sd_list = sd_trial_data.get(t_type, [])
+                if len(sd_list) != len(wf_list):
+                    print(f"Warning: SD/WF count mismatch for {t_type}: SD={len(sd_list)}, WF={len(wf_list)}")
+                for sd, wf in zip(sd_list, wf_list):
+                    all_sdwf_trials.append(sd + wf)
+
+            print("\n## Global Consumer Statistics Summary (SDWF Combined)")
+            print("------------------------------------------------------------")
+            if all_sdwf_trials:
+                print(f"Global SDWF min latency: {int(np.min(all_sdwf_trials))} nanoseconds")
+                print(f"Global SDWF low latency: {int(np.quantile(all_sdwf_trials, 0.25))} nanoseconds")
+                print(f"Global SDWF mid latency: {int(np.median(all_sdwf_trials))} nanoseconds")
+                print(f"Global SDWF high latency: {int(np.quantile(all_sdwf_trials, 0.75))} nanoseconds")
+                print(f"Global SDWF max latency: {int(np.max(all_sdwf_trials))} nanoseconds")
+                print(f"Global SDWF total latency: {int(np.sum(all_sdwf_trials))} nanoseconds")
+                print(f"Global SDWF avg latency: {int(np.mean(all_sdwf_trials))} nanoseconds")
+            else:
+                print("  No SDWF trial data found.")
+                print(f"Global SDWF min latency: 0 nanoseconds")
+                print(f"Global SDWF low latency: 0 nanoseconds")
+                print(f"Global SDWF mid latency: 0 nanoseconds")
+                print(f"Global SDWF high latency: 0 nanoseconds")
+                print(f"Global SDWF max latency: 0 nanoseconds")
+                print(f"Global SDWF total latency: 0 nanoseconds")
+                print(f"Global SDWF avg latency: 0 nanoseconds")
 
 
 
@@ -466,10 +496,9 @@ def analyze_and_plot(file_path, output_filename_base, poisson_detected, num_inte
             else:
                 print("Warning: Total simulation duration is zero (possibly no finished jobs before stop time).")
 
-            overall_total_busy_time_us = overall_total_busy_time_ns / US_TO_NS
             print("\n## Overall Resource Utilization Summary")
             print("------------------------------------------")
-            print(f"Overall Total Busy Time (All Nodes): {overall_total_busy_time_us} microseconds")
+            print(f"Overall Total Busy Time (All Nodes): {overall_total_busy_time_ns} nanoseconds")
             print(f"Average Utilization (All Nodes): {average_utilization_percentage:.4f}%")
             print(f"Coefficient of Variation (load distribution): {coef_of_variation:.4f}")
             print()
@@ -620,7 +649,7 @@ def analyze_and_plot(file_path, output_filename_base, poisson_detected, num_inte
         print(f"Workflow Start Time: {workflow_start_time_ns} nanoseconds")
         if stop_time:
             print(f"Log Analysis Stopped At: {stop_time} seconds")
-        print(f"Final Service Latency: {final_service_latency_ns} nanoseconds")
+        print(f"Final WF Latency: {final_service_latency_ns} nanoseconds")
         print(f"Total Simulation Duration: {total_simulation_duration_ns} nanoseconds")
 
         print("\n## Individual Node Resource Utilization")
@@ -633,10 +662,9 @@ def analyze_and_plot(file_path, output_filename_base, poisson_detected, num_inte
         else:
             print("Warning: Total simulation duration is zero (possibly no finished jobs before stop time).")
 
-        overall_total_busy_time_us = overall_total_busy_time_ns / US_TO_NS
         print("\n## Overall Resource Utilization Summary")
         print("------------------------------------------")
-        print(f"Overall Total Busy Time (All Nodes): {overall_total_busy_time_us} microseconds")
+        print(f"Overall Total Busy Time (All Nodes): {overall_total_busy_time_ns} nanoseconds")
         print(f"Average Utilization (All Nodes): {average_utilization_percentage:.4f}%")
         print(f"Coefficient of Variation (load distribution): {coef_of_variation:.4f}")
 

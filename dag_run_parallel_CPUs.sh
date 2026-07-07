@@ -35,37 +35,38 @@ export NS_LOG="$LOGS"
 
 
 #---------------------------------  SETTINGS -----------------------------------
-#TYPE="cascon_main"
-#TYPE="cascon_main_cat"
-#TYPE="cascon_cpm"
-#TYPE="cascon_cpm_random"
-#TYPE="cascon_cpm_random_nesco"
-#TYPE="cascon_lat-bw-cpm"
-#TYPE="cascon_intervals"
-#TYPE="fwdOptSD"
-#TYPE="fwdOptSDSweep"
-#TYPE="fwdOptSDSweep2"
-#TYPE="fwdOptSDSweep3"
-#TYPE="fwdOptSDSweep4"
-#TYPE="fwdOptSDSweep5"
-#TYPE="fwdOptSDSweep20"
-#TYPE="fwdOptSDSweep20_5x8"
-#TYPE="cascon_random_test"
-#TYPE="linearWFs_SD20"
-#TYPE="fwdOptSD2Sweep20_test"
-#TYPE="fwdOptSD2Sweep20_5x8"
-#TYPE="fwdOptSD2Sweep_5runsx10reqx100cons_5servx8nodes"
-#TYPE="fwdOptSD2Sweep_1runsx5reqx100cons_4servx6nodes"
-#TYPE="fwdOptSD2Sweep_1runsx5reqx3cons_3servx4nodes"
-#TYPE="linearSD2Sweep20_5x8"
-#TYPE="linearWFs_SD2Sweep_1runsx5reqx3cons_4servx5nodes"
-#TYPE="linearWFs_SD2Sweep_1runsx20reqx20cons_5servx6nodes"
-#TYPE="linearWFs_SD2Sweep_5runsx20reqx20cons_4servx5nodes"
-#TYPE="linearWFs_SD2Sweep_4runsx20reqx20cons_4servx5nodes"
-#TYPE="fwdOptSD2Sweep_5runsx20reqx20cons_4servx5nodes"
-#TYPE="fwdOptSD2Sweep_4runsx20reqx20cons_4servx5nodes"
-#TYPE="linearWFs_SD2Sweep_5runsx20reqx20cons_4servx5nodes_0P6"
-TYPE="linearWFs_SD2Sweep_20runsx20reqx20cons_5servx6nodes_0P8"
+#NAME="cascon_main"
+#NAME="cascon_main_cat"
+#NAME="cascon_cpm"
+#NAME="cascon_cpm_random"
+#NAME="cascon_cpm_random_nesco"
+#NAME="cascon_lat-bw-cpm"
+#NAME="cascon_intervals"
+#NAME="fwdOptSD"
+#NAME="fwdOptSDSweep"
+#NAME="fwdOptSDSweep2"
+#NAME="fwdOptSDSweep3"
+#NAME="fwdOptSDSweep4"
+#NAME="fwdOptSDSweep5"
+#NAME="fwdOptSDSweep20"
+#NAME="fwdOptSDSweep20_5x8"
+#NAME="cascon_random_test"
+#NAME="linearWFs_SD20"
+#NAME="fwdOptSD2Sweep20_test"
+#NAME="fwdOptSD2Sweep20_5x8"
+#NAME="fwdOptSD2Sweep_5runsx10reqx100cons_5servx8nodes"
+#NAME="fwdOptSD2Sweep_1runsx5reqx100cons_4servx6nodes"
+#NAME="fwdOptSD2Sweep_1runsx5reqx3cons_3servx4nodes"
+#NAME="linearSD2Sweep20_5x8"
+#NAME="linearWFs_SD2Sweep_1runsx5reqx3cons_4servx5nodes"
+#NAME="linearWFs_SD2Sweep_1runsx20reqx20cons_5servx6nodes"
+#NAME="linearWFs_SD2Sweep_5runsx20reqx20cons_4servx5nodes"
+#NAME="linearWFs_SD2Sweep_4runsx20reqx20cons_4servx5nodes"
+#NAME="fwdOptSD2Sweep_5runsx20reqx20cons_4servx5nodes"
+#NAME="fwdOptSD2Sweep_4runsx20reqx20cons_4servx5nodes"
+#NAME="linearWFs_SD2Sweep_5runsx20reqx20cons_4servx5nodes_0P6"
+#NAME="linearWFs_SD2Sweep_20runsx20reqx20cons_5servx6nodes_0P8"
+NAME="SD2_stateArt_5runsx20reqx20cons_4servx5nodes_0P6"
 
 
 #export GEN_ALLOCATION_GRAPHS="true"
@@ -86,8 +87,8 @@ export FORCE_FRESHNESS=0    # Set to override data packet freshness settings in 
 
 export NDNSIM_HOME="$HOME/ndnSIM"
 export SCENARIO_DIR="$HOME/ndnSIM/scenario"
-export SCENARIO_LOGS_DIR="$SCENARIO_DIR/scenario_logs/$TYPE"
-export SCENARIO_TRACE_DIR="$SCENARIO_DIR/trace_results/$TYPE"
+export SCENARIO_LOGS_DIR="$SCENARIO_DIR/scenario_logs/$NAME"
+export SCENARIO_TRACE_DIR="$SCENARIO_DIR/trace_results/$NAME"
 export WORKFLOW_DIR="$HOME/ndnSIM/scenario/workflows"
 export TOPOLOGY_DIR="$HOME/ndnSIM/scenario/topologies"
 export CPM_DIR="$HOME/CPM"
@@ -95,16 +96,16 @@ export USAGE_ALLOCATION_GRAPHS_DIR="$HOME/ndnSIM/scenario/usage_allocation_graph
 
 
 
-export SCENARIO_JSON_DIR="$SCENARIO_DIR/scenario_json/$TYPE"
-export csv_out="$SCENARIO_DIR/perf-results-simulation-generic_${TYPE}.csv"
+export SCENARIO_JSON_DIR="$SCENARIO_DIR/scenario_json/$NAME"
+export csv_out="$SCENARIO_DIR/perf-results-simulation-generic_${NAME}.csv"
 
 mkdir -p "$SCENARIO_LOGS_DIR"
 mkdir -p "$SCENARIO_TRACE_DIR"
 
 # --- 1. Setup CSV Header ---
-#header="Example, SD Interest Packets Generated, SD Data Packets Generated, SD Interest Packets Transmitted, SD Data Packets Transmitted, WF Interest Packets Generated, WF Data Packets Generated, WF Interest Packets Transmitted, WF Data Packets Transmitted, Critical-Path-Metric, CPM-t_exec(ns), SD Latency (us), SD Estimated WF Service Latency (us), WF Service Latency (us), Total Node Usage Time (us), Average Node Utilization (%), Coefficient of Variation (load distribution), Final Result, Time, ns-3 commit, pybindgen commit, scenario commit, ndnSIM commit"
-#header="Example, SD Interest Packets Generated, SD Data Packets Generated, SD Interest Packets Transmitted, SD Data Packets Transmitted, WF Interest Packets Generated, WF Data Packets Generated, WF Interest Packets Transmitted, WF Data Packets Transmitted, Critical-Path-Metric, CPM-t_exec(ns), SD Latency (us), SD Estimated WF Service Latency (us), WF Service Latency (us), Total Node Usage Time (us), Average Node Utilization (%), Coefficient of Variation (load distribution), Total Cache Hits, Total Cache Misses, Avg Cache Usage, Total KB Transferred, Final Result, Time, ns-3 commit, pybindgen commit, scenario commit, ndnSIM commit"
-header="Example, SD Interest Packets Generated, SD Data Packets Generated, SD Interest Packets Transmitted, SD Data Packets Transmitted, WF Interest Packets Generated, WF Data Packets Generated, WF Interest Packets Transmitted, WF Data Packets Transmitted, Critical-Path-Metric, CPM-t_exec(ns), SD Latency (us), SD Estimated WF Service Latency (us), WF Service Latency (us), Total Node Usage Time (us), Average Node Utilization (%), Coefficient of Variation (load distribution), Total Cache Hits, Total Cache Misses, Avg Cache Usage, Total KB Transferred, Avg SD2 Latency (us), Min Service Latency(us), Low Quartile Service Latency(us), Mid Quartile Service Latency(us), High Quartile Service Latency(us), Max Service Latency(us), Total Service Latency(us), Avg Service Latency(us), Requests Fulfilled, Result Sum, Final Result, Time, ns-3 commit, pybindgen commit, scenario commit, ndnSIM commit"
+#header="Example, SD Interest Packets Generated, SD Data Packets Generated, SD Interest Packets Transmitted, SD Data Packets Transmitted, WF Interest Packets Generated, WF Data Packets Generated, WF Interest Packets Transmitted, WF Data Packets Transmitted, Critical-Path-Metric, CPM-t_exec(ns), SD Latency (ns), SD Estimated WF Service Latency (ns), WF Service Latency (ns), Total Node Usage Time (ns), Average Node Utilization (%), Coefficient of Variation (load distribution), Final Result, Time, ns-3 commit, pybindgen commit, scenario commit, ndnSIM commit"
+#header="Example, SD Interest Packets Generated, SD Data Packets Generated, SD Interest Packets Transmitted, SD Data Packets Transmitted, WF Interest Packets Generated, WF Data Packets Generated, WF Interest Packets Transmitted, WF Data Packets Transmitted, Critical-Path-Metric, CPM-t_exec(ns), SD Latency (ns), SD Estimated WF Service Latency (ns), WF Service Latency (ns), Total Node Usage Time (ns), Average Node Utilization (%), Coefficient of Variation (load distribution), Total Cache Hits, Total Cache Misses, Avg Cache Usage, Total KB Transferred, Final Result, Time, ns-3 commit, pybindgen commit, scenario commit, ndnSIM commit"
+header="Example, SD Interest Packets Generated, SD Data Packets Generated, SD Interest Packets Transmitted, SD Data Packets Transmitted, WF Interest Packets Generated, WF Data Packets Generated, WF Interest Packets Transmitted, WF Data Packets Transmitted, Critical-Path-Metric, CPM-t_exec(ns), SD Latency (ns), SD Estimated WF Service Latency (ns), WF Service Latency (ns), Total Node Usage Time (ns), Average Node Utilization (%), Coefficient of Variation (load distribution), Total Cache Hits, Total Cache Misses, Avg Cache Usage, Total KB Transferred, Avg SD Latency (ns), Min WF Latency(ns), Low Quartile WF Latency(ns), Mid Quartile WF Latency(ns), High Quartile WF Latency(ns), Max WF Latency(ns), Total WF Latency(ns), Avg WF Latency(ns), Min SDWF Latency(ns), Low Quartile SDWF Latency(ns), Mid Quartile SDWF Latency(ns), High Quartile SDWF Latency(ns), Max SDWF Latency(ns), Total SDWF Latency(ns), Avg SDWF Latency(ns), Requests Fulfilled, Result Sum, Final Result, Time, ns-3 commit, pybindgen commit, scenario commit, ndnSIM commit"
 
 # Function to write sorted placeholder rows into the CSV file
 populate_blank_scenarios() {
@@ -214,16 +215,16 @@ run_simulation() {
     "$SCENARIO_DIR/waf" --run="ndn-cabeee-generic --scenario=$scenario_json --verbose=false --overrideTrace=$force_trace --traceDir=$SCENARIO_TRACE_DIR --overrideMakespan=$force_makespan --overrideFreshness=$force_freshness" > "$scenario_log" 2>&1
 
     # Parse logs
-    local estimatedWFLatency=$(grep "Service Latency estimated by SD:" "$scenario_log" | tail -n 1 | sed -n 's/^\s*Service Latency estimated by SD: \([0-9\.]*\) microseconds.$/\1/p')
+    local estimatedWFLatency=$(grep "Service Latency estimated by SD:" "$scenario_log" | tail -n 1 | sed -n 's/^\s*Service Latency estimated by SD: \([0-9\.]*\) nanoseconds.$/\1/p')
     estimatedWFLatency="${estimatedWFLatency:-N.A.}"
 
-    #local SDlatency=$(grep "Service Discovery Latency:" "$scenario_log" | tail -n 1 | sed -n 's/^\s*Service Discovery Latency: \([0-9\.]*\) microseconds.$/\1/p')
+    #local SDlatency=$(grep "Service Discovery Latency:" "$scenario_log" | tail -n 1 | sed -n 's/^\s*Service Discovery Latency: \([0-9\.]*\) nanoseconds.$/\1/p')
     #SDlatency="${SDlatency:-N.A.}"
-    local SDlatency=$(grep -o "Service Discovery Latency: [0-9]* microseconds" "$scenario_log" | tail -n 1 | cut -d' ' -f4)
+    local SDlatency=$(grep -o "Service Discovery Latency: [0-9]* nanoseconds" "$scenario_log" | tail -n 1 | cut -d' ' -f4)
     SDlatency="${SDlatency:-N.A.}"
 
 
-    local WFlatency=$(grep "Service Latency:" "$scenario_log" | sed -n 's/^\s*Service Latency: \([0-9\.]*\) microseconds.$/\1/p')
+    local WFlatency=$(grep "Service Latency:" "$scenario_log" | sed -n 's/^\s*Service Latency: \([0-9\.]*\) nanoseconds.$/\1/p')
     WFlatency="${WFlatency:-Error_WFLatency}"
 
     local result=$(grep "The final answer is:" "$scenario_log" | tail -n 1 | sed -n 's/^\s*The final answer is: \([0-9]*\)$/\1/p')
@@ -239,17 +240,24 @@ run_simulation() {
         -e 's/^WF Data Packets Generated: \([0-9]*\) data$/\1,/p' \
         -e 's/^WF Interest Packets Transmitted: \([0-9]*\) interests$/\1,/p' \
         -e 's/^WF Data Packets Transmitted: \([0-9]*\) data/\1,/p' \
-        -e 's/^Global workflow min latency: \([0-9.]*\) microseconds$/\1,/p' \
-        -e 's/^Global workflow low latency: \([0-9.]*\) microseconds$/\1,/p' \
-        -e 's/^Global workflow mid latency: \([0-9.]*\) microseconds$/\1,/p' \
-        -e 's/^Global workflow high latency: \([0-9.]*\) microseconds$/\1,/p' \
-        -e 's/^Global workflow max latency: \([0-9.]*\) microseconds$/\1,/p' \
-        -e 's/^Global workflow total latency: \([0-9.]*\) microseconds$/\1,/p' \
-        -e 's/^Global workflow avg latency: \([0-9.]*\) microseconds$/\1,/p' \
-        -e 's/^Global workflow total requests fulfilled: \([0-9.]*\) total requests$/\1,/p' \
-        -e 's/^Global workflow final answers sum: \([0-9.]*\) numerical$/\1,/p' \
-        -e 's/^Global service discovery average latency: \([0-9.]*\) microseconds$/\1,/p' \
-        -e 's/^Overall Total Busy Time (All Nodes): \([0-9.]*\) microseconds/\1,/p' \
+        -e 's/^Global WF min latency: \([0-9.]*\) nanoseconds$/\1,/p' \
+        -e 's/^Global WF low latency: \([0-9.]*\) nanoseconds$/\1,/p' \
+        -e 's/^Global WF mid latency: \([0-9.]*\) nanoseconds$/\1,/p' \
+        -e 's/^Global WF high latency: \([0-9.]*\) nanoseconds$/\1,/p' \
+        -e 's/^Global WF max latency: \([0-9.]*\) nanoseconds$/\1,/p' \
+        -e 's/^Global WF total latency: \([0-9.]*\) nanoseconds$/\1,/p' \
+        -e 's/^Global WF avg latency: \([0-9.]*\) nanoseconds$/\1,/p' \
+        -e 's/^Global WF total requests fulfilled: \([0-9.]*\) total requests$/\1,/p' \
+        -e 's/^Global WF final answers sum: \([0-9.]*\) numerical$/\1,/p' \
+        -e 's/^Global SD average latency: \([0-9.]*\) nanoseconds$/\1,/p' \
+        -e 's/^Global SDWF min latency: \([0-9.]*\) nanoseconds$/\1,/p' \
+        -e 's/^Global SDWF low latency: \([0-9.]*\) nanoseconds$/\1,/p' \
+        -e 's/^Global SDWF mid latency: \([0-9.]*\) nanoseconds$/\1,/p' \
+        -e 's/^Global SDWF high latency: \([0-9.]*\) nanoseconds$/\1,/p' \
+        -e 's/^Global SDWF max latency: \([0-9.]*\) nanoseconds$/\1,/p' \
+        -e 's/^Global SDWF total latency: \([0-9.]*\) nanoseconds$/\1,/p' \
+        -e 's/^Global SDWF avg latency: \([0-9.]*\) nanoseconds$/\1,/p' \
+        -e 's/^Overall Total Busy Time (All Nodes): \([0-9.]*\) nanoseconds/\1,/p' \
         -e 's/^Average Utilization (All Nodes): \([0-9.]*\)%$/\1,/p' \
         -e 's/^Coefficient of Variation (load distribution): \([0-9.]*\)/\1,/p' \
         | tr -d '\n' \
@@ -272,14 +280,23 @@ run_simulation() {
     local global_wf_max_latency="${packetArray[12]:-N.A.}"
     local global_wf_total_latency="${packetArray[13]:-N.A.}"
     local global_wf_avg_latency="${packetArray[14]:-N.A.}"
+
     local global_wf_requests_fulfilled="${packetArray[15]:-N.A.}"
     local global_wf_final_answers_sum="${packetArray[16]:-N.A.}"
 
     local global_sd_avg_latency="${packetArray[17]:-N.A.}"
 
-    local totalNodeUsageTime="${packetArray[18]:-N.A.}"
-    local avgNodeUsage="${packetArray[19]:-N.A.}"
-    local coeffVariation="${packetArray[20]:-N.A.}"
+    local global_sdwf_min_latency="${packetArray[18]:-N.A.}"
+    local global_sdwf_low_latency="${packetArray[19]:-N.A.}"
+    local global_sdwf_mid_latency="${packetArray[20]:-N.A.}"
+    local global_sdwf_high_latency="${packetArray[21]:-N.A.}"
+    local global_sdwf_max_latency="${packetArray[22]:-N.A.}"
+    local global_sdwf_total_latency="${packetArray[23]:-N.A.}"
+    local global_sdwf_avg_latency="${packetArray[24]:-N.A.}"
+
+    local totalNodeUsageTime="${packetArray[25]:-N.A.}"
+    local avgNodeUsage="${packetArray[26]:-N.A.}"
+    local coeffVariation="${packetArray[27]:-N.A.}"
 
 
     # --- Trace Analysis (with existence checks) ---
@@ -335,7 +352,7 @@ run_simulation() {
 
     #local row="$scenario, $SDinterest_gen, $SDdata_gen, $SDinterest_trans, $SDdata_trans, $WFinterest_gen, $WFdata_gen, $WFinterest_trans, $WFdata_trans, $cpm, $cpm_t, $SDlatency, $estimatedWFLatency, $WFlatency, $totalNodeUsageTime, $avgNodeUsage, $coeffVariation, $result, $now, $ns_3_hash, $pybindgen_hash, $scenario_hash, $ndnsim_hash"
     #local row="$scenario, $SDinterest_gen, $SDdata_gen, $SDinterest_trans, $SDdata_trans, $WFinterest_gen, $WFdata_gen, $WFinterest_trans, $WFdata_trans, $cpm, $cpm_t, $SDlatency, $estimatedWFLatency, $WFlatency, $totalNodeUsageTime, $avgNodeUsage, $coeffVariation, $totalHits, $totalMisses, $avgCacheUsage, $totalKB, $result, $now, $ns_3_hash, $pybindgen_hash, $scenario_hash, $ndnsim_hash"
-    local row="$scenario, $SDinterest_gen, $SDdata_gen, $SDinterest_trans, $SDdata_trans, $WFinterest_gen, $WFdata_gen, $WFinterest_trans, $WFdata_trans, $cpm, $cpm_t, $SDlatency, $estimatedWFLatency, $WFlatency, $totalNodeUsageTime, $avgNodeUsage, $coeffVariation, $totalHits, $totalMisses, $avgCacheUsage, $totalKB, $global_sd_avg_latency, $global_wf_min_latency, $global_wf_low_latency, $global_wf_mid_latency, $global_wf_high_latency, $global_wf_max_latency, $global_wf_total_latency, $global_wf_avg_latency, $global_wf_requests_fulfilled, $global_wf_final_answers_sum, $result, $now, $ns_3_hash, $pybindgen_hash, $scenario_hash, $ndnsim_hash"
+    local row="$scenario, $SDinterest_gen, $SDdata_gen, $SDinterest_trans, $SDdata_trans, $WFinterest_gen, $WFdata_gen, $WFinterest_trans, $WFdata_trans, $cpm, $cpm_t, $SDlatency, $estimatedWFLatency, $WFlatency, $totalNodeUsageTime, $avgNodeUsage, $coeffVariation, $totalHits, $totalMisses, $avgCacheUsage, $totalKB, $global_sd_avg_latency, $global_wf_min_latency, $global_wf_low_latency, $global_wf_mid_latency, $global_wf_high_latency, $global_wf_max_latency, $global_wf_total_latency, $global_wf_avg_latency, $global_sdwf_min_latency, $global_sdwf_low_latency, $global_sdwf_mid_latency, $global_sdwf_high_latency, $global_sdwf_max_latency, $global_sdwf_total_latency, $global_sdwf_avg_latency, $global_wf_requests_fulfilled, $global_wf_final_answers_sum, $result, $now, $ns_3_hash, $pybindgen_hash, $scenario_hash, $ndnsim_hash"
 
 
     # Lock the CSV file writing process to prevent data corruption

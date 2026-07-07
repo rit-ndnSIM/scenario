@@ -15,9 +15,7 @@ import random
 # ==========================================
 # GLOBAL CONFIGURATION
 # ==========================================
-#NAME = "linearWFs_SD2Sweep_20runsx100reqx100cons_5servx8nodes"
-#NAME = "linearWFs_SD2Sweep_1runsx20reqx20cons_5servx6nodes"
-NAME = "linearWFs_SD2Sweep_20runsx20reqx20cons_5servx6nodes_0P8"
+NAME="SD2_stateArt_5runsx20reqx20cons_4servx5nodes_0P6"
 TIMESTAMP = datetime.now().strftime("%Y%m%d-%H%M%S")
 WORKDIR = os.path.join(os.getcwd(), "generated_scenarios", NAME)
 OUTDIR = os.path.join(os.getcwd(), "..", NAME)
@@ -29,14 +27,13 @@ if os.path.exists(OUTDIR):
     shutil.rmtree(OUTDIR)
 
 # Total number of runs (each will get it's own JSON and thus its own row in the CSV file - MATLAB will average them all)
-NUM_RUNS = 20
-#NUM_RUNS = 5
+NUM_RUNS = 5
 
 NUM_SERVICES_LIST = [4]
 NUM_NODES_LIST = [5]
 EDGERATIO_LIST = [0.5]
 #HOSTRATIO_LIST = [0.0, 0.2, 0.4, 0.6, 0.8, 1.0]
-HOSTRATIO_LIST = [0.0, 0.2, 0.4, 0.6, 0.8]
+HOSTRATIO_LIST = [0.0, 0.2, 0.4, 0.6]
 
 LINK_DELAY_AVG_MS = 1
 LINK_DELAY_VARIATION_PCT = 0.80  # percent variation.

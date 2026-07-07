@@ -368,7 +368,7 @@ DagServiceDiscoveryApp::OnInterest(std::shared_ptr<const ndn::Interest> interest
 
   simpleName        = simpleName.getSubName(2,1); // remove the zeroeth component of the name (/PREFIX), and the first component of the name (/serviceDiscovery). starting at component 2, keep 1 component
   simpleNameAndHash = simpleNameAndHash.getSubName(2,simpleNameAndHash.size()); // remove the zeroeth component of the name (/PREFIX), and the first component of the name (/serviceDiscovery). starting at component 2, keep the rest of the components, including the application parameter hash
-  fullNameAndHash   = fullNameAndHash.getSubName(0,fullNameAndHash.size()); // remove the zeroeth component of the name (/PREFIX), and the first component of the name (/serviceDiscovery). starting at component 0, keep the rest of the components, including the application parameter hash
+  fullNameAndHash   = fullNameAndHash.getSubName(0,fullNameAndHash.size()); // starting at component 0, keep the rest of the components, including the application parameter hash
 
   std::string rxedInterestName        = simpleName.toUri();
   std::string rxedInterestNameAndHash = simpleNameAndHash.toUri();

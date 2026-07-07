@@ -15,7 +15,7 @@ import random
 # ==========================================
 # GLOBAL CONFIGURATION
 # ==========================================
-NAME = "fwdOptSD2Sweep_4runsx20reqx20cons_4servx5nodes"
+NAME="SD2_baseline_20runsx20reqx20cons_5servx6nodes_0P6"
 TIMESTAMP = datetime.now().strftime("%Y%m%d-%H%M%S")
 WORKDIR = os.path.join(os.getcwd(), "generated_scenarios", NAME)
 OUTDIR = os.path.join(os.getcwd(), "..", NAME)
@@ -27,24 +27,23 @@ if os.path.exists(OUTDIR):
     shutil.rmtree(OUTDIR)
 
 # Total number of runs (each will get it's own JSON and thus its own row in the CSV file - MATLAB will average them all)
-#NUM_RUNS = 20
-NUM_RUNS = 4
+NUM_RUNS = 20
 
-NUM_SERVICES_LIST = [4]
-NUM_NODES_LIST = [5]
+NUM_SERVICES_LIST = [5]
+NUM_NODES_LIST = [6]
 EDGERATIO_LIST = [0.5]
 #HOSTRATIO_LIST = [0.0, 0.2, 0.4, 0.6, 0.8, 1.0]
-HOSTRATIO_LIST = [0.0, 0.2, 0.4]
+HOSTRATIO_LIST = [0.0, 0.2, 0.4, 0.6]
 
 LINK_DELAY_AVG_MS = 1
 LINK_DELAY_VARIATION_PCT = 0.80  # percent variation.
 #CCR_LIST = [0.1, 0.5, 1, 2, 10]  # CCR is communication to computation ratio
-CCR_LIST = [0.01, 0.1, 1, 10]  # CCR is communication to computation ratio
+CCR_LIST = [0.01, 0.1, 1]  # CCR is communication to computation ratio
 MAKESPAN_VARIATION_PCT = 0.80  # percent variation.
 
 # Consumer options
-POISSON_FREQ = 100 # wait on average 10ms between receiving results from prev WF, and generating SD2 request for next WF.
-#POISSON_FREQ = 200 # wait on average 5ms between receiving results from prev WF, and generating SD2 request for next WF.
+#POISSON_FREQ = 100 # wait on average 10ms between receiving results from prev WF, and generating SD2 request for next WF.
+POISSON_FREQ = 200 # wait on average 5ms between receiving results from prev WF, and generating SD2 request for next WF.
 #POISSON_NUM_INTERESTS = 100
 #POISSON_NUM_CONSUMERS = 100
 POISSON_NUM_INTERESTS = 20
@@ -191,7 +190,7 @@ def build_scenario(out_name, wf_filenames, tp_filename, hs_filename, prefix, str
         "--producerFreshnessMSmin", PRODUCER_FRESHNESS_MS_MIN,
         "--producerFreshnessMSmax", PRODUCER_FRESHNESS_MS_MAX,
         "--producerFreshnessMS", freshness_ms,
-        "--icnfcM", ifnfcM,
+        "--icnfcM", icnfcM,
         "--ndnfcpTMS", ndnfcpTMS,
         "--workflow"
     ] + wf_full_paths
@@ -235,7 +234,9 @@ def run_category_task(run_id, pair, generated_workflows):
             for ccr in CCR_LIST:
                 # Reset previous hosting structure across different CCR runs
                 prev_hs = None
-                ccr_str = f"CCR_{ccr}".replace('.', 'p')  # e.g., CCR_0p5 avoids dots in filenames
+                #ccr_str = f"CCR_{ccr}".replace('.', 'p')  # e.g., CCR_0p5 avoids dots in filenames
+                formatted_float = f"{ccr:05.2f}"
+                ccr_str = f"CCR_{formatted_float.replace('.', 'p')}"
 
                 link_delay_ns = LINK_DELAY_AVG_MS * 1_000_000
                 avg_makespan_ns = link_delay_ns / ccr
