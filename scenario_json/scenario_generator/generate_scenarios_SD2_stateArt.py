@@ -15,7 +15,7 @@ import random
 # ==========================================
 # GLOBAL CONFIGURATION
 # ==========================================
-NAME="SD2_stateArt_5runsx20reqx20cons_4servx5nodes_0P6"
+NAME="SD2_stateArt_5runsx20reqx20cons_4servx10nodes_0P3"
 TIMESTAMP = datetime.now().strftime("%Y%m%d-%H%M%S")
 WORKDIR = os.path.join(os.getcwd(), "generated_scenarios", NAME)
 OUTDIR = os.path.join(os.getcwd(), "..", NAME)
@@ -30,10 +30,10 @@ if os.path.exists(OUTDIR):
 NUM_RUNS = 5
 
 NUM_SERVICES_LIST = [4]
-NUM_NODES_LIST = [5]
+NUM_NODES_LIST = [10]
 EDGERATIO_LIST = [0.5]
 #HOSTRATIO_LIST = [0.0, 0.2, 0.4, 0.6, 0.8, 1.0]
-HOSTRATIO_LIST = [0.0, 0.2, 0.4, 0.6]
+HOSTRATIO_LIST = [0.0, 0.1, 0.2, 0.3]
 
 LINK_DELAY_AVG_MS = 1
 LINK_DELAY_VARIATION_PCT = 0.80  # percent variation.

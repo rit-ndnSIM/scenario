@@ -66,7 +66,8 @@ export NS_LOG="$LOGS"
 #NAME="fwdOptSD2Sweep_4runsx20reqx20cons_4servx5nodes"
 #NAME="linearWFs_SD2Sweep_5runsx20reqx20cons_4servx5nodes_0P6"
 #NAME="linearWFs_SD2Sweep_20runsx20reqx20cons_5servx6nodes_0P8"
-NAME="SD2_stateArt_5runsx20reqx20cons_4servx5nodes_0P6"
+#NAME="SD2_stateArt_5runsx20reqx20cons_4servx5nodes_0P6"
+NAME="SD2_stateArt_5runsx20reqx20cons_4servx10nodes_0P3"
 
 
 #export GEN_ALLOCATION_GRAPHS="true"
