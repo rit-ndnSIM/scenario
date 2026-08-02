@@ -69,8 +69,11 @@ export NS_LOG="$LOGS"
 #NAME="SD2_stateArt_5runsx20reqx20cons_4servx5nodes_0P6"
 #NAME="SD2_stateArt_5runsx20reqx20cons_4servx10nodes_0P3"
 #NAME="SD2_baseline_5runsx20reqx20cons_4servx10nodes_0P3"
+#NAME="SD2_baseline_20runsx20reqx01cons_4servx10nodes_0P3_002PF"
+#NAME="SD2_baseline_20runsx20reqx01cons_4servx10nodes_0P3_200PF"
+NAME="SD2_baseline_20runsx20reqx01cons_4servx10nodes_0P4_200PF"
 #NAME="debugme5"
-NAME="debugme6"
+#NAME="debugme6"
 #NAME="debugme7"
 
 
@@ -89,6 +92,7 @@ export FORCE_SD_TIMEOUT=1    # Set to override SD timeout optimization settings 
 #export FORCE_SD_TIMEOUT_COMPUTATION_MULTIPLIER=-1    # SD timeout computation multiplier in JSON file. -1 means don't perform timeout optmization at all. Zero means computation not considered. >0 assigns the multiplier. Ex: 10 means 10x faster computation available assumed in nodes that have not yet responded.
 #export FORCE_SD_TIMEOUT_COMPUTATION_MULTIPLIER=0    # SD timeout computation multiplier in JSON file. -1 means don't perform timeout optmization at all. Zero means computation not considered. >0 assigns the multiplier. Ex: 10 means 10x faster computation available assumed in nodes that have not yet responded.
 #export FORCE_SD_TIMEOUT_COMPUTATION_MULTIPLIER=10    # SD timeout computation multiplier in JSON file. -1 means don't perform timeout optmization at all. Zero means computation not considered. >0 assigns the multiplier. Ex: 10 means 10x faster computation available assumed in nodes that have not yet responded.
+#export FORCE_SD_TIMEOUT_COMPUTATION_MULTIPLIER=1.1    # SD timeout computation multiplier in JSON file. -1 means don't perform timeout optmization at all. Zero means computation not considered. >0 assigns the multiplier. Ex: 10 means 10x faster computation available assumed in nodes that have not yet responded.
 export FORCE_SD_TIMEOUT_COMPUTATION_MULTIPLIER=1.1    # SD timeout computation multiplier in JSON file. -1 means don't perform timeout optmization at all. Zero means computation not considered. >0 assigns the multiplier. Ex: 10 means 10x faster computation available assumed in nodes that have not yet responded.
 
 

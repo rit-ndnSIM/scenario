@@ -15,7 +15,7 @@ import random
 # ==========================================
 # GLOBAL CONFIGURATION
 # ==========================================
-NAME="SD2_stateArt_20runsx20reqx20cons_4servx10nodes_0P4_200PF"
+NAME="SD2_baseline_20runsx20reqx01cons_4servx10nodes_0P4_200PF"
 TIMESTAMP = datetime.now().strftime("%Y%m%d-%H%M%S")
 WORKDIR = os.path.join(os.getcwd(), "generated_scenarios", NAME)
 OUTDIR = os.path.join(os.getcwd(), "..", NAME)
@@ -33,7 +33,6 @@ NUM_SERVICES_LIST = [4]
 NUM_NODES_LIST = [10]
 EDGERATIO_LIST = [0.5]
 #HOSTRATIO_LIST = [0.0, 0.2, 0.4, 0.6, 0.8, 1.0]
-#HOSTRATIO_LIST = [0.0, 0.1, 0.2, 0.3]
 HOSTRATIO_LIST = [0.1, 0.2, 0.3, 0.4]
 
 LINK_DELAY_AVG_MS = 1
@@ -43,12 +42,13 @@ CCR_LIST = [0.01, 0.1, 1]  # CCR is communication to computation ratio
 MAKESPAN_VARIATION_PCT = 0.80  # percent variation.
 
 # Consumer options
+#POISSON_FREQ = 2 # wait on average 500ms between receiving results from prev WF, and generating SD2 request for next WF.
 #POISSON_FREQ = 100 # wait on average 10ms between receiving results from prev WF, and generating SD2 request for next WF.
 POISSON_FREQ = 200 # wait on average 5ms between receiving results from prev WF, and generating SD2 request for next WF.
 #POISSON_NUM_INTERESTS = 100
 #POISSON_NUM_CONSUMERS = 100
 POISSON_NUM_INTERESTS = 20
-POISSON_NUM_CONSUMERS = 20
+POISSON_NUM_CONSUMERS = 1
 
 PRODUCER_FRESHNESS_UNIFORM_DIST = 0 # 0: not random, use hardcoded value. 1: randomly chosen once. 2: randomly chosen each time an interest arrives.
 PRODUCER_FRESHNESS_MS_MIN = 0
@@ -62,14 +62,12 @@ VISUALIZE = False
 # Define specific pairs as "workflow:topology"
 WF_TOPO_PAIRS = [
     "linear:multi_tiered",
-    "linear:star_of_stars",
-    "linear:mesh",
-    "linear:spanning_tree"
+    "map_reduce:star_of_stars",
+    "map_reduce:mesh",
+    "wavefront:mesh"
 ]
 
-#PREFIX_LIST = ["nesco", "icnfc", "ndnfcp", "or3", "ifcns"]
-PREFIX_LIST = ["nesco", "icnfc", "ndnfcp", "or3"]
-#PREFIX_LIST = ["nesco", "icnfc", "or3"]
+PREFIX_LIST = ["nesco"]
 
 
 
@@ -106,24 +104,6 @@ def generate_wf_messy(servs, prods, cons, layers, skips, ser, shuffle=False):
         "--num-services", servs,
         "--num-layers", layers,
         "--aggregate",
-        "--num-producers", prods,
-        "--num-consumers", cons,
-        "--num-skips", skips,
-        "--output", output_path
-    ]
-    if shuffle:
-        cmd.append("--shuffle-services")
-    run_cmd(cmd)
-    return output_name
-
-def generate_wf_linear(servs, prods, cons, layers, skips, ser, shuffle=False):
-    output_name = f"{TIMESTAMP}-{ser}--wf_linear-{servs:03d}srv-{prods:03d}prod-{cons:03d}con-{skips:03d}skip-agg-{layers:03d}layer.json"
-    output_path = os.path.join(WORKDIR, output_name)
-    
-    cmd = [
-        "./genworkflow.py", "layered",
-        "--num-services", servs,
-        "--num-layers", layers,
         "--num-producers", prods,
         "--num-consumers", cons,
         "--num-skips", skips,
@@ -186,6 +166,7 @@ def build_scenario(out_name, wf_filenames, tp_filename, hs_filename, prefix, str
     hs_path = os.path.join(WORKDIR, hs_filename)
     out_path = os.path.join(WORKDIR, out_name)
     wf_full_paths = [os.path.join(WORKDIR, w) for w in wf_filenames]
+
 
     cmd = [
         "./build_scenario.py", "-f",
@@ -279,30 +260,22 @@ def run_category_task(run_id, pair, generated_workflows):
                     sim_end_time = math.ceil(sim_end_time * 10) + START_TIME_OFFSET_WF # extra buffer room to finish simulation
 
                     for prefix in PREFIX_LIST:
+                        base_name = f"{padded_catCode}-hR_{hr_str}-{ccr_str}--sn-{topoCategory}-{workflowCategory}-{prefix}"
 
-                        if prefix == "icnfc":
-                            # Scenario 1: noSD2, bestRoute, cs=0
-                            base_name = f"{padded_catCode}-hR_{hr_str}-{ccr_str}--sn-{topoCategory}-{workflowCategory}-1_{prefix}"
-                            out_path = build_scenario(f"{base_name}--2-noSD2-bestRoute.json", wf_filenames, tp, hs, prefix, "best-route", 0, sim_end_time, freshness_ms, sd=0, ru=0, icnfcM=2, ndnfcpTMS=0)
-
-                        if prefix == "ndnfcp":
-                            # Scenario 2: noSD2, bestRoute, cs=1000
-                            base_name = f"{padded_catCode}-hR_{hr_str}-{ccr_str}--sn-{topoCategory}-{workflowCategory}-2_{prefix}"
-                            out_path = build_scenario(f"{base_name}--2-noSD2-bestRoute.json", wf_filenames, tp, hs, prefix, "best-route", 1000, sim_end_time, freshness_ms, sd=0, ru=0, icnfcM=0, ndnfcpTMS=500)
+                        # Scenario 1: noSD2, multicast, cs=0
+                        build_scenario(f"{base_name}--1-noSD2-multicast.json", wf_filenames, tp, hs, prefix, "multicast", 0, sim_end_time, freshness_ms, sd=0, ru=0, icnfcM=0, ndnfcpTMS=0)
                     
-                        if prefix == "or3":
-                            # Scenario 3: SD2, bestRoute, noUtil, noUtil, cs=0
-                            base_name = f"{padded_catCode}-hR_{hr_str}-{ccr_str}--sn-{topoCategory}-{workflowCategory}-3_{prefix}"
-                            out_path = build_scenario(f"{base_name}--3-SD2-noUtilization.json", wf_filenames, tp, hs, prefix, "best-route", 0, sim_end_time, freshness_ms, sd=2, ru=0, icnfcM=0, ndnfcpTMS=0)
+                        # Scenario 2: noSD2, bestRoute, cs=0
+                        build_scenario(f"{base_name}--2-noSD2-bestRoute.json", wf_filenames, tp, hs, prefix, "best-route", 0, sim_end_time, freshness_ms, sd=0, ru=0, icnfcM=0, ndnfcpTMS=0)
                     
-                        if prefix == "nesco":
-                            # Scenario 4: SD2, bestRoute, Util, noCaching, cs=0
-                            base_name = f"{padded_catCode}-hR_{hr_str}-{ccr_str}--sn-{topoCategory}-{workflowCategory}-4_{prefix}"
-                            out_path = build_scenario(f"{base_name}--4-SD2-utilization-noCaching.json", wf_filenames, tp, hs, prefix, "best-route", 0, sim_end_time, freshness_ms, sd=2, ru=1, icnfcM=0, ndnfcpTMS=0)
-                            # Scenario 5: SD2, bestRoute, Util, Caching, cs=1000
-                            base_name = f"{padded_catCode}-hR_{hr_str}-{ccr_str}--sn-{topoCategory}-{workflowCategory}-5_{prefix}"
-                            out_path = build_scenario(f"{base_name}--5-SD2-utilization-caching.json", wf_filenames, tp, hs, prefix, "best-route", 1000, sim_end_time, freshness_ms, sd=2, ru=1, icnfcM=0, ndnfcpTMS=0)
-
+                        # Scenario 3: SD2, bestRoute, noUtil, cs=0
+                        build_scenario(f"{base_name}--3-SD2-noUtilization.json", wf_filenames, tp, hs, prefix, "best-route", 0, sim_end_time, freshness_ms, sd=2, ru=0, icnfcM=0, ndnfcpTMS=0)
+                    
+                        # Scenario 4: SD2, bestRoute, Util, noCaching, cs=0
+                        build_scenario(f"{base_name}--4-SD2-utilization-noCaching.json", wf_filenames, tp, hs, prefix, "best-route", 0, sim_end_time, freshness_ms, sd=2, ru=1, icnfcM=0, ndnfcpTMS=0)
+                    
+                        # Scenario 5: SD2, bestRoute, Util, Caching, cs=1000
+                        out_path = build_scenario(f"{base_name}--5-SD2-utilization-caching.json", wf_filenames, tp, hs, prefix, "best-route", 1000, sim_end_time, freshness_ms, sd=2, ru=1, icnfcM=0, ndnfcpTMS=0)
 
                         if VISUALIZE and num_nodes < 9 and len(wf_filenames) < 21:
                             # Best effort visualization
@@ -333,38 +306,27 @@ if __name__ == "__main__":
                 
                 if wf_cat == "linear":
                     wf_code = f"ln-{wf_num:03d}"
-                    layers = num_services + 2
+                    layers = num_services
                     skips = 0
-                    wf = generate_wf_linear(num_services, prods, cons, layers, skips, wf_code, shuffle=True)
                 elif wf_cat == "map_reduce":
                     wf_code = f"mr-{wf_num:03d}"
                     layers = 3
-                    layers = random.randint(layers-1, layers+1)
-                    layers = max(3, layers)
                     skips = 0
-                    skips = random.randint(skips-1, skips+1)
-                    skips = max(0, skips)
-                    wf = generate_wf_messy(num_services, prods, cons, layers, skips, wf_code, shuffle=True)
                 elif wf_cat == "wavefront":
                     wf_code = f"wf-{wf_num:03d}"
                     layers = max(3, int(math.sqrt(num_services)))
-                    layers = random.randint(layers-1, layers+1)
-                    layers = max(3, layers)
                     skips = max(1, int(layers / 3))
-                    skips = random.randint(skips-1, skips+1)
-                    skips = max(0, skips)
-                    wf = generate_wf_messy(num_services, prods, cons, layers, skips, wf_code, shuffle=True)
                 elif wf_cat == "multi_sink":
                     wf_code = f"ms-{wf_num:03d}"
                     layers = max(1, int(num_services / 3))
-                    layers = random.randint(layers-1, layers+1)
-                    layers = max(3, layers)
                     skips = 2
-                    skips = random.randint(skips-1, skips+1)
-                    skips = max(0, skips)
-                    wf = generate_wf_messy(num_services, prods, cons, layers, skips, wf_code, shuffle=True)
 
+                layers = random.randint(layers-1, layers+1)
+                layers = max(3, layers)
+                skips = random.randint(skips-1, skips+1)
+                skips = max(0, skips)
 
+                wf = generate_wf_messy(num_services, prods, cons, layers, skips, wf_code, shuffle=True)
                 generated_wfs[wf_cat].append(wf)
 
     # Cross Product: 20 runs x 4 categories
