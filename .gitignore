@@ -16,3 +16,7 @@ log.txt
 perf-results*.*
 results.txt
 scenario.log
+scenario_logs/*
+scenario_json/*
+trace_results/*
+scenario*.log

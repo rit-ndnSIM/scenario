@@ -68,6 +68,8 @@ main(int argc, char* argv[])
     float overrideTrace = 0;
     uint64_t overrideMakespan = 0;
     uint64_t overrideFreshness = 0;
+    uint8_t overrideSdTimeout = 0;
+    float overrideSdTimeoutComputationMultiplier = 0;
 
     CommandLine cmd;
     cmd.AddValue("scenario", "json scenario file to use", scenario_file);
@@ -76,6 +78,8 @@ main(int argc, char* argv[])
     cmd.AddValue("overrideTrace", "override rateTrace, csTrace and csUsage interval to this number of seconds", overrideTrace);
     cmd.AddValue("overrideMakespan", "override service makespan value to this number of nanoseconds", overrideMakespan);
     cmd.AddValue("overrideFreshness", "override data packet freshness value to this number of milliseconds", overrideFreshness);
+    cmd.AddValue("overrideSdTimeout", "override SD timeout optimization (0=no, 1=yes)", overrideSdTimeout);
+    cmd.AddValue("overrideSdTimeoutComputationMultiplier", "set SD timeout computation multiplier. -1: disables timeout optimization. 0: computation not considered (only link delay), >0 sets multiplier. Ex: if 10, will assume 10x faster computation available than received EFT", overrideSdTimeoutComputationMultiplier);
     cmd.Parse(argc, argv);
 
     if (scenario_file == "") {
@@ -94,6 +98,8 @@ main(int argc, char* argv[])
         std::cout << "Trace override is: " << overrideTrace << std::endl;
         std::cout << "Makespan override is: " << overrideMakespan << "ns" << std::endl;
         std::cout << "Freshness override is: " << overrideFreshness << "ms" << std::endl;
+        std::cout << "SD timeout override is: " << overrideSdTimeout << std::endl;
+        std::cout << "SD timeout computation multiplier override is: " << overrideSdTimeoutComputationMultiplier << std::endl;
     }
 
     const json scenario_json = json::parse(std::ifstream(scenario_file));
@@ -147,6 +153,7 @@ main(int argc, char* argv[])
     uint64_t producerFreshnessMSmin = 0;
     uint64_t producerFreshnessMSmax = 0;
     uint64_t producerFreshnessMS = 60000;
+    float sdTimeoutComputationMultiplier = -1;
 /*
     uint8_t icnfcM = 2;
     uint64_t ndnfcpTMS = 500;
@@ -177,6 +184,9 @@ main(int argc, char* argv[])
     }
     if (scenario_json.contains("producerFreshnessMS")) {
         producerFreshnessMS = scenario_json.at("producerFreshnessMS");
+    }
+    if (scenario_json.contains("sdTimeoutComputationMultiplier")) {
+        sdTimeoutComputationMultiplier = scenario_json.at("sdTimeoutComputationMultiplier");
     }
 /*
     if (scenario_json.contains("icnfcM")) {
@@ -356,6 +366,10 @@ main(int argc, char* argv[])
                 std::cerr << "No workflow file specified for consumer " << (srv_name) << ". (make sure you use '--scenario FILE' and this file has workflowFile specified)\n";
                 std::exit(1);
             }
+            if (overrideSdTimeout == 1)
+            {
+                sdTimeoutComputationMultiplier = overrideSdTimeoutComputationMultiplier;
+            }
             //appHelper = ndn::AppHelper("CustomAppConsumer");
             appHelper = ndn::AppHelper("CustomAppConsumerServiceDiscovery");
             appHelper.SetAttribute("Workflow", StringValue(workflow_file));
@@ -372,6 +386,7 @@ main(int argc, char* argv[])
                     }
                     if (serviceDiscoveryFlag == 2) {
                         appHelper.SetAttribute("SDName", StringValue("/serviceDiscovery2"));
+                        appHelper.SetAttribute("SDTimeoutComputationMultiplier", DoubleValue(sdTimeoutComputationMultiplier));
                     }
                     appHelper.SetAttribute("SDstartTimeOffset", TimeValue(Seconds(startTimeOffsetSD)));
                     appHelper.SetAttribute("WFstartTimeOffset", TimeValue(Seconds(startTimeOffsetWF)));

@@ -492,6 +492,8 @@ def analyze_and_plot(file_path, output_filename_base, poisson_detected, num_inte
                 for node_id_int, busy_time_ns, percentage in text_results:
                     print(f"\nNode {node_id_int}:")
                     print(f"  Total Busy Time: {busy_time_ns} nanoseconds")
+                    busy_time_s = busy_time_ns / 1000000000
+                    print(f"  Total Busy Time: {busy_time_s} seconds")
                     print(f"  Utilization: {percentage:.4f}%")
             else:
                 print("Warning: Total simulation duration is zero (possibly no finished jobs before stop time).")
@@ -499,6 +501,8 @@ def analyze_and_plot(file_path, output_filename_base, poisson_detected, num_inte
             print("\n## Overall Resource Utilization Summary")
             print("------------------------------------------")
             print(f"Overall Total Busy Time (All Nodes): {overall_total_busy_time_ns} nanoseconds")
+            overall_total_busy_time_s = overall_total_busy_time_ns / 1000000000
+            print(f"Overall Total Busy Time (All Nodes): {overall_total_busy_time_s} seconds")
             print(f"Average Utilization (All Nodes): {average_utilization_percentage:.4f}%")
             print(f"Coefficient of Variation (load distribution): {coef_of_variation:.4f}")
             print()
@@ -658,6 +662,8 @@ def analyze_and_plot(file_path, output_filename_base, poisson_detected, num_inte
             for node_id_int, busy_time_ns, percentage in text_results:
                 print(f"\nNode {node_id_int}:")
                 print(f"  Total Busy Time: {busy_time_ns} nanoseconds")
+                busy_time_s = busy_time_ns / 1000000000
+                print(f"  Total Busy Time: {busy_time_s} seconds")
                 print(f"  Utilization: {percentage:.4f}%")
         else:
             print("Warning: Total simulation duration is zero (possibly no finished jobs before stop time).")
@@ -665,6 +671,8 @@ def analyze_and_plot(file_path, output_filename_base, poisson_detected, num_inte
         print("\n## Overall Resource Utilization Summary")
         print("------------------------------------------")
         print(f"Overall Total Busy Time (All Nodes): {overall_total_busy_time_ns} nanoseconds")
+        overall_total_busy_time_s = overall_total_busy_time_ns / 1000000000
+        print(f"Overall Total Busy Time (All Nodes): {overall_total_busy_time_s} seconds")
         print(f"Average Utilization (All Nodes): {average_utilization_percentage:.4f}%")
         print(f"Coefficient of Variation (load distribution): {coef_of_variation:.4f}")
 

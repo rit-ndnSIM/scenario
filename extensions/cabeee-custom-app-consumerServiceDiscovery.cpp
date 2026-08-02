@@ -90,7 +90,9 @@ CustomAppConsumerServiceDiscovery::GetTypeId()
     .AddAttribute("Frequency", "Average number of interests per second - frequency", DoubleValue(10),
                     MakeDoubleAccessor(&CustomAppConsumerServiceDiscovery::m_frequency), MakeDoubleChecker<double>())
     .AddAttribute("NumInterests", "Total number of interests to generate", UintegerValue(1),
-                    MakeUintegerAccessor(&CustomAppConsumerServiceDiscovery::m_numInterests), MakeUintegerChecker<uint16_t>());
+                    MakeUintegerAccessor(&CustomAppConsumerServiceDiscovery::m_numInterests), MakeUintegerChecker<uint16_t>())
+    .AddAttribute("SDTimeoutComputationMultiplier", "SD timeout computation multiplier", DoubleValue(10),
+                    MakeDoubleAccessor(&CustomAppConsumerServiceDiscovery::m_SDtimeoutComputationMultiplier), MakeDoubleChecker<double>());
   return tid;
 }
 
@@ -225,6 +227,8 @@ CustomAppConsumerServiceDiscovery::SendSDInterest()
   dagObject["scheduleCompaction"] = m_scheduleCompaction;
   dagObject["consumerName"] = m_service.ndn::Name::toUri();
   dagObject["interestGenerationTimestamp"] = Simulator::Now().ToInteger(ns3::Time::NS);
+  dagObject["hopCounter"] = 0; // Used for debugging to keep track of the number of hops taken so far (from consumer up to root nodes). Perhaps we can use this for scoped interest propagation at some point.
+  dagObject["sdTimeoutComputationMultiplier"] = m_SDtimeoutComputationMultiplier;
 
 
   //std::cout << "Consumer: Full DAG as read: " << std::setw(2) << dagObject << '\n';

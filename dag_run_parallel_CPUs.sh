@@ -67,7 +67,11 @@ export NS_LOG="$LOGS"
 #NAME="linearWFs_SD2Sweep_5runsx20reqx20cons_4servx5nodes_0P6"
 #NAME="linearWFs_SD2Sweep_20runsx20reqx20cons_5servx6nodes_0P8"
 #NAME="SD2_stateArt_5runsx20reqx20cons_4servx5nodes_0P6"
-NAME="SD2_stateArt_5runsx20reqx20cons_4servx10nodes_0P3"
+#NAME="SD2_stateArt_5runsx20reqx20cons_4servx10nodes_0P3"
+#NAME="SD2_baseline_5runsx20reqx20cons_4servx10nodes_0P3"
+#NAME="debugme5"
+NAME="debugme6"
+#NAME="debugme7"
 
 
 #export GEN_ALLOCATION_GRAPHS="true"
@@ -76,10 +80,16 @@ export FORCE_RERUN_ALL="true"   # Set to "true" to run everything. Set to "false
 #export FORCE_RERUN_ALL="false"   # Set to "true" to run everything. Set to "false" to only run missing/failed scenarios.
 export FORCE_TRACE=0    # Set to override trace settings in JSON file. This value is the trace interval in seconds.
 #export FORCE_TRACE=0.1    # Set to override trace settings in JSON file. This value is the trace interval in seconds.
-#export FORCE_MAKESPAN=20000000    # Set to override service makespanNS settings in JSON file.
-export FORCE_MAKESPAN=0    # Set to override service makespanNS settings in JSON file.
+#export FORCE_MAKESPAN=20000000    # Set to override service makespanNS settings in JSON file. Zero means no override. Non-zero assigns the makespan in nanoseconds
+export FORCE_MAKESPAN=0    # Set to override service makespanNS settings in JSON file. Zero means no override. Non-zero assigns the makespan in nanoseconds
 export FORCE_FRESHNESS=0    # Set to override data packet freshness settings in JSON file.
-#export FORCE_FRESHNESS=1    # Set to override data packet freshness settings in JSON file.
+#export FORCE_FRESHNESS=1    # Set to override data packet freshness settings in JSON file. Zero means no override. Non-zero assigns the freshness in milliseconds
+#export FORCE_SD_TIMEOUT=0    # Set to override SD timeout optimization settings in JSON file. Boolean
+export FORCE_SD_TIMEOUT=1    # Set to override SD timeout optimization settings in JSON file. Boolean
+#export FORCE_SD_TIMEOUT_COMPUTATION_MULTIPLIER=-1    # SD timeout computation multiplier in JSON file. -1 means don't perform timeout optmization at all. Zero means computation not considered. >0 assigns the multiplier. Ex: 10 means 10x faster computation available assumed in nodes that have not yet responded.
+#export FORCE_SD_TIMEOUT_COMPUTATION_MULTIPLIER=0    # SD timeout computation multiplier in JSON file. -1 means don't perform timeout optmization at all. Zero means computation not considered. >0 assigns the multiplier. Ex: 10 means 10x faster computation available assumed in nodes that have not yet responded.
+#export FORCE_SD_TIMEOUT_COMPUTATION_MULTIPLIER=10    # SD timeout computation multiplier in JSON file. -1 means don't perform timeout optmization at all. Zero means computation not considered. >0 assigns the multiplier. Ex: 10 means 10x faster computation available assumed in nodes that have not yet responded.
+export FORCE_SD_TIMEOUT_COMPUTATION_MULTIPLIER=1.1    # SD timeout computation multiplier in JSON file. -1 means don't perform timeout optmization at all. Zero means computation not considered. >0 assigns the multiplier. Ex: 10 means 10x faster computation available assumed in nodes that have not yet responded.
 
 
 #------------------------------ END OF SETTINGS -----------------------------------
@@ -174,6 +184,8 @@ run_simulation() {
     local force_trace="$4"
     local force_makespan="$5"
     local force_freshness="$6"
+    local force_sd_timeout="$7"
+    local force_sd_timeout_computation_multiplier="$8"
     local filename=$(basename "$filepath")
     local scenario="${filename%.*}"
     local scenario_json="$filepath"
@@ -213,7 +225,9 @@ run_simulation() {
 
     # Run simulation, logging output to a unique file
     #"$SCENARIO_DIR/waf" --run="ndn-cabeee-generic --scenario=$scenario_json --verbose=true" > "$scenario_log" 2>&1
-    "$SCENARIO_DIR/waf" --run="ndn-cabeee-generic --scenario=$scenario_json --verbose=false --overrideTrace=$force_trace --traceDir=$SCENARIO_TRACE_DIR --overrideMakespan=$force_makespan --overrideFreshness=$force_freshness" > "$scenario_log" 2>&1
+    "$SCENARIO_DIR/waf" --run="ndn-cabeee-generic --scenario=$scenario_json --verbose=false --overrideTrace=$force_trace --traceDir=$SCENARIO_TRACE_DIR --overrideMakespan=$force_makespan --overrideFreshness=$force_freshness --overrideSdTimeout=$force_sd_timeout --overrideSdTimeoutComputationMultiplier=$force_sd_timeout_computation_multiplier" > "$scenario_log" 2>&1
+
+
 
     # Parse logs
     local estimatedWFLatency=$(grep "Service Latency estimated by SD:" "$scenario_log" | tail -n 1 | sed -n 's/^\s*Service Latency estimated by SD: \([0-9\.]*\) nanoseconds.$/\1/p')
@@ -396,7 +410,14 @@ find "$SCENARIO_JSON_DIR" -maxdepth 1 -name "*.json" | awk '
             print "z_no_hR" "\t" $0
         }
     }
-' | sort -V | cut -f2- | parallel --ungroup --jobs 80% run_simulation {} "$FORCE_RERUN_ALL" "$csv_out" "$FORCE_TRACE" "$FORCE_MAKESPAN" "$FORCE_FRESHNESS"
+' | sort -V | cut -f2- | parallel --ungroup --jobs 80% run_simulation {} \
+"$FORCE_RERUN_ALL" \
+"$csv_out" \
+"$FORCE_TRACE" \
+"$FORCE_MAKESPAN" \
+"$FORCE_FRESHNESS" \
+"$FORCE_SD_TIMEOUT" \
+"$FORCE_SD_TIMEOUT_COMPUTATION_MULTIPLIER"
 
 # Wait for all semaphores to clear just to be safe
 #sem --wait --id csv_lock

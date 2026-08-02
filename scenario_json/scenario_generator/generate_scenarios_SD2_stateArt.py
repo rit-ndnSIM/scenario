@@ -15,7 +15,7 @@ import random
 # ==========================================
 # GLOBAL CONFIGURATION
 # ==========================================
-NAME="SD2_stateArt_5runsx20reqx20cons_4servx10nodes_0P3"
+NAME="SD2_stateArt_20runsx20reqx20cons_4servx10nodes_0P3"
 TIMESTAMP = datetime.now().strftime("%Y%m%d-%H%M%S")
 WORKDIR = os.path.join(os.getcwd(), "generated_scenarios", NAME)
 OUTDIR = os.path.join(os.getcwd(), "..", NAME)
@@ -27,7 +27,7 @@ if os.path.exists(OUTDIR):
     shutil.rmtree(OUTDIR)
 
 # Total number of runs (each will get it's own JSON and thus its own row in the CSV file - MATLAB will average them all)
-NUM_RUNS = 5
+NUM_RUNS = 20
 
 NUM_SERVICES_LIST = [4]
 NUM_NODES_LIST = [10]
