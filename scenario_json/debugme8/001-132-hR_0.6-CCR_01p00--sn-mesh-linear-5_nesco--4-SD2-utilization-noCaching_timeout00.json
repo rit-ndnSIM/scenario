@@ -1,6 +1,6 @@
 {
   "prefix": "nesco",
-  "topofile": "/home/cabeee/ndnSIM/scenario/scenario_json/scenario_generator/debugme8/files/20260706-182342-001-132--tp_mesh4linear-005rtr-001snsr-001usr-000000cs.txt",
+  "topofile": "/home/cabeee/ndnSIM/scenario/scenario_json/debugme8/files/20260706-182342-001-132--tp_mesh4linear-005rtr-001snsr-001usr-000000cs.txt",
   "serviceDiscovery": 2,
   "resourceUtilization": 1,
   "resourceAllocation": 0,
@@ -263,7 +263,7 @@
     {
       "router": "user0",
       "service": "/consumer1",
-      "workflowFile": "/home/cabeee/ndnSIM/scenario/scenario_json/scenario_generator/debugme8/files/20260706-182342-ln-001--wf_linear-004srv-001prod-001con-000skip-agg-006layer.json",
+      "workflowFile": "/home/cabeee/ndnSIM/scenario/scenario_json/debugme8/files/20260706-182342-ln-001--wf_linear-004srv-001prod-001con-000skip-agg-006layer.json",
       "dag": "dag1",
       "start": 0,
       "end": -1
@@ -271,7 +271,7 @@
     {
       "router": "user0",
       "service": "/consumer20",
-      "workflowFile": "/home/cabeee/ndnSIM/scenario/scenario_json/scenario_generator/debugme8/files/20260706-182342-ln-020--wf_linear-004srv-001prod-001con-000skip-agg-006layer.json",
+      "workflowFile": "/home/cabeee/ndnSIM/scenario/scenario_json/debugme8/files/20260706-182342-ln-020--wf_linear-004srv-001prod-001con-000skip-agg-006layer.json",
       "dag": "dag20",
       "start": 0,
       "end": -1
@@ -279,7 +279,7 @@
     {
       "router": "user0",
       "service": "/consumer19",
-      "workflowFile": "/home/cabeee/ndnSIM/scenario/scenario_json/scenario_generator/debugme8/files/20260706-182342-ln-019--wf_linear-004srv-001prod-001con-000skip-agg-006layer.json",
+      "workflowFile": "/home/cabeee/ndnSIM/scenario/scenario_json/debugme8/files/20260706-182342-ln-019--wf_linear-004srv-001prod-001con-000skip-agg-006layer.json",
       "dag": "dag19",
       "start": 0,
       "end": -1
@@ -287,7 +287,7 @@
     {
       "router": "user0",
       "service": "/consumer18",
-      "workflowFile": "/home/cabeee/ndnSIM/scenario/scenario_json/scenario_generator/debugme8/files/20260706-182342-ln-018--wf_linear-004srv-001prod-001con-000skip-agg-006layer.json",
+      "workflowFile": "/home/cabeee/ndnSIM/scenario/scenario_json/debugme8/files/20260706-182342-ln-018--wf_linear-004srv-001prod-001con-000skip-agg-006layer.json",
       "dag": "dag18",
       "start": 0,
       "end": -1
@@ -295,7 +295,7 @@
     {
       "router": "user0",
       "service": "/consumer17",
-      "workflowFile": "/home/cabeee/ndnSIM/scenario/scenario_json/scenario_generator/debugme8/files/20260706-182342-ln-017--wf_linear-004srv-001prod-001con-000skip-agg-006layer.json",
+      "workflowFile": "/home/cabeee/ndnSIM/scenario/scenario_json/debugme8/files/20260706-182342-ln-017--wf_linear-004srv-001prod-001con-000skip-agg-006layer.json",
       "dag": "dag17",
       "start": 0,
       "end": -1
@@ -303,7 +303,7 @@
     {
       "router": "user0",
       "service": "/consumer16",
-      "workflowFile": "/home/cabeee/ndnSIM/scenario/scenario_json/scenario_generator/debugme8/files/20260706-182342-ln-016--wf_linear-004srv-001prod-001con-000skip-agg-006layer.json",
+      "workflowFile": "/home/cabeee/ndnSIM/scenario/scenario_json/debugme8/files/20260706-182342-ln-016--wf_linear-004srv-001prod-001con-000skip-agg-006layer.json",
       "dag": "dag16",
       "start": 0,
       "end": -1
@@ -311,7 +311,7 @@
     {
       "router": "user0",
       "service": "/consumer15",
-      "workflowFile": "/home/cabeee/ndnSIM/scenario/scenario_json/scenario_generator/debugme8/files/20260706-182342-ln-015--wf_linear-004srv-001prod-001con-000skip-agg-006layer.json",
+      "workflowFile": "/home/cabeee/ndnSIM/scenario/scenario_json/debugme8/files/20260706-182342-ln-015--wf_linear-004srv-001prod-001con-000skip-agg-006layer.json",
       "dag": "dag15",
       "start": 0,
       "end": -1
@@ -319,7 +319,7 @@
     {
       "router": "user0",
       "service": "/consumer14",
-      "workflowFile": "/home/cabeee/ndnSIM/scenario/scenario_json/scenario_generator/debugme8/files/20260706-182342-ln-014--wf_linear-004srv-001prod-001con-000skip-agg-006layer.json",
+      "workflowFile": "/home/cabeee/ndnSIM/scenario/scenario_json/debugme8/files/20260706-182342-ln-014--wf_linear-004srv-001prod-001con-000skip-agg-006layer.json",
       "dag": "dag14",
       "start": 0,
       "end": -1
@@ -327,7 +327,7 @@
     {
       "router": "user0",
       "service": "/consumer13",
-      "workflowFile": "/home/cabeee/ndnSIM/scenario/scenario_json/scenario_generator/debugme8/files/20260706-182342-ln-013--wf_linear-004srv-001prod-001con-000skip-agg-006layer.json",
+      "workflowFile": "/home/cabeee/ndnSIM/scenario/scenario_json/debugme8/files/20260706-182342-ln-013--wf_linear-004srv-001prod-001con-000skip-agg-006layer.json",
       "dag": "dag13",
       "start": 0,
       "end": -1
@@ -335,7 +335,7 @@
     {
       "router": "user0",
       "service": "/consumer12",
-      "workflowFile": "/home/cabeee/ndnSIM/scenario/scenario_json/scenario_generator/debugme8/files/20260706-182342-ln-012--wf_linear-004srv-001prod-001con-000skip-agg-006layer.json",
+      "workflowFile": "/home/cabeee/ndnSIM/scenario/scenario_json/debugme8/files/20260706-182342-ln-012--wf_linear-004srv-001prod-001con-000skip-agg-006layer.json",
       "dag": "dag12",
       "start": 0,
       "end": -1
@@ -343,7 +343,7 @@
     {
       "router": "user0",
       "service": "/consumer11",
-      "workflowFile": "/home/cabeee/ndnSIM/scenario/scenario_json/scenario_generator/debugme8/files/20260706-182342-ln-011--wf_linear-004srv-001prod-001con-000skip-agg-006layer.json",
+      "workflowFile": "/home/cabeee/ndnSIM/scenario/scenario_json/debugme8/files/20260706-182342-ln-011--wf_linear-004srv-001prod-001con-000skip-agg-006layer.json",
       "dag": "dag11",
       "start": 0,
       "end": -1
@@ -351,7 +351,7 @@
     {
       "router": "user0",
       "service": "/consumer10",
-      "workflowFile": "/home/cabeee/ndnSIM/scenario/scenario_json/scenario_generator/debugme8/files/20260706-182342-ln-010--wf_linear-004srv-001prod-001con-000skip-agg-006layer.json",
+      "workflowFile": "/home/cabeee/ndnSIM/scenario/scenario_json/debugme8/files/20260706-182342-ln-010--wf_linear-004srv-001prod-001con-000skip-agg-006layer.json",
       "dag": "dag10",
       "start": 0,
       "end": -1
@@ -359,7 +359,7 @@
     {
       "router": "user0",
       "service": "/consumer9",
-      "workflowFile": "/home/cabeee/ndnSIM/scenario/scenario_json/scenario_generator/debugme8/files/20260706-182342-ln-009--wf_linear-004srv-001prod-001con-000skip-agg-006layer.json",
+      "workflowFile": "/home/cabeee/ndnSIM/scenario/scenario_json/debugme8/files/20260706-182342-ln-009--wf_linear-004srv-001prod-001con-000skip-agg-006layer.json",
       "dag": "dag9",
       "start": 0,
       "end": -1
@@ -367,7 +367,7 @@
     {
       "router": "user0",
       "service": "/consumer8",
-      "workflowFile": "/home/cabeee/ndnSIM/scenario/scenario_json/scenario_generator/debugme8/files/20260706-182342-ln-008--wf_linear-004srv-001prod-001con-000skip-agg-006layer.json",
+      "workflowFile": "/home/cabeee/ndnSIM/scenario/scenario_json/debugme8/files/20260706-182342-ln-008--wf_linear-004srv-001prod-001con-000skip-agg-006layer.json",
       "dag": "dag8",
       "start": 0,
       "end": -1
@@ -375,7 +375,7 @@
     {
       "router": "user0",
       "service": "/consumer7",
-      "workflowFile": "/home/cabeee/ndnSIM/scenario/scenario_json/scenario_generator/debugme8/files/20260706-182342-ln-007--wf_linear-004srv-001prod-001con-000skip-agg-006layer.json",
+      "workflowFile": "/home/cabeee/ndnSIM/scenario/scenario_json/debugme8/files/20260706-182342-ln-007--wf_linear-004srv-001prod-001con-000skip-agg-006layer.json",
       "dag": "dag7",
       "start": 0,
       "end": -1
@@ -383,7 +383,7 @@
     {
       "router": "user0",
       "service": "/consumer6",
-      "workflowFile": "/home/cabeee/ndnSIM/scenario/scenario_json/scenario_generator/debugme8/files/20260706-182342-ln-006--wf_linear-004srv-001prod-001con-000skip-agg-006layer.json",
+      "workflowFile": "/home/cabeee/ndnSIM/scenario/scenario_json/debugme8/files/20260706-182342-ln-006--wf_linear-004srv-001prod-001con-000skip-agg-006layer.json",
       "dag": "dag6",
       "start": 0,
       "end": -1
@@ -391,7 +391,7 @@
     {
       "router": "user0",
       "service": "/consumer5",
-      "workflowFile": "/home/cabeee/ndnSIM/scenario/scenario_json/scenario_generator/debugme8/files/20260706-182342-ln-005--wf_linear-004srv-001prod-001con-000skip-agg-006layer.json",
+      "workflowFile": "/home/cabeee/ndnSIM/scenario/scenario_json/debugme8/files/20260706-182342-ln-005--wf_linear-004srv-001prod-001con-000skip-agg-006layer.json",
       "dag": "dag5",
       "start": 0,
       "end": -1
@@ -399,7 +399,7 @@
     {
       "router": "user0",
       "service": "/consumer4",
-      "workflowFile": "/home/cabeee/ndnSIM/scenario/scenario_json/scenario_generator/debugme8/files/20260706-182342-ln-004--wf_linear-004srv-001prod-001con-000skip-agg-006layer.json",
+      "workflowFile": "/home/cabeee/ndnSIM/scenario/scenario_json/debugme8/files/20260706-182342-ln-004--wf_linear-004srv-001prod-001con-000skip-agg-006layer.json",
       "dag": "dag4",
       "start": 0,
       "end": -1
@@ -407,7 +407,7 @@
     {
       "router": "user0",
       "service": "/consumer3",
-      "workflowFile": "/home/cabeee/ndnSIM/scenario/scenario_json/scenario_generator/debugme8/files/20260706-182342-ln-003--wf_linear-004srv-001prod-001con-000skip-agg-006layer.json",
+      "workflowFile": "/home/cabeee/ndnSIM/scenario/scenario_json/debugme8/files/20260706-182342-ln-003--wf_linear-004srv-001prod-001con-000skip-agg-006layer.json",
       "dag": "dag3",
       "start": 0,
       "end": -1
@@ -415,7 +415,7 @@
     {
       "router": "user0",
       "service": "/consumer2",
-      "workflowFile": "/home/cabeee/ndnSIM/scenario/scenario_json/scenario_generator/debugme8/files/20260706-182342-ln-002--wf_linear-004srv-001prod-001con-000skip-agg-006layer.json",
+      "workflowFile": "/home/cabeee/ndnSIM/scenario/scenario_json/debugme8/files/20260706-182342-ln-002--wf_linear-004srv-001prod-001con-000skip-agg-006layer.json",
       "dag": "dag2",
       "start": 0,
       "end": -1
