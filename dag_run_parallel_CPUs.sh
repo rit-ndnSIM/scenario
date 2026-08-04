@@ -70,11 +70,32 @@ export NS_LOG="$LOGS"
 #NAME="SD2_stateArt_5runsx20reqx20cons_4servx10nodes_0P3"
 #NAME="SD2_baseline_5runsx20reqx20cons_4servx10nodes_0P3"
 #NAME="SD2_baseline_20runsx20reqx01cons_4servx10nodes_0P3_002PF"
-#NAME="SD2_baseline_20runsx20reqx01cons_4servx10nodes_0P3_200PF"
-NAME="SD2_baseline_20runsx20reqx01cons_4servx10nodes_0P4_200PF"
 #NAME="debugme5"
 #NAME="debugme6"
 #NAME="debugme7"
+#NAME="debugme8"
+NAME="debugmeOR3"
+
+#NAME="SD2_baseline_20runsx20reqx01cons_4servx10nodes_0P4_200PF"
+#NAME="SD2_baseline_20runsx20reqx01cons_2_8servx4_10nodes_0P4_200PF"
+#NAME="SD2_stateArt_20runsx20reqx20cons_4servx10nodes_0P4_200PF"
+
+
+
+
+# for baseline totalUsage (aggregate processing time), use a single consumer:
+#NAME="SD2_baseline_20runsx20reqx01cons_4servx10nodes_0P3_200PF"
+
+# for baseline scalability:
+#NAME="SD2_baseline_20runsx20reqx01cons_2_8servx4_10nodes_0P3"
+
+# for baseline SHD+WF latency, use 20 consumers:
+#NAME="SD2_baseline_20runsx20reqx20cons_4servx10nodes_0P3"
+
+# for stateArt SHD+WF latency:
+#NAME="SD2_stateArt_20runsx20reqx20cons_4servx10nodes_0P3"
+
+
 
 
 #export GEN_ALLOCATION_GRAPHS="true"
@@ -93,7 +114,7 @@ export FORCE_SD_TIMEOUT=1    # Set to override SD timeout optimization settings 
 #export FORCE_SD_TIMEOUT_COMPUTATION_MULTIPLIER=0    # SD timeout computation multiplier in JSON file. -1 means don't perform timeout optmization at all. Zero means computation not considered. >0 assigns the multiplier. Ex: 10 means 10x faster computation available assumed in nodes that have not yet responded.
 #export FORCE_SD_TIMEOUT_COMPUTATION_MULTIPLIER=10    # SD timeout computation multiplier in JSON file. -1 means don't perform timeout optmization at all. Zero means computation not considered. >0 assigns the multiplier. Ex: 10 means 10x faster computation available assumed in nodes that have not yet responded.
 #export FORCE_SD_TIMEOUT_COMPUTATION_MULTIPLIER=1.1    # SD timeout computation multiplier in JSON file. -1 means don't perform timeout optmization at all. Zero means computation not considered. >0 assigns the multiplier. Ex: 10 means 10x faster computation available assumed in nodes that have not yet responded.
-export FORCE_SD_TIMEOUT_COMPUTATION_MULTIPLIER=1.1    # SD timeout computation multiplier in JSON file. -1 means don't perform timeout optmization at all. Zero means computation not considered. >0 assigns the multiplier. Ex: 10 means 10x faster computation available assumed in nodes that have not yet responded.
+export FORCE_SD_TIMEOUT_COMPUTATION_MULTIPLIER=1.0    # SD timeout computation multiplier in JSON file. -1 means don't perform timeout optmization at all. Zero means computation not considered. >0 assigns the multiplier. Ex: 10 means 10x faster computation available assumed in nodes that have not yet responded.
 
 
 #------------------------------ END OF SETTINGS -----------------------------------
@@ -435,20 +456,6 @@ M=$(((TOTAL_RUNTIME % 3600) / 60))
 S=$((TOTAL_RUNTIME % 60))
 printf "\nTotal Execution Time: %02d:%02d:%02d (%d seconds)\n" $H $M $S $TOTAL_RUNTIME
 
-echo -e "\a"
-sleep 0.5
-echo -e "\a"
-sleep 0.5
-echo -e "\a"
-sleep 0.5
-echo -e "\a"
-sleep 0.5
-echo -e "\a"
-sleep 0.5
-echo -e "\a"
-sleep 0.5
-echo -e "\a"
-sleep 0.5
 echo -e "\a"
 sleep 0.5
 echo -e "\a"

@@ -531,6 +531,8 @@ DagServiceDiscoveryApp::OnInterest(std::shared_ptr<const ndn::Interest> interest
 
               auto dagObject = json::parse(updatedDagString);
               dagObject["interestGenerationTimestamp"] = Simulator::Now().ToInteger(ns3::Time::NS);
+              dagObject["legOriginNodeID"] = GetNode()->GetId(); // this node is exploring its own upstream input, independently of any other node hosting the same service (their makespans and queue loads differ, so their EFTs will too). Pairing this with the timestamp keeps those legs distinct in the NFD forwarder's duplicate check.
+              dagObject["legHopCounter"] = 0; // a new leg starts here, so restart the per-leg hop count (hopCounter keeps accumulating across the whole chain)
               updatedDagString = dagObject.dump();
 
               // Create interest with simplename x.key(), then add application parameters, and use the new name&hash for the data structure inputsRxed item.

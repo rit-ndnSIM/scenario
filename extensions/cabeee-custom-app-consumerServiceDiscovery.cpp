@@ -227,7 +227,9 @@ CustomAppConsumerServiceDiscovery::SendSDInterest()
   dagObject["scheduleCompaction"] = m_scheduleCompaction;
   dagObject["consumerName"] = m_service.ndn::Name::toUri();
   dagObject["interestGenerationTimestamp"] = Simulator::Now().ToInteger(ns3::Time::NS);
+  dagObject["legOriginNodeID"] = GetNode()->GetId(); // this consumer spawned this leg of the exploration. Re-stamped by each service-hosting node that asks for its own upstream input, so the NFD forwarder can tell independent legs apart from duplicate copies of the same leg.
   dagObject["hopCounter"] = 0; // Used for debugging to keep track of the number of hops taken so far (from consumer up to root nodes). Perhaps we can use this for scoped interest propagation at some point.
+  dagObject["legHopCounter"] = 0; // hops within this leg only. Reset to 0 by whoever spawns a leg, so unlike hopCounter it does not accumulate across the whole service chain.
   dagObject["sdTimeoutComputationMultiplier"] = m_SDtimeoutComputationMultiplier;
 
 
@@ -577,6 +579,7 @@ CustomAppConsumerServiceDiscovery::OnData(std::shared_ptr<const ndn::Data> data)
       //NS_LOG_INFO("\n  The final answer is: " <<  (int)(*pContent) << std::endl << "\n\n");
       NS_LOG_INFO("\n  The final answer is: " <<  finalResult << std::endl << "\n\n");
 
+      NS_LOG_INFO("Consumer stopping simulation at time " << Simulator::Now().GetSeconds());
       Simulator::Stop(Simulator::Now()); // end the simulation as soon as we receive this data packet, no need to keep going.
     }
     else if (m_numInterests > 1) // we are running an experiment with many requests as a Poisson Process

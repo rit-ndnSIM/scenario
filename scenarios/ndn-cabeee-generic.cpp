@@ -536,6 +536,7 @@ main(int argc, char* argv[])
     }
 
     Simulator::Run();
+    std::cout << "Simulation finished at time " << Simulator::Now().GetSeconds() << std::endl;
     Simulator::Destroy();
 
     return 0;
