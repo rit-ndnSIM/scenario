@@ -52,7 +52,7 @@
   ],
   "link": [
     {
-      "capacity": "10Mbps",
+      "capacity": "1Gbps",
       "metric": "1",
       "delay": "0.722ms",
       "queue": "100000",
@@ -60,7 +60,7 @@
       "to": "rtr0"
     },
     {
-      "capacity": "10Mbps",
+      "capacity": "1Gbps",
       "metric": "1",
       "delay": "1.556ms",
       "queue": "100000",
@@ -68,7 +68,7 @@
       "to": "user0"
     },
     {
-      "capacity": "10Mbps",
+      "capacity": "1Gbps",
       "metric": "1",
       "delay": "0.832ms",
       "queue": "100000",
@@ -76,7 +76,7 @@
       "to": "rtr3"
     },
     {
-      "capacity": "10Mbps",
+      "capacity": "1Gbps",
       "metric": "1",
       "delay": "0.328ms",
       "queue": "100000",
@@ -84,7 +84,7 @@
       "to": "rtr4"
     },
     {
-      "capacity": "10Mbps",
+      "capacity": "1Gbps",
       "metric": "1",
       "delay": "1.676ms",
       "queue": "100000",
@@ -92,7 +92,7 @@
       "to": "sensor0"
     },
     {
-      "capacity": "10Mbps",
+      "capacity": "1Gbps",
       "metric": "1",
       "delay": "1.245ms",
       "queue": "100000",
@@ -100,7 +100,7 @@
       "to": "rtr3"
     },
     {
-      "capacity": "10Mbps",
+      "capacity": "1Gbps",
       "metric": "1",
       "delay": "1.315ms",
       "queue": "100000",
