@@ -690,7 +690,7 @@ def main():
     shared_parser.add_argument('--ypos', type=int, default=0)
     shared_parser.add_argument('--xpos', type=int, default=0)
     shared_parser.add_argument('--mpi', type=int)
-    shared_parser.add_argument('--bandwidth', type=str, default="10Mbps")
+    shared_parser.add_argument('--bandwidth', type=str, default="1Gbps")
     shared_parser.add_argument('--metric', type=str, default="1")
     shared_parser.add_argument('--delay-avg', type=str, default="1ms")
     shared_parser.add_argument('--delay-var', type=float, default="0.0")
