@@ -331,6 +331,7 @@ CustomAppConsumer::SendInterest()
   //interest->setApplicationParameters(buffer, length);
   interest->setApplicationParameters((const uint8_t *)dagStringParameter, length);
   //interest->setApplicationParameters(appParamBlock);
+  delete[] dagStringParameter;
   //extract custom parameter from interest packet
   //auto dagStringParameterFromInterest = interest.getApplicationParameters();
 

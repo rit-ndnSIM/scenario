@@ -112,6 +112,13 @@ CustomAppConsumerServiceDiscovery::StartApplication()
   m_WFrunning = false;
   m_appStartTime = Simulator::Now();
 
+  // Build the cached URI strings ONCE. m_prefix/m_service/m_SDName are ns-3 Attributes that are
+  // fixed by now and never reassigned, so their toUri() is constant for the whole run. Must be set
+  // before anything below uses them.
+  m_prefixUri  = m_prefix.ndn::Name::toUri();
+  m_serviceUri = m_service.ndn::Name::toUri();
+  m_SDNameUri  = m_SDName.ndn::Name::toUri();
+
   // Add entry to FIB for `/prefix/sub`
   //ndn::FibHelper::AddRoute(GetNode(), "/prefix/sub", m_face, 0); //cabeee took this out, let the global router figure it out.
   // cabeee - I think this means: if any interest exists for /prefix/sub, forward to this application's
@@ -185,6 +192,7 @@ CustomAppConsumerServiceDiscovery::SendSDInterest()
 
   std::ifstream f(m_dagPath);
   json dagObject = json::parse(f);
+  dagObject = { {"dag", dagObject["dag"] } }; // strip away all items except the one called "dag". In some cases (with automatically generated workflows), the JSON workflow file may contain "services" as well.
 
   // here we generate just the first interest(s) according to the workflow
   // to do this, we must discover which services in the DAG are "sink" services (services which feed the end consumer)
@@ -209,7 +217,7 @@ CustomAppConsumerServiceDiscovery::SendSDInterest()
   //std::stringstream ssSD_ns;
   //ssSD_ns << SDstartTimeOffsetNS << " ns";
   //ssSD_ns << SDstartTimeOffsetNS;
-  dagObject["serviceDiscoveryStartTimeNS"] = SDstartTimeOffsetNS;
+  dagObject["SDstartNS"] = SDstartTimeOffsetNS;
 
   //m_WFstartTimeOffset = Seconds(2.0);
   // Convert to integer in milliseconds and then to string
@@ -219,18 +227,40 @@ CustomAppConsumerServiceDiscovery::SendSDInterest()
   //ssWF_ns << WFstartTimeOffsetNS;
   //std::string timeStringNS = ssWF_ns.str();
   //std::cout << "SD Start Time in milliseconds: " << timeStringNS << std::endl;
-  dagObject["workflowStartTimeNS"] = WFstartTimeOffsetNS;
-  dagObject["serviceDiscovery"] = m_serviceDiscovery;
-  dagObject["resourceUtilization"] = m_resourceUtilization;
-  dagObject["resourceAllocation"] = m_resourceAllocation;
-  dagObject["allocationReuse"] = m_allocationReuse;
-  dagObject["scheduleCompaction"] = m_scheduleCompaction;
-  dagObject["consumerName"] = m_service.ndn::Name::toUri();
-  dagObject["interestGenerationTimestamp"] = Simulator::Now().ToInteger(ns3::Time::NS);
-  dagObject["legOriginNodeID"] = GetNode()->GetId(); // this consumer spawned this leg of the exploration. Re-stamped by each service-hosting node that asks for its own upstream input, so the NFD forwarder can tell independent legs apart from duplicate copies of the same leg.
-  dagObject["hopCounter"] = 0; // Used for debugging to keep track of the number of hops taken so far (from consumer up to root nodes). Perhaps we can use this for scoped interest propagation at some point.
-  dagObject["legHopCounter"] = 0; // hops within this leg only. Reset to 0 by whoever spawns a leg, so unlike hopCounter it does not accumulate across the whole service chain.
-  dagObject["sdTimeoutComputationMultiplier"] = m_SDtimeoutComputationMultiplier;
+  // NOTE ON KEY NAMES: every key below travels on the wire inside the SD interest's application
+  // parameters, and is re-serialized by the NFD forwarder at every single hop of every leg, so the key
+  // strings themselves cost real bandwidth. They were shortened for that reason. The scenario JSON
+  // files still use the original long names - ndn-cabeee-generic reads those and passes the values in
+  // as attributes, so old scenarios keep working untouched. Short name -> what it used to be called:
+  //
+  //   SDstartNS     <- serviceDiscoveryStartTimeNS      absolute time the SD process started
+  //   WFstartNS     <- workflowStartTimeNS              absolute time the WF process is due to start
+  //   SDtype        <- serviceDiscovery                 SD mode: 0 disabled, 1, or 2
+  //   RU            <- resourceUtilization              0/1, factor node load into the EFT
+  //   RA            <- resourceAllocation               0/1, reserve a CPU slot for the service
+  //   AR            <- allocationReuse                  0/1, reuse a previously allocated slot
+  //   SC            <- scheduleCompaction               0/1, left-pack the schedule after a release
+  //   conName       <- consumerName                     which consumer this SD round belongs to
+  //   iGenTime      <- interestGenerationTimestamp      identifies one SD round, used for dedup
+  //   legNodeID     <- legOriginNodeID                  node that spawned this leg of the exploration
+  //   hops          <- hopCounter                       hops so far, consumer through the whole chain
+  //   legHops       <- legHopCounter                    hops so far within this leg only
+  //   SDtimeoutCM   <- sdTimeoutComputationMultiplier   -1 disables the SD timeout, else the multiplier
+  //
+  // "dag", "head", "prevHash", "nodeID" and "faceIN" were left alone: the first two are read all over
+  // the DAG pruning code and the rest are added by the forwarder, so renaming them buys little.
+  dagObject["WFstartNS"] = WFstartTimeOffsetNS;
+  dagObject["SDtype"] = m_serviceDiscovery;
+  dagObject["RU"] = m_resourceUtilization;
+  dagObject["RA"] = m_resourceAllocation;
+  dagObject["AR"] = m_allocationReuse;
+  dagObject["SC"] = m_scheduleCompaction;
+  dagObject["conName"] = m_serviceUri;
+  dagObject["iGenTime"] = Simulator::Now().ToInteger(ns3::Time::NS);
+  dagObject["legNodeID"] = GetNode()->GetId(); // this consumer spawned this leg of the exploration. Re-stamped by each service-hosting node that asks for its own upstream input, so the NFD forwarder can tell independent legs apart from duplicate copies of the same leg.
+  dagObject["hops"] = 0; // Used for debugging to keep track of the number of hops taken so far (from consumer up to root nodes). Perhaps we can use this for scoped interest propagation at some point.
+  dagObject["legHops"] = 0; // hops within this leg only. Reset to 0 by whoever spawns a leg, so unlike hops it does not accumulate across the whole service chain.
+  dagObject["SDtimeoutCM"] = m_SDtimeoutComputationMultiplier;
 
 
   //std::cout << "Consumer: Full DAG as read: " << std::setw(2) << dagObject << '\n';
@@ -238,9 +268,9 @@ CustomAppConsumerServiceDiscovery::SendSDInterest()
 
   if (m_orchestrate == 0) {
     dagObject["head"] = sinkService;
-    //interest->setName(m_prefix.ndn::Name::toUri() + sinkService);
-    //interest->setName(m_prefix.ndn::Name::toUri() + "/serviceDiscovery" + sinkService);
-    interest->setName(m_prefix.ndn::Name::toUri() + m_SDName.ndn::Name::toUri() + sinkService + m_service.ndn::Name::toUri());
+    //interest->setName(m_prefixUri + sinkService);
+    //interest->setName(m_prefixUri + "/serviceDiscovery" + sinkService);
+    interest->setName(m_prefixUri + m_SDNameUri + sinkService + m_serviceUri);
 
     bool consumerFound = false;
     // now we remove the entry that has the sinkService feeding the consumer. It is not needed, and can't be in the dag if we want caching of intermediate results to work.
@@ -250,7 +280,7 @@ CustomAppConsumerServiceDiscovery::SendSDInterest()
       for (auto& y : dagObject["dag"][x.key()].items())
       {
         //std::cout << "Checking y.key: " << (std::string)y.key() << '\n';
-        //if (y.key() == m_service.ndn::Name::toUri())
+        //if (y.key() == m_serviceUri)
         if (y.key() == "/consumer")
         {
           dagObject["dag"].erase(x.key());
@@ -264,12 +294,12 @@ CustomAppConsumerServiceDiscovery::SendSDInterest()
   }
   else if (m_orchestrate == 1){ // orchestration method A
     //dagObject["head"] = "/serviceOrchestration";
-    //interest->setName(m_prefix.ndn::Name::toUri() + "/serviceOrchestration");
+    //interest->setName(m_prefixUri + "/serviceOrchestration");
     NS_LOG_ERROR("ERROR, this should not happen. m_orchestrate value is 1, and we don't support Service Discovery with Orchestrator A" << '\n');
   }
   else if (m_orchestrate == 2){ // orchestration method B
     //dagObject["head"] = "/serviceOrchestration/dag";
-    //interest->setName(m_prefix.ndn::Name::toUri() + "/serviceOrchestration/dag");
+    //interest->setName(m_prefixUri + "/serviceOrchestration/dag");
     NS_LOG_ERROR("ERROR, this should not happen. m_orchestrate value is 2, and we don't support Service Discovery with Orchestrator B" << '\n');
   }
   else
@@ -290,6 +320,7 @@ CustomAppConsumerServiceDiscovery::SendSDInterest()
 
 
   interest->setApplicationParameters((const uint8_t *)dagStringParameter, length);
+  delete[] dagStringParameter;
 
 
   //NS_LOG_DEBUG("Consumer: Interest parameters being sent: " << dagStringParameter);
@@ -369,7 +400,7 @@ CustomAppConsumerServiceDiscovery::SendInterest()
 
   if (m_orchestrate == 0) {
     dagObject["head"] = sinkService;
-    interest->setName(m_prefix.ndn::Name::toUri() + sinkService);
+    interest->setName(m_prefixUri + sinkService);
 
     bool consumerFound = false;
     // now we remove the entry that has the sinkService feeding the consumer. It is not needed, and can't be in the dag if we want caching of intermediate results to work.
@@ -379,7 +410,7 @@ CustomAppConsumerServiceDiscovery::SendInterest()
       for (auto& y : dagObject["dag"][x.key()].items())
       {
         //std::cout << "Checking y.key: " << (std::string)y.key() << '\n';
-        //if (y.key() == m_service.ndn::Name::toUri())
+        //if (y.key() == m_serviceUri)
         if (y.key() == "/consumer")
         {
           dagObject["dag"].erase(x.key());
@@ -393,11 +424,11 @@ CustomAppConsumerServiceDiscovery::SendInterest()
   }
   else if (m_orchestrate == 1){ // orchestration method A
     dagObject["head"] = "/serviceOrchestration";
-    interest->setName(m_prefix.ndn::Name::toUri() + "/serviceOrchestration");
+    interest->setName(m_prefixUri + "/serviceOrchestration");
   }
   else if (m_orchestrate == 2){ // orchestration method B
     dagObject["head"] = "/serviceOrchestration/dag";
-    interest->setName(m_prefix.ndn::Name::toUri() + "/serviceOrchestration/dag");
+    interest->setName(m_prefixUri + "/serviceOrchestration/dag");
   }
   else
   {
@@ -420,6 +451,7 @@ CustomAppConsumerServiceDiscovery::SendInterest()
 
 
   interest->setApplicationParameters((const uint8_t *)dagStringParameter, length);
+  delete[] dagStringParameter;
 
 
 
@@ -510,15 +542,15 @@ CustomAppConsumerServiceDiscovery::OnData(std::shared_ptr<const ndn::Data> data)
     //else if (m_serviceDiscovery == 2 && m_numInterests > 1)
     else if (m_serviceDiscovery == 2)
     {
-      NS_LOG_INFO("\n\n      CONSUMER: Service Discovery DATA # " << m_interestNum << "/" << m_numInterests << " received for name " << data->getName() << " for consumer service " << m_service.ndn::Name::toUri()  << std::endl << "\n\n");
+      NS_LOG_INFO("\n\n      CONSUMER: Service Discovery DATA # " << m_interestNum << "/" << m_numInterests << " received for name " << data->getName() << " for consumer service " << m_serviceUri  << std::endl << "\n\n");
       m_SDendTime = Simulator::Now();
       Time serviceDiscoveryLatency = m_SDendTime - m_SDstartTime;
       NS_LOG_INFO("  SD Latency: " <<  serviceDiscoveryLatency.GetMilliSeconds() << " milliseconds." << std::endl);
       NS_LOG_INFO("  SD Latency: " <<  serviceDiscoveryLatency.GetMicroSeconds() << " microseconds." << std::endl);
       NS_LOG_INFO("  SD Latency: " <<  serviceDiscoveryLatency.GetNanoSeconds() << " nanoseconds." << std::endl);
-      NS_LOG_INFO("  SD Latency for consumer node " << GetNode()->GetId() << ", service " << m_service.ndn::Name::toUri() << ", interest # " << m_interestNum << "/" << m_numInterests << ": " <<  serviceDiscoveryLatency.GetMilliSeconds() << " milliseconds." << std::endl);
-      NS_LOG_INFO("  SD Latency for consumer node " << GetNode()->GetId() << ", service " << m_service.ndn::Name::toUri() << ", interest # " << m_interestNum << "/" << m_numInterests << ": " <<  serviceDiscoveryLatency.GetMicroSeconds() << " microseconds." << std::endl);
-      NS_LOG_INFO("  SD Latency for consumer node " << GetNode()->GetId() << ", service " << m_service.ndn::Name::toUri() << ", interest # " << m_interestNum << "/" << m_numInterests << ": " <<  serviceDiscoveryLatency.GetNanoSeconds() << " nanoseconds." << std::endl);
+      NS_LOG_INFO("  SD Latency for consumer node " << GetNode()->GetId() << ", service " << m_serviceUri << ", interest # " << m_interestNum << "/" << m_numInterests << ": " <<  serviceDiscoveryLatency.GetMilliSeconds() << " milliseconds." << std::endl);
+      NS_LOG_INFO("  SD Latency for consumer node " << GetNode()->GetId() << ", service " << m_serviceUri << ", interest # " << m_interestNum << "/" << m_numInterests << ": " <<  serviceDiscoveryLatency.GetMicroSeconds() << " microseconds." << std::endl);
+      NS_LOG_INFO("  SD Latency for consumer node " << GetNode()->GetId() << ", service " << m_serviceUri << ", interest # " << m_interestNum << "/" << m_numInterests << ": " <<  serviceDiscoveryLatency.GetNanoSeconds() << " nanoseconds." << std::endl);
 
       std::string dataPacketString;
       dataPacketString = (const char *)data->getContent().value();
@@ -596,14 +628,14 @@ CustomAppConsumerServiceDiscovery::OnData(std::shared_ptr<const ndn::Data> data)
       int64_t finalResult = 0;
       finalResult = dataPacketContents["serviceOutput"];
 
-      NS_LOG_INFO("  Final answer for consumer node    " << GetNode()->GetId() << ", service " << m_service.ndn::Name::toUri() << ", interest # " << m_interestNum << "/" << m_numInterests << ": " <<  finalResult << std::endl);
+      NS_LOG_INFO("  Final answer for consumer node    " << GetNode()->GetId() << ", service " << m_serviceUri << ", interest # " << m_interestNum << "/" << m_numInterests << ": " <<  finalResult << std::endl);
 
       m_WFrunning = false;
       m_WFendTime = Simulator::Now();
       Time serviceLatency = m_WFendTime - m_WFstartTime - m_appStartTime;
-      NS_LOG_INFO("  WF Latency for consumer node " << GetNode()->GetId() << ", service " << m_service.ndn::Name::toUri() << ", interest # " << m_interestNum << "/" << m_numInterests << ": " <<  serviceLatency.GetMilliSeconds() << " milliseconds." << std::endl);
-      NS_LOG_INFO("  WF Latency for consumer node " << GetNode()->GetId() << ", service " << m_service.ndn::Name::toUri() << ", interest # " << m_interestNum << "/" << m_numInterests << ": " <<  serviceLatency.GetMicroSeconds() << " microseconds." << std::endl);
-      NS_LOG_INFO("  WF Latency for consumer node " << GetNode()->GetId() << ", service " << m_service.ndn::Name::toUri() << ", interest # " << m_interestNum << "/" << m_numInterests << ": " <<  serviceLatency.GetNanoSeconds() << " nanoseconds." << std::endl);
+      NS_LOG_INFO("  WF Latency for consumer node " << GetNode()->GetId() << ", service " << m_serviceUri << ", interest # " << m_interestNum << "/" << m_numInterests << ": " <<  serviceLatency.GetMilliSeconds() << " milliseconds." << std::endl);
+      NS_LOG_INFO("  WF Latency for consumer node " << GetNode()->GetId() << ", service " << m_serviceUri << ", interest # " << m_interestNum << "/" << m_numInterests << ": " <<  serviceLatency.GetMicroSeconds() << " microseconds." << std::endl);
+      NS_LOG_INFO("  WF Latency for consumer node " << GetNode()->GetId() << ", service " << m_serviceUri << ", interest # " << m_interestNum << "/" << m_numInterests << ": " <<  serviceLatency.GetNanoSeconds() << " nanoseconds." << std::endl);
 
 
       NS_LOG_INFO("Ending WF for " << m_service);

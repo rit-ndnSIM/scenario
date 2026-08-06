@@ -68,8 +68,11 @@ public:
   OnData(std::shared_ptr<const ndn::Data> contentObject);
 
 private:
-  std::string
-  PruneDagWorkflow(const std::string& interestName, std::string);
+  // Takes and returns the DAG as a json object rather than a serialized string. The caller already holds
+  // a json object, so the string form meant dumping it and re-parsing on the way in, then again on the
+  // way out - four JSON conversions per generated interest, all on the hot path.
+  json
+  PruneDagWorkflow(const std::string& interestName, json dagObject);
   std::string
   SendInterest(const std::string& interestName, std::string);
   
@@ -81,6 +84,15 @@ private:
   std::string m_nameUri;
   ndn::Name m_nameAndDigest;
   ndn::Name m_service;
+
+  // Cached toUri() of the ndn::Name members above. These are ns-3 Attributes, fixed before
+  // StartApplication() and never reassigned, so their URI form is constant for the run. Calling
+  // toUri() rebuilds and reallocates the string every time, and it was being called on these
+  // several times per interest on the hot path, so we build each once in StartApplication().
+  std::string m_prefixUri;
+  std::string m_SDNameUri;
+  std::string m_serviceUri;
+
   uint64_t m_makespan;
   json m_dagServTracker; // with this data structure, we can keep track of WHICH inputs have arrived, rather than just the NUMBER of inputs. (in case one inputs arrives multiple times)
   //json m_dagObject;

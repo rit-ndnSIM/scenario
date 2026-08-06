@@ -73,6 +73,15 @@ private:
   ndn::Name m_prefix;
   ndn::Name m_service;
   ndn::Name m_SDName;
+
+  // Cached toUri() of the ndn::Name members above. These are ns-3 Attributes, fixed before
+  // StartApplication() and never reassigned, so their URI form is constant for the run. Calling
+  // toUri() rebuilds and reallocates the string every time, and it was being called on these
+  // several times per interest on the hot path, so we build each once in StartApplication().
+  std::string m_prefixUri;
+  std::string m_serviceUri;
+  std::string m_SDNameUri;
+
   uint16_t m_orchestrate;
   uint16_t m_serviceDiscovery;
   uint16_t m_resourceUtilization;

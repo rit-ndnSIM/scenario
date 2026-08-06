@@ -40,6 +40,7 @@
 #include <string.h>
 
 #include <fstream>
+#include <unordered_set>
 #include <nlohmann/json.hpp>
 using json = nlohmann::json;
 
@@ -80,7 +81,13 @@ DagForwarderApp::StartApplication()
   ndn::App::StartApplication();
   m_isRunning = true;
 
-  m_name = m_prefix.ndn::Name::toUri() + m_service.ndn::Name::toUri();
+  // Build the cached URI strings ONCE. m_prefix/m_service/m_SDName are ns-3 Attributes that are
+  // fixed by now and never reassigned, so their toUri() is constant for the whole run. Must be set
+  // before anything below uses them.
+  m_prefixUri  = m_prefix.ndn::Name::toUri();
+  m_serviceUri = m_service.ndn::Name::toUri();
+
+  m_name = m_prefixUri + m_serviceUri;
   
   // Add entry to FIB for `/prefix/sub`
   //ndn::FibHelper::AddRoute(GetNode(), "/prefix/sub", m_face, 0); //cabeee took this out, let the global router figure it out.
@@ -131,7 +138,7 @@ DagForwarderApp::PruneDAGandSendInterest(const std::string& interestName, std::s
   // Create and configure ndn::Interest
   //auto interest = std::make_shared<ndn::Interest>("/prefix/sub");
   //auto interest = std::make_shared<ndn::Interest>(m_name); // must take it in as an argument, not just use m_name!!
-  auto interest = std::make_shared<ndn::Interest>(m_prefix.ndn::Name::toUri() + interestName);
+  auto interest = std::make_shared<ndn::Interest>(m_prefixUri + interestName);
   Ptr<UniformRandomVariable> rand = CreateObject<UniformRandomVariable>();
   interest->setNonce(rand->GetValue(0, std::numeric_limits<uint32_t>::max()));
   interest->setInterestLifetime(ndn::time::seconds(540));
@@ -168,29 +175,24 @@ DagForwarderApp::PruneDAGandSendInterest(const std::string& interestName, std::s
 
 
     //find Sink Nodes
-    std::list <std::string> listOfServicesWithInputs;   // keeps track of which services have inputs
-    std::list <std::string> listOfRootServices;         // keeps track of which services don't have any inputs
-    std::list <std::string> listOfSinkNodes;            // keeps track of which node doesn't have an output (usually this is just the consumer)
+    // These were std::list with std::find / .remove(), which are linear scans, so building and filtering
+    // the sink list was quadratic in the number of services. std::unordered_set makes both the membership
+    // test and the erase O(1) average. Behaviour is unchanged: the list never held duplicates anyway (the
+    // std::find guard prevented them), and nothing depends on the ordering.
+    // (Same change as in cabeee-dag-serviceDiscovery-app.cpp, which carries an identical block.)
+    std::unordered_set<std::string> listOfSinkNodes;    // keeps track of which node doesn't have an output (usually this is just the consumer)
     for (auto& x : dagObject["dag"].items())
     {
-      listOfRootServices.push_back(x.key()); // for now, add ALL keys to the list, we'll remove non-root ones later
       for (auto& y : dagObject["dag"][x.key()].items())
       {
-        listOfServicesWithInputs.push_back(y.key()); // add all values to the list
-        if ((std::find(listOfSinkNodes.begin(), listOfSinkNodes.end(), y.key()) == listOfSinkNodes.end())) // if y.key() does not exist in listOfSinkNodes
-        {
-          listOfSinkNodes.push_back(y.key()); // for now, add ALL values to the list, we'll remove non-sinks later
-        }
+        listOfSinkNodes.insert(y.key()); // for now, add ALL values to the set, we'll remove non-sinks later
       }
     }
     //std::cout << "removing services that feed into other services" << '\n';
     // now remove services that feed into other services from the list of sink nodes
     for (auto& x : dagObject["dag"].items())
     {
-      if (!(std::find(listOfSinkNodes.begin(), listOfSinkNodes.end(), x.key()) == listOfSinkNodes.end())) // if x.key() exists in listOfSinkNodes
-      {
-        listOfSinkNodes.remove(x.key());
-      }
+      listOfSinkNodes.erase(x.key()); // no-op if x.key() was not a sink
     }
     //std::cout << "done finding sink nodes. Num found: " << std::to_string(listOfSinkNodes.size()) << '\n';
 
@@ -277,6 +279,7 @@ DagForwarderApp::PruneDAGandSendInterest(const std::string& interestName, std::s
   //interest->setApplicationParameters(dagParameter);
   //add modified DAG workflow as a parameter to the new interest
   interest->setApplicationParameters((const uint8_t *)dagStringParameter, length);
+  delete[] dagStringParameter;
 
 
   if (actualSend)
@@ -373,13 +376,13 @@ DagForwarderApp::OnInterest(std::shared_ptr<const ndn::Interest> interest)
   // generate interests for inputs into hosted services early (shortcut optimization to parallelize workflow)
   if (rxedInterestName == "/shortcutOPT")
   {
-    if (m_service.toUri() != dagObject["head"])
+    if (m_serviceUri != dagObject["head"])
     {
       // only if we haven't already received a request for the service
       //if (m_dagServTracker.empty()) // if we haven't generated an interest for this service, the dagServTracker will be empty
       if (!m_dagServTracker.contains(rxedFullInterestNameAndHash))
       {
-        NS_LOG_DEBUG("\n\nshortcutOPT: We are hosting service " << m_service.toUri() << ", looking for this service in the DAG and generating interests for their inputs!" << std::endl);
+        NS_LOG_DEBUG("\n\nshortcutOPT: We are hosting service " << m_serviceUri << ", looking for this service in the DAG and generating interests for their inputs!" << std::endl);
 
 
 
@@ -393,7 +396,7 @@ DagForwarderApp::OnInterest(std::shared_ptr<const ndn::Interest> interest)
           {
             //std::cout << "Checking y.key: " << (std::string)y.key() << '\n';
             //if (y.key() == m_nameUri)
-            if (y.key() == m_service.toUri())
+            if (y.key() == m_serviceUri)
             {
               //std::cout << " FOUND IT!!" << std::endl;
               //std::cout << "Forwarder dagServTracker data structure before: " << std::setw(2) << m_dagServTracker << '\n';
@@ -443,7 +446,7 @@ DagForwarderApp::OnInterest(std::shared_ptr<const ndn::Interest> interest)
         NS_LOG_DEBUG("\n\nshortcutOPT: Generarating all interests for required inputs..." << '\n');
         // generate all the interests for required inputs
         //for (auto& serviceInput : m_dagServTracker[(std::string)m_nameUri]["inputsRxed"].items())
-        for (auto& serviceInput : m_dagServTracker[(std::string)m_service.toUri()]["inputsRxed"].items())
+        for (auto& serviceInput : m_dagServTracker[(std::string)m_serviceUri]["inputsRxed"].items())
         {
           if (serviceInput.value() == 0)
           {
@@ -634,11 +637,11 @@ DagForwarderApp::OnData(std::shared_ptr<const ndn::Data> data)
         serviceOutput += input;
       }
       
-      NS_LOG_DEBUG("Service " << m_service.ndn::Name::toUri() << " has output: " << (int)serviceOutput);
+      NS_LOG_DEBUG("Service " << m_serviceUri << " has output: " << (int)serviceOutput);
     
       // this following line is for linear workflows only!
       //now add the service name in front of the data name
-      //std::string new_name = m_service.ndn::Name::toUri() + data->getName().ndn::Name::toUri();
+      //std::string new_name = m_serviceUri + data->getName().ndn::Name::toUri();
       //NS_LOG_DEBUG("Creating data for new name: " << new_name);
       // for dag workflows, FOR NOW we just generate the data packet with the name of the service we ran. We don't support repeated services yet. For that we need higharchical names/results such as "/S2/S1/sensor" for example
 

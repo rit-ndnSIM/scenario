@@ -147,6 +147,7 @@ DagServiceB_App::SendInterest(const std::string& interestName, std::string dagSt
 
   //add modified DAG workflow as a parameter to the new interest
   interest->setApplicationParameters((const uint8_t *)dagStringParameter, length);
+  delete[] dagStringParameter;
 
 
 
