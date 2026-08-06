@@ -68,13 +68,18 @@ def normalize_to_ns(value, unit):
 
 
 # --- 1. Define Regex Patterns ---
+# NOTE: none of these may start with '.*?'. re.search() already scans from every offset, so a leading
+# '.*?' is redundant AND quadratic: at each start offset the lazy match expands one character at a time
+# hunting for the literal that follows. Measured on a 208k-line log, the two NFDForwarder patterns took
+# 61.5s and 59.9s with the prefix (the second matching nothing at all) versus ~0.03s for structurally
+# similar patterns without it - together 98.6% of this script's total runtime.
 NODE_ACTIVITY_PATTERN = re.compile(
     #r".*?NFDForwarder - (WF|SD)?resourceAllocation: Service (?P<service_name>\S+) (?P<action>started|finished) running on node (?P<node_id>\d+)\. .*? at (?P<timestamp>\d+) (nanoseconds|microseconds)"
-    r".*?NFDForwarder - (WF|SD)?resourceAllocation: Service (?P<service_name>\S+) (?P<action>started|finished) running on node (?P<node_id>\d+)\. .*? at (?P<timestamp>\d+) (?P<unit>nanoseconds|microseconds)"
+    r"NFDForwarder - (WF|SD)?resourceAllocation: Service (?P<service_name>\S+) (?P<action>started|finished) running on node (?P<node_id>\d+)\. .*? at (?P<timestamp>\d+) (?P<unit>nanoseconds|microseconds)"
 )
 SCHEDULING_PATTERN = re.compile(
     #r".*?NFDForwarder - SDresourceAllocation: Service (?P<service_name>\S+) (?P<status>scheduled|no longer scheduled) on node (?P<node_id>\d+) starting at (?P<start_ns>\d+) and ending at (?P<end_ns>\d+) nanoseconds"
-    r".*?NFDForwarder - SDresourceAllocation: Service (?P<service_name>\S+) (?P<status>scheduled|no longer scheduled) on node (?P<node_id>\d+) starting at (?P<start_time>\d+) and ending at (?P<end_time>\d+) (?P<unit>nanoseconds|microseconds)"
+    r"NFDForwarder - SDresourceAllocation: Service (?P<service_name>\S+) (?P<status>scheduled|no longer scheduled) on node (?P<node_id>\d+) starting at (?P<start_time>\d+) and ending at (?P<end_time>\d+) (?P<unit>nanoseconds|microseconds)"
 )
 WORKFLOW_START_PATTERN = re.compile(
     r"- workflow start: (?P<start_time>\d+) nanoseconds"
@@ -246,7 +251,7 @@ def analyze_and_plot(file_path, output_filename_base, poisson_detected, num_inte
                     number_of_nodes += 1
 
                 # 3. Resource Utilization (Actual)
-                match_utilization = NODE_ACTIVITY_PATTERN.search(line)
+                match_utilization = NODE_ACTIVITY_PATTERN.search(line) if 'NFDForwarder - ' in line else None
                 if match_utilization:
                     data = match_utilization.groupdict()
                     node_id = int(data['node_id'])
@@ -543,7 +548,7 @@ def analyze_and_plot(file_path, output_filename_base, poisson_detected, num_inte
                 final_service_latency_ns = int(match_latency.group('latency'))
 
             # 3. Resource Utilization (Actual)
-            match_utilization = NODE_ACTIVITY_PATTERN.search(line)
+            match_utilization = NODE_ACTIVITY_PATTERN.search(line) if 'NFDForwarder - ' in line else None
             if match_utilization:
                 data = match_utilization.groupdict()
                 node_id = int(data['node_id'])
@@ -574,7 +579,7 @@ def analyze_and_plot(file_path, output_filename_base, poisson_detected, num_inte
                         })
 
             # 4. Resource Scheduling (Planned)
-            match_sched = SCHEDULING_PATTERN.search(line)
+            match_sched = SCHEDULING_PATTERN.search(line) if 'NFDForwarder - ' in line else None
             if match_sched:
                 data = match_sched.groupdict()
                 node_id = int(data['node_id'])

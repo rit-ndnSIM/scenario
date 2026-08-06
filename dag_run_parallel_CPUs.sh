@@ -71,10 +71,10 @@ export NS_LOG="$LOGS"
 #NAME="SD2_baseline_5runsx20reqx20cons_4servx10nodes_0P3"
 #NAME="SD2_baseline_20runsx20reqx01cons_4servx10nodes_0P3_002PF"
 #NAME="debugme5"
-#NAME="debugme6"
+NAME="debugme6"
 #NAME="debugme7"
 #NAME="debugme8"
-NAME="debugmeOR3"
+#NAME="debugmeOR3"
 
 #NAME="SD2_baseline_20runsx20reqx01cons_4servx10nodes_0P4_200PF"
 #NAME="SD2_baseline_20runsx20reqx01cons_2_8servx4_10nodes_0P4_200PF"
@@ -102,7 +102,7 @@ NAME="debugmeOR3"
 export GEN_ALLOCATION_GRAPHS="false"
 export FORCE_RERUN_ALL="true"   # Set to "true" to run everything. Set to "false" to only run missing/failed scenarios.
 #export FORCE_RERUN_ALL="false"   # Set to "true" to run everything. Set to "false" to only run missing/failed scenarios.
-export FORCE_TRACE=0    # Set to override trace settings in JSON file. This value is the trace interval in seconds.
+export FORCE_TRACE=1    # Set to override trace settings in JSON file. This value is the trace interval in seconds.
 #export FORCE_TRACE=0.1    # Set to override trace settings in JSON file. This value is the trace interval in seconds.
 #export FORCE_MAKESPAN=20000000    # Set to override service makespanNS settings in JSON file. Zero means no override. Non-zero assigns the makespan in nanoseconds
 export FORCE_MAKESPAN=0    # Set to override service makespanNS settings in JSON file. Zero means no override. Non-zero assigns the makespan in nanoseconds
@@ -112,9 +112,9 @@ export FORCE_FRESHNESS=0    # Set to override data packet freshness settings in 
 export FORCE_SD_TIMEOUT=1    # Set to override SD timeout optimization settings in JSON file. Boolean
 #export FORCE_SD_TIMEOUT_COMPUTATION_MULTIPLIER=-1    # SD timeout computation multiplier in JSON file. -1 means don't perform timeout optmization at all. Zero means computation not considered. >0 assigns the multiplier. Ex: 10 means 10x faster computation available assumed in nodes that have not yet responded.
 #export FORCE_SD_TIMEOUT_COMPUTATION_MULTIPLIER=0    # SD timeout computation multiplier in JSON file. -1 means don't perform timeout optmization at all. Zero means computation not considered. >0 assigns the multiplier. Ex: 10 means 10x faster computation available assumed in nodes that have not yet responded.
-#export FORCE_SD_TIMEOUT_COMPUTATION_MULTIPLIER=10    # SD timeout computation multiplier in JSON file. -1 means don't perform timeout optmization at all. Zero means computation not considered. >0 assigns the multiplier. Ex: 10 means 10x faster computation available assumed in nodes that have not yet responded.
+export FORCE_SD_TIMEOUT_COMPUTATION_MULTIPLIER=10    # SD timeout computation multiplier in JSON file. -1 means don't perform timeout optmization at all. Zero means computation not considered. >0 assigns the multiplier. Ex: 10 means 10x faster computation available assumed in nodes that have not yet responded.
 #export FORCE_SD_TIMEOUT_COMPUTATION_MULTIPLIER=1.1    # SD timeout computation multiplier in JSON file. -1 means don't perform timeout optmization at all. Zero means computation not considered. >0 assigns the multiplier. Ex: 10 means 10x faster computation available assumed in nodes that have not yet responded.
-export FORCE_SD_TIMEOUT_COMPUTATION_MULTIPLIER=1.0    # SD timeout computation multiplier in JSON file. -1 means don't perform timeout optmization at all. Zero means computation not considered. >0 assigns the multiplier. Ex: 10 means 10x faster computation available assumed in nodes that have not yet responded.
+#export FORCE_SD_TIMEOUT_COMPUTATION_MULTIPLIER=1.0    # SD timeout computation multiplier in JSON file. -1 means don't perform timeout optmization at all. Zero means computation not considered. >0 assigns the multiplier. Ex: 10 means 10x faster computation available assumed in nodes that have not yet responded.
 
 
 #------------------------------ END OF SETTINGS -----------------------------------
@@ -141,7 +141,7 @@ mkdir -p "$SCENARIO_TRACE_DIR"
 # --- 1. Setup CSV Header ---
 #header="Example, SD Interest Packets Generated, SD Data Packets Generated, SD Interest Packets Transmitted, SD Data Packets Transmitted, WF Interest Packets Generated, WF Data Packets Generated, WF Interest Packets Transmitted, WF Data Packets Transmitted, Critical-Path-Metric, CPM-t_exec(ns), SD Latency (ns), SD Estimated WF Service Latency (ns), WF Service Latency (ns), Total Node Usage Time (ns), Average Node Utilization (%), Coefficient of Variation (load distribution), Final Result, Time, ns-3 commit, pybindgen commit, scenario commit, ndnSIM commit"
 #header="Example, SD Interest Packets Generated, SD Data Packets Generated, SD Interest Packets Transmitted, SD Data Packets Transmitted, WF Interest Packets Generated, WF Data Packets Generated, WF Interest Packets Transmitted, WF Data Packets Transmitted, Critical-Path-Metric, CPM-t_exec(ns), SD Latency (ns), SD Estimated WF Service Latency (ns), WF Service Latency (ns), Total Node Usage Time (ns), Average Node Utilization (%), Coefficient of Variation (load distribution), Total Cache Hits, Total Cache Misses, Avg Cache Usage, Total KB Transferred, Final Result, Time, ns-3 commit, pybindgen commit, scenario commit, ndnSIM commit"
-header="Example, SD Interest Packets Generated, SD Data Packets Generated, SD Interest Packets Transmitted, SD Data Packets Transmitted, WF Interest Packets Generated, WF Data Packets Generated, WF Interest Packets Transmitted, WF Data Packets Transmitted, Critical-Path-Metric, CPM-t_exec(ns), SD Latency (ns), SD Estimated WF Service Latency (ns), WF Service Latency (ns), Total Node Usage Time (ns), Average Node Utilization (%), Coefficient of Variation (load distribution), Total Cache Hits, Total Cache Misses, Avg Cache Usage, Total KB Transferred, Avg SD Latency (ns), Min WF Latency(ns), Low Quartile WF Latency(ns), Mid Quartile WF Latency(ns), High Quartile WF Latency(ns), Max WF Latency(ns), Total WF Latency(ns), Avg WF Latency(ns), Min SDWF Latency(ns), Low Quartile SDWF Latency(ns), Mid Quartile SDWF Latency(ns), High Quartile SDWF Latency(ns), Max SDWF Latency(ns), Total SDWF Latency(ns), Avg SDWF Latency(ns), Requests Fulfilled, Result Sum, Final Result, Time, ns-3 commit, pybindgen commit, scenario commit, ndnSIM commit"
+header="Example, SD Interest Packets Generated, SD Data Packets Generated, SD Interest Packets Transmitted, SD Data Packets Transmitted, WF Interest Packets Generated, WF Data Packets Generated, WF Interest Packets Transmitted, WF Data Packets Transmitted, Critical-Path-Metric, CPM-t_exec(ns), SD Latency (ns), SD Estimated WF Service Latency (ns), WF Service Latency (ns), Total Node Usage Time (ns), Average Node Utilization (%), Coefficient of Variation (load distribution), Total Cache Hits, Total Cache Misses, Avg Cache Usage, Total KB Transferred, Avg SD Latency (ns), Min WF Latency(ns), Low Quartile WF Latency(ns), Mid Quartile WF Latency(ns), High Quartile WF Latency(ns), Max WF Latency(ns), Total WF Latency(ns), Avg WF Latency(ns), Min SDWF Latency(ns), Low Quartile SDWF Latency(ns), Mid Quartile SDWF Latency(ns), High Quartile SDWF Latency(ns), Max SDWF Latency(ns), Total SDWF Latency(ns), Avg SDWF Latency(ns), Requests Fulfilled, Result Sum, Final Result, Result Consistency, Sim Duration (s), Time, ns-3 commit, pybindgen commit, scenario commit, ndnSIM commit"
 
 # Function to write sorted placeholder rows into the CSV file
 populate_blank_scenarios() {
@@ -246,6 +246,10 @@ run_simulation() {
         fi
     fi
 
+    # Wall-clock stamp for this scenario, so the CSV can report how long it took. Paired with the
+    # matching stamp taken just before the CSV row is built, it covers the same span as the
+    # Starting/Finished banners: the simulation itself plus all of its log post-processing.
+    local scenario_start_epoch=$(date +%s)
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] Starting Scenario: $scenario"
 
     # Run simulation, logging output to a unique file
@@ -270,8 +274,23 @@ run_simulation() {
     local result=$(grep "The final answer is:" "$scenario_log" | tail -n 1 | sed -n 's/^\s*The final answer is: \([0-9]*\)$/\1/p')
     result="${result:-N.A.}"
 
+    # Run the log processor ONCE and keep its whole output. We need it twice: to extract the metrics
+    # below, and to look for the inconsistency warning. Re-running it would mean scanning the (very
+    # large) scenario log a second time.
+    local py_output
+    py_output=$(python3 "$SCENARIO_DIR/process_nfd_logs_SD2.py" --logfile "$scenario_log" --output "$USAGE_ALLOCATION_GRAPHS_DIR/${scenario}.png" --graph "$GEN_ALLOCATION_GRAPHS")
+
+    # process_nfd_logs_SD2.py prints "Warning: Inconsistent final result for type X!" when two runs of
+    # the same consumer produced different numerical answers - i.e. the workflow computed the wrong
+    # thing on at least one of them. That warning does not match any of the sed patterns below, so it
+    # would otherwise be silently discarded. Surface it as its own CSV column instead.
+    local resultConsistency="OK"
+    if grep -q "Warning: Inconsistent final result" <<< "$py_output"; then
+        resultConsistency="Inconsistent Final Result"
+    fi
+
     local packets=$( \
-        python3 "$SCENARIO_DIR/process_nfd_logs_SD2.py" --logfile "$scenario_log" --output "$USAGE_ALLOCATION_GRAPHS_DIR/${scenario}.png" --graph "$GEN_ALLOCATION_GRAPHS" | sed -n \
+        printf '%s\n' "$py_output" | sed -n \
         -e 's/^SD Interest Packets Generated: \([0-9]*\) interests$/\1,/p' \
         -e 's/^SD Data Packets Generated: \([0-9]*\) data$/\1,/p' \
         -e 's/^SD Interest Packets Transmitted: \([0-9]*\) interests$/\1,/p' \
@@ -392,7 +411,9 @@ run_simulation() {
 
     #local row="$scenario, $SDinterest_gen, $SDdata_gen, $SDinterest_trans, $SDdata_trans, $WFinterest_gen, $WFdata_gen, $WFinterest_trans, $WFdata_trans, $cpm, $cpm_t, $SDlatency, $estimatedWFLatency, $WFlatency, $totalNodeUsageTime, $avgNodeUsage, $coeffVariation, $result, $now, $ns_3_hash, $pybindgen_hash, $scenario_hash, $ndnsim_hash"
     #local row="$scenario, $SDinterest_gen, $SDdata_gen, $SDinterest_trans, $SDdata_trans, $WFinterest_gen, $WFdata_gen, $WFinterest_trans, $WFdata_trans, $cpm, $cpm_t, $SDlatency, $estimatedWFLatency, $WFlatency, $totalNodeUsageTime, $avgNodeUsage, $coeffVariation, $totalHits, $totalMisses, $avgCacheUsage, $totalKB, $result, $now, $ns_3_hash, $pybindgen_hash, $scenario_hash, $ndnsim_hash"
-    local row="$scenario, $SDinterest_gen, $SDdata_gen, $SDinterest_trans, $SDdata_trans, $WFinterest_gen, $WFdata_gen, $WFinterest_trans, $WFdata_trans, $cpm, $cpm_t, $SDlatency, $estimatedWFLatency, $WFlatency, $totalNodeUsageTime, $avgNodeUsage, $coeffVariation, $totalHits, $totalMisses, $avgCacheUsage, $totalKB, $global_sd_avg_latency, $global_wf_min_latency, $global_wf_low_latency, $global_wf_mid_latency, $global_wf_high_latency, $global_wf_max_latency, $global_wf_total_latency, $global_wf_avg_latency, $global_sdwf_min_latency, $global_sdwf_low_latency, $global_sdwf_mid_latency, $global_sdwf_high_latency, $global_sdwf_max_latency, $global_sdwf_total_latency, $global_sdwf_avg_latency, $global_wf_requests_fulfilled, $global_wf_final_answers_sum, $result, $now, $ns_3_hash, $pybindgen_hash, $scenario_hash, $ndnsim_hash"
+    local scenario_duration=$(( $(date +%s) - scenario_start_epoch ))
+
+    local row="$scenario, $SDinterest_gen, $SDdata_gen, $SDinterest_trans, $SDdata_trans, $WFinterest_gen, $WFdata_gen, $WFinterest_trans, $WFdata_trans, $cpm, $cpm_t, $SDlatency, $estimatedWFLatency, $WFlatency, $totalNodeUsageTime, $avgNodeUsage, $coeffVariation, $totalHits, $totalMisses, $avgCacheUsage, $totalKB, $global_sd_avg_latency, $global_wf_min_latency, $global_wf_low_latency, $global_wf_mid_latency, $global_wf_high_latency, $global_wf_max_latency, $global_wf_total_latency, $global_wf_avg_latency, $global_sdwf_min_latency, $global_sdwf_low_latency, $global_sdwf_mid_latency, $global_sdwf_high_latency, $global_sdwf_max_latency, $global_sdwf_total_latency, $global_sdwf_avg_latency, $global_wf_requests_fulfilled, $global_wf_final_answers_sum, $result, $resultConsistency, $scenario_duration, $now, $ns_3_hash, $pybindgen_hash, $scenario_hash, $ndnsim_hash"
 
 
     # Lock the CSV file writing process to prevent data corruption
@@ -455,6 +476,8 @@ H=$((TOTAL_RUNTIME / 3600))
 M=$(((TOTAL_RUNTIME % 3600) / 60))
 S=$((TOTAL_RUNTIME % 60))
 printf "\nTotal Execution Time: %02d:%02d:%02d (%d seconds)\n" $H $M $S $TOTAL_RUNTIME
+
+curl -d "dag_run complete! $NAME" ntfy.sh/cabeee-dag_run
 
 echo -e "\a"
 sleep 0.5
