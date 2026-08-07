@@ -149,11 +149,11 @@ main(int argc, char* argv[])
     int8_t resourceAllocationFlag = 0;
     int8_t allocationReuseFlag = 0;
     int8_t scheduleCompactionFlag = 0;
+    float sdTimeoutComputationMultiplier = -1;
     int8_t producerFreshnessUniformDist = 0;
     uint64_t producerFreshnessMSmin = 0;
     uint64_t producerFreshnessMSmax = 0;
     uint64_t producerFreshnessMS = 60000;
-    float sdTimeoutComputationMultiplier = -1;
 /*
     uint8_t icnfcM = 2;
     uint64_t ndnfcpTMS = 500;
@@ -173,6 +173,9 @@ main(int argc, char* argv[])
     if (scenario_json.contains("scheduleCompaction")) {
         scheduleCompactionFlag = scenario_json.at("scheduleCompaction");
     }
+    if (scenario_json.contains("sdTimeoutComputationMultiplier")) {
+        sdTimeoutComputationMultiplier = scenario_json.at("sdTimeoutComputationMultiplier");
+    }
     if (scenario_json.contains("producerFreshnessUniformDist")) {
         producerFreshnessUniformDist = scenario_json.at("producerFreshnessUniformDist");
     }
@@ -185,9 +188,6 @@ main(int argc, char* argv[])
     if (scenario_json.contains("producerFreshnessMS")) {
         producerFreshnessMS = scenario_json.at("producerFreshnessMS");
     }
-    if (scenario_json.contains("sdTimeoutComputationMultiplier")) {
-        sdTimeoutComputationMultiplier = scenario_json.at("sdTimeoutComputationMultiplier");
-    }
 /*
     if (scenario_json.contains("icnfcM")) {
         icnfcM = scenario_json.at("icnfcM");
@@ -198,7 +198,7 @@ main(int argc, char* argv[])
 */
 
     float simulationEndTime = 1000; // set default end time (in case json doesn't specify)
-    if (scenario_json.contains("scheduleCompaction")) {
+    if (scenario_json.contains("simulationEndTime")) {
         simulationEndTime = scenario_json.at("simulationEndTime");
     }
     

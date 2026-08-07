@@ -30,6 +30,7 @@ def main():
     parser.add_argument('-ra', '--resourceAllocation', type=int, default=0, help="perform resource allocation")
     parser.add_argument('-ar', '--allocationReuse', type=int, default=0, help="perform allocation reuse")
     parser.add_argument('-sc', '--scheduleCompaction', type=int, default=0, help="perform schedule compaction")
+    parser.add_argument('-to', '--sdTimeoutComputationMultiplier', type=float, default=-1, help="service discovery timeout computation multiplier (to estimate CPU capability of other nodes)")
     parser.add_argument('-stosd', '--startTimeOffsetSD', type=int, default=0, help="start time offset for service discovery")
     parser.add_argument('-stowf', '--startTimeOffsetWF', type=int, default=2, help="start time offset for workflow")
     parser.add_argument('-set', '--simulationEndTime', type=int, default=200, help="set simulation end time")
@@ -127,6 +128,7 @@ def main():
         'resourceAllocation': (args.resourceAllocation),
         'allocationReuse': (args.allocationReuse),
         'scheduleCompaction': (args.scheduleCompaction),
+        'sdTimeoutComputationMultiplier': (args.sdTimeoutComputationMultiplier),
         'startTimeOffsetSD': (args.startTimeOffsetSD),
         'startTimeOffsetWF': (args.startTimeOffsetWF),
         'simulationEndTime': (args.simulationEndTime),
