@@ -15,7 +15,9 @@ import random
 # ==========================================
 # GLOBAL CONFIGURATION
 # ==========================================
-NAME="SD2_baseline_20runsx20reqx01cons_4servx10nodes_0P4_200PF_totalUsage"
+#NAME="SD2_baseline_20runsx20reqx01cons_4servx10nodes_0P4_200PF_totalUsage"
+#NAME="SD2_baseline_20runsx20reqx05cons_4servx10nodes_0P4_200PF_totalUsage_Pool5x"
+NAME="SD2_baseline_20runsx01reqx20cons_4servx10nodes_0P4_200PF_totalUsage"
 TIMESTAMP = datetime.now().strftime("%Y%m%d-%H%M%S")
 WORKDIR = os.path.join(os.getcwd(), "generated_scenarios", NAME)
 OUTDIR = os.path.join(os.getcwd(), "..", NAME)
@@ -30,6 +32,12 @@ if os.path.exists(OUTDIR):
 NUM_RUNS = 20
 
 NUM_SERVICES_LIST = [4]
+
+# Workflows draw their service names from a pool this many times larger than num_services. 1.0 keeps
+# the historical naming (/service0../service{n-1}). Raising it makes two independently generated
+# workflows much less likely to name the same services, so consumers running their own workflow share
+# less. E.g. 3.0 with 5 services samples 5 distinct names out of /service0../service14.
+SERVICE_POOL_MULTIPLIER = 1.0
 NUM_NODES_LIST = [10]
 EDGERATIO_LIST = [0.5]
 #HOSTRATIO_LIST = [0.0, 0.2, 0.4, 0.6, 0.8, 1.0]
@@ -40,6 +48,7 @@ LINK_DELAY_AVG_MS = 1
 LINK_DELAY_VARIATION_PCT = 0.80  # percent variation.
 #CCR_LIST = [0.1, 0.5, 1, 2, 10]  # CCR is communication to computation ratio
 CCR_LIST = [0.01, 0.1, 1]  # CCR is communication to computation ratio
+#CCR_LIST = [0.01]  # CCR is communication to computation ratio
 MAKESPAN_VARIATION_PCT = 0.80  # percent variation.
 
 # Consumer options
@@ -48,8 +57,8 @@ MAKESPAN_VARIATION_PCT = 0.80  # percent variation.
 POISSON_FREQ = 200 # wait on average 5ms between receiving results from prev WF, and generating SD2 request for next WF.
 #POISSON_NUM_INTERESTS = 100
 #POISSON_NUM_CONSUMERS = 100
-POISSON_NUM_INTERESTS = 20
-POISSON_NUM_CONSUMERS = 1
+POISSON_NUM_INTERESTS = 1
+POISSON_NUM_CONSUMERS = 20
 
 PRODUCER_FRESHNESS_UNIFORM_DIST = 0 # 0: not random, use hardcoded value. 1: randomly chosen once. 2: randomly chosen each time an interest arrives.
 PRODUCER_FRESHNESS_MS_MIN = 0
@@ -108,6 +117,7 @@ def generate_wf_messy(servs, prods, cons, layers, skips, ser, shuffle=False):
         "--num-producers", prods,
         "--num-consumers", cons,
         "--num-skips", skips,
+        "--service-pool-multiplier", SERVICE_POOL_MULTIPLIER,
         "--output", output_path
     ]
     if shuffle:

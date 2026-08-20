@@ -15,7 +15,7 @@ import random
 # ==========================================
 # GLOBAL CONFIGURATION
 # ==========================================
-NAME="SD2_baseline_01runsx20reqx01cons_2_8servx4_10nodes_0P4_200PF_scalability"
+NAME="SD2_baseline_20runsx20reqx01cons_2_8servx4_10nodes_0P4_200PF_scalability"
 TIMESTAMP = datetime.now().strftime("%Y%m%d-%H%M%S")
 WORKDIR = os.path.join(os.getcwd(), "generated_scenarios", NAME)
 OUTDIR = os.path.join(os.getcwd(), "..", NAME)
@@ -27,9 +27,15 @@ if os.path.exists(OUTDIR):
     shutil.rmtree(OUTDIR)
 
 # Total number of runs (each will get it's own JSON and thus its own row in the CSV file - MATLAB will average them all)
-NUM_RUNS = 1
+NUM_RUNS = 20
 
 NUM_SERVICES_LIST = [2, 4, 6, 8]
+
+# Workflows draw their service names from a pool this many times larger than num_services. 1.0 keeps
+# the historical naming (/service0../service{n-1}). Raising it makes two independently generated
+# workflows much less likely to name the same services, so consumers running their own workflow share
+# less. E.g. 3.0 with 5 services samples 5 distinct names out of /service0../service14.
+SERVICE_POOL_MULTIPLIER = 1.0
 NUM_NODES_LIST = [4, 6, 8, 10]
 EDGERATIO_LIST = [0.5]
 #HOSTRATIO_LIST = [0.0, 0.2, 0.4, 0.6, 0.8, 1.0]
@@ -39,7 +45,8 @@ HOSTRATIO_LIST = [0.1, 0.2, 0.3, 0.4]
 LINK_DELAY_AVG_MS = 1
 LINK_DELAY_VARIATION_PCT = 0.80  # percent variation.
 #CCR_LIST = [0.1, 0.5, 1, 2, 10]  # CCR is communication to computation ratio
-CCR_LIST = [0.01, 0.1, 1]  # CCR is communication to computation ratio
+#CCR_LIST = [0.01, 0.1, 1]  # CCR is communication to computation ratio
+CCR_LIST = [0.01]  # CCR is communication to computation ratio
 MAKESPAN_VARIATION_PCT = 0.80  # percent variation.
 
 # Consumer options
@@ -108,6 +115,7 @@ def generate_wf_messy(servs, prods, cons, layers, skips, ser, shuffle=False):
         "--num-producers", prods,
         "--num-consumers", cons,
         "--num-skips", skips,
+        "--service-pool-multiplier", SERVICE_POOL_MULTIPLIER,
         "--output", output_path
     ]
     if shuffle:
@@ -284,10 +292,10 @@ def run_category_task(run_id, pair, generated_workflows):
                             #build_scenario(f"{base_name}--3-SD2-noUtilization.json", wf_filenames, tp, hs, prefix, "best-route", 0, sim_end_time, freshness_ms, sd=2, ru=0, icnfcM=0, ndnfcpTMS=0)
                     
                             # Scenario 4: SD2, bestRoute, Util, noCaching, cs=0
-                            build_scenario(f"{base_name}--4-SD2-utilization-noCaching.json", wf_filenames, tp, hs, prefix, "best-route", 0, sim_end_time, freshness_ms, sd=2, ru=1, icnfcM=0, ndnfcpTMS=0)
+                            out_path = build_scenario(f"{base_name}--4-SD2-utilization-noCaching.json", wf_filenames, tp, hs, prefix, "best-route", 0, sim_end_time, freshness_ms, sd=2, ru=1, icnfcM=0, ndnfcpTMS=0)
                     
                             # Scenario 5: SD2, bestRoute, Util, Caching, cs=1000
-                            out_path = build_scenario(f"{base_name}--5-SD2-utilization-caching.json", wf_filenames, tp, hs, prefix, "best-route", 1000, sim_end_time, freshness_ms, sd=2, ru=1, icnfcM=0, ndnfcpTMS=0)
+                            #out_path = build_scenario(f"{base_name}--5-SD2-utilization-caching.json", wf_filenames, tp, hs, prefix, "best-route", 1000, sim_end_time, freshness_ms, sd=2, ru=1, icnfcM=0, ndnfcpTMS=0)
 
                             if VISUALIZE and num_nodes < 9 and len(wf_filenames) < 21:
                                 # Best effort visualization

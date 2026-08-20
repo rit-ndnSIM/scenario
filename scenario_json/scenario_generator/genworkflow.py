@@ -33,7 +33,7 @@ def connect_layers(workflow, above, below):
 
 
 def layered(args):
-    workflow = gen_layered_dag(args.num_services, args.num_producers, args.num_consumers, args.num_layers, args.num_skips, args.aggregate, args.split, args.shuffle_services)
+    workflow = gen_layered_dag(args.num_services, args.num_producers, args.num_consumers, args.num_layers, args.num_skips, args.aggregate, args.split, args.shuffle_services, args.service_pool_multiplier)
 
     with open(args.output, "w") as f:
         json.dump(workflow.get_dict(), f, indent=None if args.compact_output else 4)
@@ -54,7 +54,7 @@ def separate(args):
             json.dump(workflow.get_dict(), f, indent=None if args.compact_output else 4)
 
 
-def gen_layered_dag(num_services, num_producers=1, num_consumers=1, num_layers=5, num_skips=0, aggregate=False, split=False, shuffle_services=False):
+def gen_layered_dag(num_services, num_producers=1, num_consumers=1, num_layers=5, num_skips=0, aggregate=False, split=False, shuffle_services=False, service_pool_multiplier=1.0):
     if num_services < 0:
         raise ValueError("number of services must be nonnegative")
 
@@ -80,7 +80,21 @@ def gen_layered_dag(num_services, num_producers=1, num_consumers=1, num_layers=5
     workflow = graph.Workflow()
 
     layers = [[] for _ in range(num_layers)]
-    services = [f"/service{i}" for i in range(num_services)]
+
+    # Draw the workflow's service names from a pool that can be larger than the workflow itself.
+    # With the default multiplier of 1 the pool is exactly /service0../service{n-1} in order, which is
+    # the historical behaviour. With a multiplier of 3 and 5 services the pool is /service0../service14
+    # and 5 distinct names are sampled from it, so two independently generated workflows are much less
+    # likely to name the same services - useful when several consumers each run their own workflow and
+    # the overlap between them would otherwise be total.
+    # The sample is sorted back into numeric order so that this knob controls only WHICH names are used;
+    # ordering stays the job of --shuffle-services, and the two remain independent.
+    pool_size = max(num_services, round(num_services * service_pool_multiplier))
+    if pool_size > num_services:
+        services = sorted(random.sample([f"/service{i}" for i in range(pool_size)], num_services),
+                          key=lambda s: int(s[len("/service"):]))
+    else:
+        services = [f"/service{i}" for i in range(num_services)]
     if shuffle_services:
         random.shuffle(services)
     skips = [f"skip{i}" for i in range(num_skips)]
@@ -187,6 +201,7 @@ def main():
     lay_parser.add_argument('-a', '--aggregate', action='store_true', default=False, help='add aggregators before consumer')
     lay_parser.add_argument('-t', '--split', action='store_true', default=False, help='add splitters after producers')
     lay_parser.add_argument('--shuffle-services', action='store_true', default=False, help='randomize the order of intermediate services')
+    lay_parser.add_argument('--service-pool-multiplier', type=float, default=1.0, help='draw service names from a pool this many times larger than --num-services (default 1.0 = /service0../service{n-1}); e.g. 3 with -n 5 samples 5 distinct names out of /service0../service14, reducing name overlap between independently generated workflows')
 
     # i really wannna call this "split" but that shadows --split and i can't think of a better name
     sep_parser = subparsers.add_parser('separate', help="separate workflow into one for each consumer")

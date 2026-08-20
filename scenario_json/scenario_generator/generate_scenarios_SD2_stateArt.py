@@ -30,6 +30,12 @@ if os.path.exists(OUTDIR):
 NUM_RUNS = 20
 
 NUM_SERVICES_LIST = [4]
+
+# Workflows draw their service names from a pool this many times larger than num_services. 1.0 keeps
+# the historical naming (/service0../service{n-1}). Raising it makes two independently generated
+# workflows much less likely to name the same services, so consumers running their own workflow share
+# less. E.g. 3.0 with 5 services samples 5 distinct names out of /service0../service14.
+SERVICE_POOL_MULTIPLIER = 1.0
 NUM_NODES_LIST = [10]
 EDGERATIO_LIST = [0.5]
 #HOSTRATIO_LIST = [0.0, 0.2, 0.4, 0.6, 0.8, 1.0]
@@ -109,6 +115,7 @@ def generate_wf_messy(servs, prods, cons, layers, skips, ser, shuffle=False):
         "--num-producers", prods,
         "--num-consumers", cons,
         "--num-skips", skips,
+        "--service-pool-multiplier", SERVICE_POOL_MULTIPLIER,
         "--output", output_path
     ]
     if shuffle:
@@ -127,6 +134,7 @@ def generate_wf_linear(servs, prods, cons, layers, skips, ser, shuffle=False):
         "--num-producers", prods,
         "--num-consumers", cons,
         "--num-skips", skips,
+        "--service-pool-multiplier", SERVICE_POOL_MULTIPLIER,
         "--output", output_path
     ]
     if shuffle:
