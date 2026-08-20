@@ -113,9 +113,9 @@ main(int argc, char* argv[])
     topologyReader.Read();
 
     if (scenario_json.contains("poissonConsumerNumInterests")) {
-        if (scenario_json.at("poissonConsumerNumInterests") > 1) {
+        //if (scenario_json.at("poissonConsumerNumInterests") > 1) {
             std::cout << "Poisson consumer is being used. Number of interests = " << scenario_json.at("poissonConsumerNumInterests") << ", frequency = " << scenario_json.at("poissonConsumerFrequency") << " interests per second." << std::endl;
-        }
+        //}
     }
 
     // Install NDN stack on all nodes
@@ -400,6 +400,11 @@ main(int argc, char* argv[])
                 }
                 if (scenario_json.contains("poissonConsumerNumInterests")) {
                     appHelper.SetAttribute("NumInterests", UintegerValue(scenario_json.at("poissonConsumerNumInterests")));
+                    appHelper.SetAttribute("Poisson", UintegerValue(1));
+                }
+                else {
+                    appHelper.SetAttribute("NumInterests", UintegerValue(1));
+                    appHelper.SetAttribute("Poisson", UintegerValue(0));
                 }
             }
             if (Prefix == "orchA") {

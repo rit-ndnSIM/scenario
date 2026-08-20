@@ -91,6 +91,8 @@ CustomAppConsumerServiceDiscovery::GetTypeId()
                     MakeDoubleAccessor(&CustomAppConsumerServiceDiscovery::m_frequency), MakeDoubleChecker<double>())
     .AddAttribute("NumInterests", "Total number of interests to generate", UintegerValue(1),
                     MakeUintegerAccessor(&CustomAppConsumerServiceDiscovery::m_numInterests), MakeUintegerChecker<uint16_t>())
+    .AddAttribute("Poisson", "Use Poisson Process to generate interests", UintegerValue(0),
+                    MakeUintegerAccessor(&CustomAppConsumerServiceDiscovery::m_poisson), MakeUintegerChecker<uint16_t>())
     .AddAttribute("SDTimeoutComputationMultiplier", "SD timeout computation multiplier", DoubleValue(10),
                     MakeDoubleAccessor(&CustomAppConsumerServiceDiscovery::m_SDtimeoutComputationMultiplier), MakeDoubleChecker<double>());
   return tid;
@@ -504,8 +506,8 @@ CustomAppConsumerServiceDiscovery::OnData(std::shared_ptr<const ndn::Data> data)
   //if (data->getName().ndn::Name::getPrefix(-1).getSubName(1,1).ndn::Name::toUri() == "/serviceDiscovery")
   if (data->getName().ndn::Name::getPrefix(-1).getSubName(1,1).ndn::Name::toUri() == m_SDName)
   {
-    if (m_serviceDiscovery == 1 && m_numInterests == 1)
-    //if ((m_serviceDiscovery == 1 || m_serviceDiscovery == 2) && m_numInterests == 1)
+    if (m_serviceDiscovery == 1 && m_poisson == 0)
+    //if ((m_serviceDiscovery == 1 || m_serviceDiscovery == 2) && m_poisson == 0)
     {
       NS_LOG_INFO("\n\n      CONSUMER: Service Discovery DATA received for name " << data->getName() << std::endl << "\n\n");
       m_SDendTime = Simulator::Now();
@@ -539,7 +541,7 @@ CustomAppConsumerServiceDiscovery::OnData(std::shared_ptr<const ndn::Data> data)
         return;
       }
     }
-    //else if (m_serviceDiscovery == 2 && m_numInterests > 1)
+    //else if (m_serviceDiscovery == 2 && m_poisson == 1)
     else if (m_serviceDiscovery == 2)
     {
       NS_LOG_INFO("\n\n      CONSUMER: Service Discovery DATA # " << m_interestNum << "/" << m_numInterests << " received for name " << data->getName() << " for consumer service " << m_serviceUri  << std::endl << "\n\n");
@@ -572,7 +574,7 @@ CustomAppConsumerServiceDiscovery::OnData(std::shared_ptr<const ndn::Data> data)
   // else, it's a final workflow data packet, so just report the result and see if there are more requests to be made
   else
   {
-    if (m_numInterests == 1) // we are running an experiment with only 1 WF request (not Poisson Process)
+    if (m_poisson == 0) // we are running an experiment with only 1 WF request (not Poisson Process)
     {
 
       NS_LOG_INFO("\n\n      CONSUMER: DATA received for name " << data->getName() << std::endl << "\n\n");
@@ -614,7 +616,7 @@ CustomAppConsumerServiceDiscovery::OnData(std::shared_ptr<const ndn::Data> data)
       NS_LOG_INFO("Consumer stopping simulation at time " << Simulator::Now().GetSeconds());
       Simulator::Stop(Simulator::Now()); // end the simulation as soon as we receive this data packet, no need to keep going.
     }
-    else if (m_numInterests > 1) // we are running an experiment with many requests as a Poisson Process
+    else if (m_poisson == 1) // we are running an experiment with many requests as a Poisson Process
     {
       //NS_LOG_DEBUG("Now reading it into string...");
       std::string dataPacketString;

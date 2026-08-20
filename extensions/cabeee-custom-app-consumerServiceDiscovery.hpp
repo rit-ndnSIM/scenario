@@ -100,6 +100,7 @@ private:
   Time m_WFendTime;
   double m_frequency; // how many interests per second on average?
   uint16_t m_numInterests; // total number of interests to generate
+  uint16_t m_poisson; // 1 or 0 for true/false
   uint16_t m_interestNum; // to keep track of how many interests we've generated
   double m_SDtimeoutComputationMultiplier; // multiplier for how long to consider computation in EFT timeouts. -1 means don't perform timeout optmization at all. Zero means computation not considered. >0 assigns the multiplier. Ex: 10 means 10x faster computation available assumed in nodes that have not yet responded.
 };
