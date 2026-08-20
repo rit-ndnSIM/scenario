@@ -73,49 +73,76 @@ export NS_LOG="$LOGS"
 #NAME="debugme5"
 #NAME="debugme6"
 #NAME="debugme7"
-NAME="debugme8"
 #NAME="debugmeOR3"
-
 #NAME="SD2_baseline_20runsx20reqx01cons_4servx10nodes_0P4_200PF"
 #NAME="SD2_baseline_20runsx20reqx01cons_2_8servx4_10nodes_0P4_200PF"
+#NAME="SD2_stateArt_20runsx20reqx20cons_4servx10nodes_0P4_200PF"
+
+# for baseline totalUsage (aggregate processing time), use a single consumer:
+#NAME="SD2_baseline_20runsx20reqx01cons_4servx10nodes_0P4_200PF_totalUsage"
+
+# for baseline scalability:
+#NAME="SD2_baseline_20runsx20reqx01cons_2_8servx4_10nodes_0P4_200PF_scalability"
+
+# for baseline SHD+WF latency, use 21 consumers:
+#NAME="SD2_baseline_20runsx20reqx20cons_4servx10nodes_0P4_200PF"
+
+# for stateArt SHD+WF latency:
 #NAME="SD2_stateArt_20runsx20reqx20cons_4servx10nodes_0P4_200PF"
 
 
 
 
-# for baseline totalUsage (aggregate processing time), use a single consumer:
-#NAME="SD2_baseline_20runsx20reqx01cons_4servx10nodes_0P3_200PF"
+# Scenario sets to run, in order. Each entry must match a directory under scenario_json/, and each one
+# gets its own scenario_logs/<NAME>/, trace_results/<NAME>/ and perf-results-simulation-generic_<NAME>.csv.
+# Add or comment out lines freely; a set whose scenario_json directory is missing is skipped with a warning.
+NAMES=(
+    #"debugme9"
+    #"SD2_baseline_20runsx20reqx01cons_4servx10nodes_0P4_200PF_totalUsage_Pool5x"
+    #"SD2_baseline_20runsx20reqx05cons_4servx10nodes_0P4_200PF_totalUsage_Pool5x"
+    #"SD2_baseline_20runsx20reqx20cons_4servx10nodes_0P4_200PF_Pool2x"
+    #"SD2_baseline_01runsx20reqx20cons_4servx10nodes_0P4_200PF_Pool5x"
+    #"SD2_baseline_20runsx01reqx20cons_4servx10nodes_0P4_200PF_totalUsage_Pool5x"
+    #"SD2_baseline_20runsx01reqx20cons_4servx10nodes_0P4_200PF_totalUsage_Pool1x"
 
-# for baseline scalability:
-#NAME="SD2_baseline_20runsx20reqx01cons_2_8servx4_10nodes_0P3"
 
-# for baseline SHD+WF latency, use 20 consumers:
-#NAME="SD2_baseline_20runsx20reqx20cons_4servx10nodes_0P3"
 
-# for stateArt SHD+WF latency:
-#NAME="SD2_stateArt_20runsx20reqx20cons_4servx10nodes_0P3"
+
+    #"SD2_baseline_20runsx20reqx01cons_2_8servx4_10nodes_0P4_200PF_scalability"
+    "SD2_baseline_20runsx01reqx20cons_4servx10nodes_0P4_200PF_totalUsage"
+    #"SD2_stateArt_20runsx20reqx20cons_4servx10nodes_0P4_200PF"
+)
+
+
+
+
 
 
 
 
 #export GEN_ALLOCATION_GRAPHS="true"
 export GEN_ALLOCATION_GRAPHS="false"
-export FORCE_RERUN_ALL="true"   # Set to "true" to run everything. Set to "false" to only run missing/failed scenarios.
-#export FORCE_RERUN_ALL="false"   # Set to "true" to run everything. Set to "false" to only run missing/failed scenarios.
+#export FORCE_RERUN_ALL="true"   # Set to "true" to run everything. Set to "false" to only run missing/failed scenarios.
+export FORCE_RERUN_ALL="false"   # Set to "true" to run everything. Set to "false" to only run missing/failed scenarios.
 export FORCE_TRACE=1    # Set to override trace settings in JSON file. This value is the trace interval in seconds.
 #export FORCE_TRACE=0.1    # Set to override trace settings in JSON file. This value is the trace interval in seconds.
 #export FORCE_MAKESPAN=20000000    # Set to override service makespanNS settings in JSON file. Zero means no override. Non-zero assigns the makespan in nanoseconds
 export FORCE_MAKESPAN=0    # Set to override service makespanNS settings in JSON file. Zero means no override. Non-zero assigns the makespan in nanoseconds
 export FORCE_FRESHNESS=0    # Set to override data packet freshness settings in JSON file.
 #export FORCE_FRESHNESS=1    # Set to override data packet freshness settings in JSON file. Zero means no override. Non-zero assigns the freshness in milliseconds
-#export FORCE_SD_TIMEOUT=0    # Set to override SD timeout optimization settings in JSON file. Boolean
-export FORCE_SD_TIMEOUT=1    # Set to override SD timeout optimization settings in JSON file. Boolean
+export FORCE_SD_TIMEOUT=0    # Set to override SD timeout optimization settings in JSON file. Boolean
+#export FORCE_SD_TIMEOUT=1    # Set to override SD timeout optimization settings in JSON file. Boolean
 #export FORCE_SD_TIMEOUT_COMPUTATION_MULTIPLIER=-1    # SD timeout computation multiplier in JSON file. -1 means don't perform timeout optmization at all. Zero means computation not considered. >0 assigns the multiplier. Ex: 10 means 10x faster computation available assumed in nodes that have not yet responded.
 #export FORCE_SD_TIMEOUT_COMPUTATION_MULTIPLIER=0    # SD timeout computation multiplier in JSON file. -1 means don't perform timeout optmization at all. Zero means computation not considered. >0 assigns the multiplier. Ex: 10 means 10x faster computation available assumed in nodes that have not yet responded.
-export FORCE_SD_TIMEOUT_COMPUTATION_MULTIPLIER=10    # SD timeout computation multiplier in JSON file. -1 means don't perform timeout optmization at all. Zero means computation not considered. >0 assigns the multiplier. Ex: 10 means 10x faster computation available assumed in nodes that have not yet responded.
+#export FORCE_SD_TIMEOUT_COMPUTATION_MULTIPLIER=10    # SD timeout computation multiplier in JSON file. -1 means don't perform timeout optmization at all. Zero means computation not considered. >0 assigns the multiplier. Ex: 10 means 10x faster computation available assumed in nodes that have not yet responded.
 #export FORCE_SD_TIMEOUT_COMPUTATION_MULTIPLIER=1.1    # SD timeout computation multiplier in JSON file. -1 means don't perform timeout optmization at all. Zero means computation not considered. >0 assigns the multiplier. Ex: 10 means 10x faster computation available assumed in nodes that have not yet responded.
 #export FORCE_SD_TIMEOUT_COMPUTATION_MULTIPLIER=1.0    # SD timeout computation multiplier in JSON file. -1 means don't perform timeout optmization at all. Zero means computation not considered. >0 assigns the multiplier. Ex: 10 means 10x faster computation available assumed in nodes that have not yet responded.
+export FORCE_SD_TIMEOUT_COMPUTATION_MULTIPLIER=2.0    # SD timeout computation multiplier in JSON file. -1 means don't perform timeout optmization at all. Zero means computation not considered. >0 assigns the multiplier. Ex: 10 means 10x faster computation available assumed in nodes that have not yet responded.
 
+# Delete each scenario's simulation log and its three trace files as soon as its CSV row is written.
+# These are the files that fill the disk (multi-GB logs, ~1GB rate traces) and nothing downstream
+# needs them once the row exists. Set to 1 to keep them, e.g. when debugging one scenario set.
+export KEEP_SCENARIO_FILES=1
 
 #------------------------------ END OF SETTINGS -----------------------------------
 
@@ -123,8 +150,6 @@ export FORCE_SD_TIMEOUT_COMPUTATION_MULTIPLIER=10    # SD timeout computation mu
 
 export NDNSIM_HOME="$HOME/ndnSIM"
 export SCENARIO_DIR="$HOME/ndnSIM/scenario"
-export SCENARIO_LOGS_DIR="$SCENARIO_DIR/scenario_logs/$NAME"
-export SCENARIO_TRACE_DIR="$SCENARIO_DIR/trace_results/$NAME"
 export WORKFLOW_DIR="$HOME/ndnSIM/scenario/workflows"
 export TOPOLOGY_DIR="$HOME/ndnSIM/scenario/topologies"
 export CPM_DIR="$HOME/CPM"
@@ -132,11 +157,6 @@ export USAGE_ALLOCATION_GRAPHS_DIR="$HOME/ndnSIM/scenario/usage_allocation_graph
 
 
 
-export SCENARIO_JSON_DIR="$SCENARIO_DIR/scenario_json/$NAME"
-export csv_out="$SCENARIO_DIR/perf-results-simulation-generic_${NAME}.csv"
-
-mkdir -p "$SCENARIO_LOGS_DIR"
-mkdir -p "$SCENARIO_TRACE_DIR"
 
 # --- 1. Setup CSV Header ---
 #header="Example, SD Interest Packets Generated, SD Data Packets Generated, SD Interest Packets Transmitted, SD Data Packets Transmitted, WF Interest Packets Generated, WF Data Packets Generated, WF Interest Packets Transmitted, WF Data Packets Transmitted, Critical-Path-Metric, CPM-t_exec(ns), SD Latency (ns), SD Estimated WF Service Latency (ns), WF Service Latency (ns), Total Node Usage Time (ns), Average Node Utilization (%), Coefficient of Variation (load distribution), Final Result, Time, ns-3 commit, pybindgen commit, scenario commit, ndnSIM commit"
@@ -164,21 +184,8 @@ populate_blank_scenarios() {
     done
 }
 
-if [ ! -f "$csv_out" ]; then
-    echo "Creating csv..."
-    echo "$header" > "$csv_out"
-    populate_blank_scenarios
-elif ! grep -q -F "$header" "$csv_out"; then
-    echo "Overwriting csv..."
-    mv "$csv_out" "$csv_out.bak"
-    echo "$header" > "$csv_out"
-    populate_blank_scenarios
-else
-    echo "Updating csv..."
-    cp "$csv_out" "$csv_out.bak"
-fi
 
-# --- 2. Cache Git Hashes (Run Once) ---
+# --- 2. Retrieve Git Hashes (Run Once) ---
 export ns_3_hash="$(git -C "$NDNSIM_HOME/ns-3" rev-parse HEAD)"
 export pybindgen_hash="$(git -C "$NDNSIM_HOME/pybindgen" rev-parse HEAD)"
 export scenario_hash="$(git -C "$NDNSIM_HOME/scenario" rev-parse HEAD)"
@@ -211,6 +218,12 @@ run_simulation() {
     local force_freshness="$6"
     local force_sd_timeout="$7"
     local force_sd_timeout_computation_multiplier="$8"
+    # Progress tracking for the Starting/Finished banners. scenario_index is GNU parallel's {#}, the
+    # job's dispatch sequence number. The Finished banner uses a separate completed-count instead, so
+    # the two numbers are independent: they track "started" and "finished", not the same scenario.
+    local scenario_index="$9"
+    local scenario_total="${SCENARIO_TOTAL:-?}"
+    local progress_file="${csv_out}.progress"
     local filename=$(basename "$filepath")
     local scenario="${filename%.*}"
     local scenario_json="$filepath"
@@ -250,7 +263,7 @@ run_simulation() {
     # matching stamp taken just before the CSV row is built, it covers the same span as the
     # Starting/Finished banners: the simulation itself plus all of its log post-processing.
     local scenario_start_epoch=$(date +%s)
-    echo "[$(date '+%Y-%m-%d %H:%M:%S')] Starting Scenario: $scenario"
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] Starting Scenario $scenario_index/$scenario_total: $scenario"
 
     # Run simulation, logging output to a unique file
     #"$SCENARIO_DIR/waf" --run="ndn-cabeee-generic --scenario=$scenario_json --verbose=true" > "$scenario_log" 2>&1
@@ -423,52 +436,141 @@ run_simulation() {
         update_csv "$scenario" "$row" "$csv_out"
     ) 200> "${csv_out}.lock"
 
-    echo "[$(date '+%Y-%m-%d %H:%M:%S')] Finished Scenario: $scenario"
+    # --- Reclaim disk space ---
+    # Everything this scenario needed from these files has already been extracted into $row above:
+    # the simulation log was last read at the packet/latency parsing step, and the three trace files
+    # at the cache/KB-transferred step. A single scenario log can run to several GB and the rate
+    # trace to over a GB, so keeping them for a whole sweep fills the disk. Delete them here, once
+    # the CSV row is safely written.
+    # NOTE: this makes the run non-re-analysable - process_nfd_logs_SD2.py cannot be re-run against a
+    # scenario afterwards, and there is nothing left to grep when a result looks wrong. The resume path
+    # is unaffected: the 'already has results' check reads the CSV, not these files.
+    # Set KEEP_SCENARIO_FILES=1 in the settings block to keep everything while debugging a single set.
+    if [ "${KEEP_SCENARIO_FILES:-0}" != "1" ]; then
+        rm -f "$scenario_log" "$scenario_csTrace" "$scenario_csUsage" "$scenario_rateTrace"
+    fi
+
+
+    # Completed-scenario counter. Read-increment-write happens under its own lock so two workers
+    # finishing at the same moment cannot both read the same value and report the same number. Uses a
+    # different FD than the CSV lock above (200) so the two never interfere.
+    local n
+    n=$(
+        (
+            flock -x 201
+            n=$(cat "$progress_file" 2>/dev/null || echo 0)
+            n=$(( ${n:-0} + 1 ))
+            echo "$n" > "$progress_file"
+            echo "$n"
+        ) 201> "${progress_file}.lock"
+    )
+
+    #echo "[$(date '+%Y-%m-%d %H:%M:%S')] Finished Scenario: $scenario"
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] Finished Scenario $n/$scenario_total: $scenario"
+
 }
 export -f run_simulation
 
-# --- 5. Dispatch Jobs ---
-#echo "Dispatching jobs to all available CPU cores..."
-echo "Dispatching jobs in prioritized hR order (0.0 -> 0.2 -> 0.4 -> 0.6 -> 0.8 -> 1.0)..."
+
+# --- 5. Run every requested scenario set, one after another ---
+# Each NAME gets its own scenario_json/, scenario_logs/, trace_results/ and its own CSV. Everything
+# above this point (the header, the helper functions, the git hashes) is independent of NAME and is
+# set up once; only the per-NAME paths and CSV are rebuilt on each pass.
+for NAME in "${NAMES[@]}"; do
+    NAME_START_TIME=$(date +%s)
+    echo ""
+    echo "=============================================================================="
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] Starting scenario set: $NAME"
+    echo "=============================================================================="
+
+    export SCENARIO_LOGS_DIR="$SCENARIO_DIR/scenario_logs/$NAME"
+    export SCENARIO_TRACE_DIR="$SCENARIO_DIR/trace_results/$NAME"
+    export SCENARIO_JSON_DIR="$SCENARIO_DIR/scenario_json/$NAME"
+    export csv_out="$SCENARIO_DIR/perf-results/perf-results-simulation-generic_${NAME}.csv"
+
+    mkdir -p "$SCENARIO_LOGS_DIR"
+    mkdir -p "$SCENARIO_TRACE_DIR"
+
+    if [ ! -f "$csv_out" ]; then
+        echo "Creating csv..."
+        echo "$header" > "$csv_out"
+        populate_blank_scenarios
+    elif ! grep -q -F "$header" "$csv_out"; then
+        echo "Overwriting csv..."
+        mv "$csv_out" "$csv_out.bak"
+        echo "$header" > "$csv_out"
+        populate_blank_scenarios
+    else
+        echo "Updating csv..."
+        cp "$csv_out" "$csv_out.bak"
+    fi
+
+    if [ ! -d "$SCENARIO_JSON_DIR" ]; then
+        echo "WARNING: no scenario_json directory for '$NAME' ($SCENARIO_JSON_DIR) - skipping."
+        continue
+    fi
+
+    # Total scenarios in this set, and a fresh completed-counter for it. The count uses the same find
+    # as the dispatch pipeline below, so the denominator matches the number of jobs parallel creates.
+    # Exported because run_simulation runs in a parallel-spawned subshell.
+    export SCENARIO_TOTAL=$(find "$SCENARIO_JSON_DIR" -maxdepth 1 -name "*.json" | wc -l)
+    : > "${csv_out}.progress"
 
 
-# Find all JSON files and pipe them into parallel using all system resources (may overload system if too many jobs are started at once)
-#find "$SCENARIO_JSON_DIR" -maxdepth 1 -name "*.json" | parallel --ungroup --jobs 0 run_simulation {}
-# Find all JSON files and pipe them into parallel using all cores
-#find "$SCENARIO_JSON_DIR" -maxdepth 1 -name "*.json" | parallel --ungroup --jobs 90% run_simulation {}
-# Find all JSON files and pipe them into parallel using 7 cores
-#find "$SCENARIO_JSON_DIR" -maxdepth 1 -name "*.json" | parallel --ungroup --jobs 7 run_simulation {}
-# Find all JSON files and pipe them into parallel using half of the cores
-#find "$SCENARIO_JSON_DIR" -maxdepth 1 -name "*.json" | parallel --ungroup --jobs 50% run_simulation {}
+    # --- 5. Dispatch Jobs ---
+    #echo "Dispatching jobs to all available CPU cores..."
+    echo "Dispatching jobs in prioritized hR order (0.0 -> 0.2 -> 0.4 -> 0.6 -> 0.8 -> 1.0)..."
 
 
-# 1. Find all json files
-# 2. Extract 'hR_X.X' from the middle of the filename to use as a sorting prefix
-# 3. Sort them alphanumerically (0.0 first, 1.0 last)
-# 4. Strip the prefix so GNU Parallel receives the original clean file path
-find "$SCENARIO_JSON_DIR" -maxdepth 1 -name "*.json" | awk '
-    {
-        # Match "hR_" followed by a number, a dot, and another number
-        if (match($0, /hR_[0-9]+\.[0-9]+/)) {
-            print substr($0, RSTART, RLENGTH) "\t" $0
-        } else {
-            # Catch-all fallback just in case a file misses the pattern
-            print "z_no_hR" "\t" $0
+    # Find all JSON files and pipe them into parallel using all system resources (may overload system if too many jobs are started at once)
+    #find "$SCENARIO_JSON_DIR" -maxdepth 1 -name "*.json" | parallel --ungroup --jobs 0 run_simulation {}
+    # Find all JSON files and pipe them into parallel using all cores
+    #find "$SCENARIO_JSON_DIR" -maxdepth 1 -name "*.json" | parallel --ungroup --jobs 90% run_simulation {}
+    # Find all JSON files and pipe them into parallel using 7 cores
+    #find "$SCENARIO_JSON_DIR" -maxdepth 1 -name "*.json" | parallel --ungroup --jobs 7 run_simulation {}
+    # Find all JSON files and pipe them into parallel using half of the cores
+    #find "$SCENARIO_JSON_DIR" -maxdepth 1 -name "*.json" | parallel --ungroup --jobs 50% run_simulation {}
+
+
+    # 1. Find all json files
+    # 2. Extract 'hR_X.X' from the middle of the filename to use as a sorting prefix
+    # 3. Sort them alphanumerically (0.0 first, 1.0 last)
+    # 4. Strip the prefix so GNU Parallel receives the original clean file path
+    find "$SCENARIO_JSON_DIR" -maxdepth 1 -name "*.json" | awk '
+        {
+            # Match "hR_" followed by a number, a dot, and another number
+            if (match($0, /hR_[0-9]+\.[0-9]+/)) {
+                print substr($0, RSTART, RLENGTH) "\t" $0
+            } else {
+                # Catch-all fallback just in case a file misses the pattern
+                print "z_no_hR" "\t" $0
+            }
         }
-    }
-' | sort -V | cut -f2- | parallel --ungroup --jobs 80% run_simulation {} \
-"$FORCE_RERUN_ALL" \
-"$csv_out" \
-"$FORCE_TRACE" \
-"$FORCE_MAKESPAN" \
-"$FORCE_FRESHNESS" \
-"$FORCE_SD_TIMEOUT" \
-"$FORCE_SD_TIMEOUT_COMPUTATION_MULTIPLIER"
+    ' | sort -V | cut -f2- | parallel --ungroup --jobs 80% run_simulation {} \
+    "$FORCE_RERUN_ALL" \
+    "$csv_out" \
+    "$FORCE_TRACE" \
+    "$FORCE_MAKESPAN" \
+    "$FORCE_FRESHNESS" \
+    "$FORCE_SD_TIMEOUT" \
+    "$FORCE_SD_TIMEOUT_COMPUTATION_MULTIPLIER" \
+    {#}
+
+    NAME_END_TIME=$(date +%s)
+    NAME_RUNTIME=$((NAME_END_TIME - NAME_START_TIME))
+    NH=$((NAME_RUNTIME / 3600)); NM=$(((NAME_RUNTIME % 3600) / 60)); NS=$((NAME_RUNTIME % 60))
+    printf "\n[%s] Finished scenario set: %s  (%02d:%02d:%02d, %d seconds)\n" \
+           "$(date '+%Y-%m-%d %H:%M:%S')" "$NAME" $NH $NM $NS $NAME_RUNTIME
+    echo "CSV written to: $csv_out"
+
+    curl -d "dag_run complete! $NAME. exec time: $NH:$NM:$NS" ntfy.sh/cabeee-dag_run
+done
+
 
 # Wait for all semaphores to clear just to be safe
 #sem --wait --id csv_lock
 
-echo "All scenarios completed."
+echo "All scenario sets completed: ${NAMES[*]}"
 END_TIME=$(date +%s)
 TOTAL_RUNTIME=$((END_TIME - START_TIME))
 # Format the time into HH:MM:SS
@@ -477,7 +579,7 @@ M=$(((TOTAL_RUNTIME % 3600) / 60))
 S=$((TOTAL_RUNTIME % 60))
 printf "\nTotal Execution Time: %02d:%02d:%02d (%d seconds)\n" $H $M $S $TOTAL_RUNTIME
 
-curl -d "dag_run complete! $NAME" ntfy.sh/cabeee-dag_run
+curl -d "ALL dag_runs complete! Sets: ${NAMES[*]}, total exec time: $H:$M:$S." ntfy.sh/cabeee-dag_run
 
 echo -e "\a"
 sleep 0.5
