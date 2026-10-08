@@ -32,8 +32,14 @@ HOSTRATIO_LIST = [0.2, 0.4, 0.6, 0.8, 1.0]
 LINK_DELAY_AVG_MS = 1
 LINK_DELAY_VARIATION_PCT = 0.50  # percent variation.
 #CCR_LIST = [0.1, 0.5, 1, 2, 10]  # CCR is communication to computation ratio
-CCR_LIST = [0.1, 1, 10]  # CCR is communication to computation ratio
+CCR_LIST = [0.01, 0.1, 1, 10]  # CCR is communication to computation ratio
 MAKESPAN_VARIATION_PCT = 0.50  # percent variation.
+QUALITY_AVG = 0.8
+QUALITY_MIN = 0.1   # no matter the variation below, cap the min at this value
+QUALITY_MAX = 1     # no matter the variation below, cap the max at this value
+QUALITY_VARIATION_PCT = 0.50  # percent variation.
+ENERGY_AVG = 5 # in Joules (1watt x 1second), although the units are inconsequential since all scenarios will use the same units.
+ENERGY_VARIATION_PCT = 0.50  # percent variation.
 
 # Consumer options
 POISSON_FREQ = 100
@@ -118,7 +124,7 @@ def generate_tp(tp_type, nodes, snsrs, usrs, cs, delay_avg, delay_var, wf_cat, s
     run_cmd(cmd)
     return output_name
 
-def generate_hs(wf_filenames, tp_filename, snsrs, usrs, makespanMinNS, makespanMaxNS, ser, hostRatio, prev_hs):
+def generate_hs(wf_filenames, tp_filename, snsrs, usrs, makespanMinNS, makespanMaxNS, ser, hostRatio, prev_hs, qualityMin, qualityMax, energyMin, energyMax):
     tp_path = os.path.join(WORKDIR, tp_filename)
     
     with open(tp_path, 'r') as f:
@@ -142,6 +148,10 @@ def generate_hs(wf_filenames, tp_filename, snsrs, usrs, makespanMinNS, makespanM
         "-s", snsrs, "-u", usrs,
         "--makespan-min", makespanMinNS,
         "--makespan-max", makespanMaxNS,
+        "--quality-min", qualityMin,
+        "--quality-max", qualityMax,
+        "--energy-min", energyMin,
+        "--energy-max", energyMax,
         "--min-hosts", minHosts,
         "--max-hosts", maxHosts
     ]
@@ -269,6 +279,14 @@ def run_category_task(run_id, pair):
                     makespanMinNS = int(avg_makespan_ns * (1.0 - MAKESPAN_VARIATION_PCT))
                     makespanMaxNS = int(avg_makespan_ns * (1.0 + MAKESPAN_VARIATION_PCT))
 
+                    qualityMin = float(QUALITY_AVG * (1.0 - QUALITY_VARIATION_PCT))
+                    qualityMin = max(QUALITY_MIN, qualityMin)
+                    qualityMax = float(QUALITY_AVG * (1.0 + QUALITY_VARIATION_PCT))
+                    qualityMax = min(QUALITY_MAX, qualityMax)
+                    energyMin = float(ENERGY_AVG * (1.0 - ENERGY_VARIATION_PCT))
+                    energyMin = max(0,energyMin)
+                    energyMax = float(ENERGY_AVG * (1.0 + ENERGY_VARIATION_PCT))
+
                     freshness_ms = 1/POISSON_FREQ * 1_000 # assumes interest gets new freshness when created, thus aggregator data will be very fresh no matter what pDAG looks like.
                     #freshness_ms = max(NUM_SERVICES_LIST) * avg_makespan_ns/1_000_000
 
@@ -278,7 +296,7 @@ def run_category_task(run_id, pair):
 
                         # Create the hosting layer
                         hs_code = f"{padded_catCode}-{ccr_str}"
-                        hs = generate_hs(wf_filenames, tp, sensors, hs_users, makespanMinNS, makespanMaxNS, hs_code, hostRatio, prev_hs)
+                        hs = generate_hs(wf_filenames, tp, sensors, hs_users, makespanMinNS, makespanMaxNS, hs_code, hostRatio, prev_hs, qualityMin, qualityMax, energyMin, energyMax)
                         prev_hs = hs
                         hr_str = f"{hostRatio:03.1f}"
 
@@ -289,11 +307,11 @@ def run_category_task(run_id, pair):
                             base_name = f"{padded_catCode}-hR_{hr_str}-{ccr_str}--sn-{topoCategory}-{workflowCategory}-{prefix}"
 
                             # Build Scenario Variations
-                            build_scenario(f"{base_name}--1-noSD2-multicast.json", wf_filenames, tp, hs, prefix, "multicast", 0, sim_end_time, freshness_ms, icnfcM=0, ndnfcpTMS=0, sd=0, ru=0)
-                            build_scenario(f"{base_name}--2-noSD2-bestRoute.json", wf_filenames, tp, hs, prefix, "best-route", 0, sim_end_time, freshness_ms, icnfcM=0, ndnfcpTMS=0, sd=0, ru=0)
-                            build_scenario(f"{base_name}--3-SD2-noUtilization.json", wf_filenames, tp, hs, prefix, "best-route", 0, sim_end_time, freshness_ms, icnfcM=0, ndnfcpTMS=0, sd=2, ru=0)
-                            build_scenario(f"{base_name}--4-SD2-utilization-noCaching.json", wf_filenames, tp, hs, prefix, "best-route", 0, sim_end_time, freshness_ms, icnfcM=0, ndnfcpTMS=0, sd=2, ru=1)
-                            out_path = build_scenario(f"{base_name}--5-SD2-utilization-caching.json", wf_filenames, tp, hs, prefix, "best-route", 1000, sim_end_time, freshness_ms, icnfcM=0, ndnfcpTMS=0, sd=2, ru=1)
+                            out_path = build_scenario(f"{base_name}--1-noSD2-multicast.json", wf_filenames, tp, hs, prefix, "multicast", 0, sim_end_time, freshness_ms, icnfcM=0, ndnfcpTMS=0, sd=0, ru=0)
+                            #out_path = build_scenario(f"{base_name}--2-noSD2-bestRoute.json", wf_filenames, tp, hs, prefix, "best-route", 0, sim_end_time, freshness_ms, icnfcM=0, ndnfcpTMS=0, sd=0, ru=0)
+                            #out_path = build_scenario(f"{base_name}--3-SD2-noUtilization.json", wf_filenames, tp, hs, prefix, "best-route", 0, sim_end_time, freshness_ms, icnfcM=0, ndnfcpTMS=0, sd=2, ru=0)
+                            #out_path = build_scenario(f"{base_name}--4-SD2-utilization-noCaching.json", wf_filenames, tp, hs, prefix, "best-route", 0, sim_end_time, freshness_ms, icnfcM=0, ndnfcpTMS=0, sd=2, ru=1)
+                            #out_path = build_scenario(f"{base_name}--5-SD2-utilization-caching.json", wf_filenames, tp, hs, prefix, "best-route", 1000, sim_end_time, freshness_ms, icnfcM=0, ndnfcpTMS=0, sd=2, ru=1)
 
                             # Quick graph visualization logic
                             if VISUALIZE and num_nodes < 9 and num_services < 21:
