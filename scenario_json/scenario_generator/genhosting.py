@@ -78,13 +78,21 @@ def uniform(args):
             start, stop = random.choice(tuple(zip(args.start_times, args.stop_times)))
             makespan = random.randint(args.makespan_min, args.makespan_max)
             item.update({'start': start, 'end': stop, 'makespanNS': makespan})
+            quality = random.uniform(args.quality_min, args.quality_max)
+            item.update({'quality': quality})
+            energy = random.uniform(args.energy_min, args.energy_max)
+            item.update({'energy': energy})
         elif srv_name in all_consumers:
             # Metadata maps directly during initial provisioning inside gen_uniform_hosting
             pass
         elif srv_name in all_producers:
             #makespan = 1000000
             makespan = random.randint(args.makespan_min, args.makespan_max)
-            item.update({"start": 0, "end": -1, 'makespanNS': makespan})
+            item.update({'start': 0, 'end': -1, 'makespanNS': makespan})
+            quality = random.uniform(args.quality_min, args.quality_max)
+            item.update({'quality': quality})
+            energy = random.uniform(args.energy_min, args.energy_max)
+            item.update({'energy': energy})
 
     return { "routerHosting": hosting }
 
@@ -308,6 +316,10 @@ def main():
     uni_parser.add_argument('--stop-times', nargs='+', type=int, default=[-1], help="list of stop time choices, paired with --start-times")
     uni_parser.add_argument('--makespan-min', type=int, default=0, help='minimum service makespan in NS')
     uni_parser.add_argument('--makespan-max', type=int, default=0, help='maximum service makespan in NS')
+    uni_parser.add_argument('--quality-min', type=float, default=1, help='minimum service quality')
+    uni_parser.add_argument('--quality-max', type=float, default=1, help='maximum service quality')
+    uni_parser.add_argument('--energy-min', type=float, default=1, help='minimum service energy in Joules')
+    uni_parser.add_argument('--energy-max', type=float, default=1, help='maximum service energy in Joules')
     uni_parser.add_argument('-b', '--base-hosting', type=Path, help="base hosting json file to extend")
 
     comb_parser = subparsers.add_parser('combine', help="combine two hosting files")
