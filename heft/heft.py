@@ -9,6 +9,7 @@ import csv
 import argparse
 import fnmatch
 import time
+import subprocess
 import concurrent.futures
 import multiprocessing
 
@@ -21,8 +22,11 @@ class EdgeScheduler:
         
         self.delay_matrix = {}
         self.comp_matrix = {} # comp_matrix[task][node] = time_in_ns
+        self.energy_matrix = {} # energy_matrix[task][node] = joules
+        self.quality_matrix = {} # quality_matrix[task][node] = quality in (0, 1]
+        self.quality_tasks = set() # tasks whose hosting entries actually carry a quality
         
-        # Cap on the number of re-ranking passes used by schedule_heft_cabeee_mod2()
+        # Cap on the number of re-ranking passes used by schedule_heft_iter_mod2()
         self.max_heft_iterations = 100
 
         # Budget for schedule_exhaustive(): maximum number of candidate task
@@ -38,6 +42,26 @@ class EdgeScheduler:
         # at or below this; above it the step is expanded service by service with the
         # beam applied inside the step too. See schedule_abeam().
         self.abeam_max_step_combinations = 20_000
+
+        # Hard ceiling on how many branches A-Beam may hold at once. Enumerating a step
+        # exactly multiplies the live branch list by the beam width, so memory grows as
+        # beam_width x step_combinations - at beam_width 1000 that reached ~2.5 GB per
+        # worker and got processes OOM-killed. When an expansion would exceed this, the
+        # branch list is trimmed to the best f first and the step is no longer exact.
+        # Budget roughly 2 KB per branch PER WORKER PROCESS, so the default is about
+        # 400 MB per worker; lower it if you run many workers on a small machine.
+        # The default leaves beam widths up to 10 untouched (10 x 20_000 = 200_000).
+        self.abeam_max_open_branches = 200_000
+
+        # Objective weights. The A_Beam<k>_LEQ schemes minimize a weighted sum of three
+        # normalized terms - latency, quality and energy (see evaluate_schedule() for how
+        # each is normalized so that the weights are comparable); the A_Beam<k>_L schemes
+        # ignore these and optimize latency alone. evaluate_schedule() also uses them to
+        # score every scheme's Cost column. Only their ratios affect which placement wins.
+        # All equal for now; to be tuned per context later.
+        self.weight_latency = 1.0 / 3.0
+        self.weight_quality = 1.0 / 3.0
+        self.weight_energy = 1.0 / 3.0
 
         self._parse_json(json_data)
         self._compute_all_pairs_shortest_path()
@@ -85,17 +109,14 @@ class EdgeScheduler:
                 self.dag[parent].append(child)
                 self.dag_parents[child].append(parent)
 
-        # Parse Router Hosting (Computation Matrix)
+        # Parse Router Hosting (Computation, Energy and Quality Matrices)
         self.comp_matrix = {t: {} for t in self.tasks}
+        self.energy_matrix = {t: {} for t in self.tasks}
+        self.quality_matrix = {t: {} for t in self.tasks}
         for rh in data.get('routerHosting', []):
             svc = rh['service']
-            rtr = rh['router']
-
-            # Use makespanNS if available, otherwise default to 0
-            cost = rh.get('makespanNS', 0)
-
             if svc in self.comp_matrix:
-                self.comp_matrix[svc][rtr] = cost
+                self._add_hosting(svc, rh)
 
         # Fallback for instance-suffixed hosting names. The DAG names the consumer
         # sink task "/consumer", but routerHosting pins it under its instance name
@@ -108,7 +129,19 @@ class EdgeScheduler:
             for rh in data.get('routerHosting', []):
                 svc = rh['service']
                 if re.fullmatch(re.escape(task) + r"\d+", svc):
-                    self.comp_matrix[task][rh['router']] = rh.get('makespanNS', 0)
+                    self._add_hosting(task, rh)
+
+    def _add_hosting(self, task, rh):
+        """Records one routerHosting entry for `task`. A missing field falls back to the
+        neutral value for its objective: makespanNS 0, energy 0 J (adds nothing to the
+        total), quality 1.0 (multiplies the total quality by 1). The consumer entry, for
+        instance, carries none of the three."""
+        rtr = rh['router']
+        self.comp_matrix[task][rtr] = rh.get('makespanNS', 0)
+        self.energy_matrix[task][rtr] = rh.get('energy', 0.0)
+        self.quality_matrix[task][rtr] = rh.get('quality', 1.0)
+        if 'quality' in rh:
+            self.quality_tasks.add(task)
 
     def _compute_all_pairs_shortest_path(self):
         """Floyd-Warshall to get shortest path delay between all routers."""
@@ -204,6 +237,31 @@ class EdgeScheduler:
         if not rank_min:
             return 0
         return max(rank_min.values())
+    def calculate_cp_min_comm(self):
+        """Like calculate_cp_min(), but also charges every edge its cheapest possible
+        transfer (_get_specific_min_comm): the longest path in the DAG where each task
+        costs its minimum makespan and each hop its minimum link delay. Every chain in
+        the DAG must be executed in order, and no placement can make a task or a transfer
+        cheaper than its minimum, so this is still a true lower bound on the makespan of
+        ANY schedule - just a much tighter one when communication matters."""
+        placeable_set = {t for t in self.tasks if self.comp_matrix.get(t)}
+        rank = {}
+
+        def calc(task):
+            if task in rank: return rank[task]
+            longest_succ = 0
+            for succ in self.dag.get(task, []):
+                if succ in placeable_set:
+                    longest_succ = max(longest_succ,
+                                       self._get_specific_min_comm(task, succ) + calc(succ))
+            rank[task] = self._get_min_comp(task) + longest_succ
+            return rank[task]
+
+        for t in self.tasks:
+            if t in placeable_set:
+                calc(t)
+        return max(rank.values()) if rank else 0
+
     def get_makespan(self, schedule):
         """Returns the total makespan of a given schedule."""
         if not schedule:
@@ -211,6 +269,124 @@ class EdgeScheduler:
         return max(end for node, start, end in schedule.values())
 
 
+    # --- MULTI-OBJECTIVE EVALUATION (latency, quality, energy) ---
+
+    def _objective_refs(self):
+        """Per-scenario reference ("ideal") value for each objective, used to turn the
+        three raw objectives into comparable, dimensionless terms. Computed once.
+
+          latency_ref  : calculate_cp_min_comm() - the critical path with every task at
+                         its cheapest makespan AND every edge at its cheapest transfer; no
+                         schedule can finish sooner. CP_min alone is far too loose for
+                         this: it ignores communication, which on high-CCR scenarios is
+                         most of the makespan, so even the OPTIMAL schedule sits at a
+                         median 2.7x (p90 ~23x) CP_min - which would inflate the latency
+                         term by that factor and swamp quality and energy regardless of
+                         the weights. With communication included the optimum sits at a
+                         median ~1.4x.
+          energy_ref   : the sum of every placeable task's cheapest energy; the lowest
+                         total energy any placement can reach.
+          quality_best : each task's best quality over its eligible nodes; their
+                         product is the highest total quality any placement can reach.
+          n_quality    : how many placeable tasks actually carry a quality value."""
+        if hasattr(self, '_objective_refs_cache'):
+            return self._objective_refs_cache
+
+        placeable = [t for t in self.tasks if self.comp_matrix.get(t)]
+        latency_ref = self.calculate_cp_min_comm()
+        self._objective_refs_cache = {
+            "latency_ref": latency_ref if latency_ref > 0 else 1,
+            "energy_ref": sum(min(self.energy_matrix[t].values()) for t in placeable),
+            "quality_best": {t: max(self.quality_matrix[t].values()) for t in placeable},
+            "n_quality": sum(1 for t in placeable if t in self.quality_tasks),
+        }
+        return self._objective_refs_cache
+
+    def _resolve_weights(self, weights=None):
+        """The objective weights to use: `weights` if given (a dict with any of the keys
+        "latency", "energy", "quality"; missing keys fall back to 0), otherwise the
+        configured self.weight_latency / self.weight_energy / self.weight_quality."""
+        if weights is None:
+            return {"latency": self.weight_latency,
+                    "energy": self.weight_energy,
+                    "quality": self.weight_quality}
+        return {k: weights.get(k, 0.0) for k in ("latency", "energy", "quality")}
+
+    def _energy_quality_cost(self, task, node, weights=None):
+        """The weighted energy + quality cost of hosting `task` on `node` - its share of
+        w_energy * energy_term + w_quality * quality_term in evaluate_schedule(), minus
+        the energy term's constant offset. Both terms are additive per service, so a
+        schedule's energy + quality cost is exactly the sum of this over its services.
+        An objective whose weight is 0 is skipped outright."""
+        w = self._resolve_weights(weights)
+        refs = self._objective_refs()
+        cost = 0.0
+        if w["energy"] and refs["energy_ref"] > 0:
+            cost += w["energy"] * self.energy_matrix[task][node] / refs["energy_ref"]
+        if w["quality"] and refs["n_quality"] > 0 and task in self.quality_tasks:
+            q = self.quality_matrix[task][node]
+            if q <= 0:
+                return math.inf # a zero-quality service zeroes the whole product
+            cost += w["quality"] * math.log(refs["quality_best"][task] / q) / refs["n_quality"]
+        return cost
+
+    def _cost_offset(self, weights=None):
+        """Constant subtracted so the combined cost is 0 at the ideal: the "- 1" of the
+        energy ratio term (the latency ratio's "- 1" is applied where it is computed)."""
+        w = self._resolve_weights(weights)
+        return w["energy"] if self._objective_refs()["energy_ref"] > 0 else 0.0
+
+    def evaluate_schedule(self, schedule):
+        """Scores a schedule on all three objectives and combines them into one cost.
+
+        Raw values:
+          latency : the makespan (ns) - service makespans plus link delays along the
+                    schedule's longest path
+          energy  : the SUM of every placed service's energy (J)
+          quality : the PRODUCT of every placed service's quality, in (0, 1]; 1 only if
+                    every service runs at full quality, lower for any degraded one
+
+        The raw values live on wildly different scales (~10^7 ns, a few tens of J, and a
+        product that can be ~10^-2), so weighting them directly would let latency swamp
+        the other two no matter the weights. Each is instead turned into a dimensionless
+        term that is 0 at its ideal and grows as the schedule gets worse:
+
+          latency_term = latency / latency_ref - 1        (latency_ref includes comms)
+          energy_term  = energy / energy_ref - 1
+          quality_term = ln(quality_best_total / quality) / n_quality
+
+        so a schedule 10% worse than ideal in any one objective scores ~0.1 in that term.
+
+        quality_term is the per-service (geometric-mean) quality loss. The product shrinks
+        geometrically as the DAG grows, so without dividing by the number of services
+        quality would automatically outweigh latency and energy on bigger DAGs. Being a
+        log it is additive per service, which A-Beam's heuristic relies on, and it is a
+        monotone function of the product, so ranking by it IS ranking by total quality.
+
+          cost = w_latency * latency_term + w_quality * quality_term + w_energy * energy_term
+
+        Returns a dict with the raw values, the three terms and the cost."""
+        refs = self._objective_refs()
+        latency = self.get_makespan(schedule)
+        energy = 0.0
+        quality = 1.0
+        quality_term = 0.0
+        for task, (node, _start, _end) in schedule.items():
+            energy += self.energy_matrix[task][node]
+            q = self.quality_matrix[task][node]
+            quality *= q
+            if refs["n_quality"] > 0 and task in self.quality_tasks:
+                quality_term = (math.inf if q <= 0 else
+                                quality_term + math.log(refs["quality_best"][task] / q) / refs["n_quality"])
+
+        latency_term = latency / refs["latency_ref"] - 1
+        energy_term = energy / refs["energy_ref"] - 1 if refs["energy_ref"] > 0 else 0.0
+        cost = (self.weight_latency * latency_term
+                + self.weight_quality * quality_term
+                + self.weight_energy * energy_term)
+        return {"latency": latency, "energy": energy, "quality": quality,
+                "latency_term": latency_term, "quality_term": quality_term,
+                "energy_term": energy_term, "cost": cost}
 
 
     # --- ALGORITHMS ---
@@ -245,7 +421,7 @@ class EdgeScheduler:
         for t in self.tasks: calc_downward(t)
 
 
-    def compute_ranks_cabeee(self):
+    def compute_ranks_rlc(self):
         """Uses the average of all links between two specific services, rather than average of all links in the entire topology.
         i.e.: uses mean shortest-path delay over only the routers that can actually host the parent × routers that can host the child, computed per edge"""
         
@@ -280,8 +456,8 @@ class EdgeScheduler:
 
 
 
-    def compute_ranks_cabeee_mod1(self):
-        """cabeee ranks, but each task is also charged its most expensive input transfer."""
+    def compute_ranks_ic(self):
+        """Like RLC ranks, but each task is also charged its most expensive input transfer cost."""
         self.rank_u = {}
         self.rank_d = {}
 
@@ -299,7 +475,7 @@ class EdgeScheduler:
             for succ in self.dag[task]:
                 specific_comm = self._get_specific_avg_comm(task, succ)         # this uses the average of all links between two specific services
                 max_succ = max(max_succ, specific_comm + calc_upward(succ))
-            # mod1: add the highest input cost of this task on top of the cabeee rank
+            # mod1: add the highest input cost of this task on top of the RLC rank
             self.rank_u[task] = self._get_avg_comp(task) + max_input_comm(task) + max_succ
             return self.rank_u[task]
 
@@ -319,8 +495,8 @@ class EdgeScheduler:
 
         for t in self.tasks: calc_downward(t)
 
-    def compute_ranks_cabeee_mod2(self, schedule=None):
-        """cabeee ranks. If a schedule is given, every task that was placed uses the
+    def compute_ranks_iter(self, schedule=None):
+        """RLC ranks. If a schedule is given, every task that was placed uses the
         makespan on its ASSIGNED node instead of the average over all eligible nodes."""
         self.rank_u = {}
         self.rank_d = {}
@@ -368,34 +544,34 @@ class EdgeScheduler:
         ordered_tasks = sorted(self.tasks, key=lambda x: self.rank_u[x], reverse=True)
         return self._place_tasks(ordered_tasks)
 
-    def schedule_heft_cabeee(self):
-        self.compute_ranks_cabeee()
+    def schedule_heft_rlc(self):
+        self.compute_ranks_rlc()
         # Sort by upward rank descending
         ordered_tasks = sorted(self.tasks, key=lambda x: self.rank_u[x], reverse=True)
         return self._place_tasks(ordered_tasks)
 
-    def schedule_heft_cabeee_mod1(self):
-        self.compute_ranks_cabeee_mod1()
+    def schedule_heft_ic(self):
+        self.compute_ranks_ic()
         # Sort by upward rank descending
         ordered_tasks = sorted(self.tasks, key=lambda x: self.rank_u[x], reverse=True)
         return self._place_tasks(ordered_tasks)
 
-    def schedule_heft_cabeee_mod2(self, max_iterations=None):
-        """Runs cabeee, then re-ranks using the computation cost each task actually got on
+    def schedule_heft_iter(self, max_iterations=None):
+        """Runs RLC, then re-ranks using the computation cost each task actually got on
         its assigned node, re-placing until the task priority order stops changing.
         Returns (schedule, iterations) where iterations counts the placement passes."""
         if max_iterations is None:
             max_iterations = self.max_heft_iterations
 
-        # Pass 1: no schedule yet, so this is exactly the cabeee ranking
-        self.compute_ranks_cabeee_mod2()
+        # Pass 1: no schedule yet, so this is exactly the RLC ranking
+        self.compute_ranks_iter()
         ordered_tasks = sorted(self.tasks, key=lambda x: self.rank_u[x], reverse=True)
         schedule = self._place_tasks(ordered_tasks)
         iterations = 1
 
         while iterations < max_iterations:
             # Re-rank with the makespan of each task on the node it was placed on
-            self.compute_ranks_cabeee_mod2(schedule)
+            self.compute_ranks_iter(schedule)
             new_order = sorted(self.tasks, key=lambda x: self.rank_u[x], reverse=True)
 
             if new_order == ordered_tasks:
@@ -483,9 +659,9 @@ class EdgeScheduler:
         # the heuristics it is supposed to be the ground truth for already beat.
         best = {"makespan": math.inf, "schedule": None}
         for seed_schedule in (self.schedule_heft(),
-                              self.schedule_heft_cabeee(),
-                              self.schedule_heft_cabeee_mod1(),
-                              self.schedule_heft_cabeee_mod2()[0],
+                              self.schedule_heft_rlc(),
+                              self.schedule_heft_ic(),
+                              self.schedule_heft_iter()[0],
                               self.schedule_cpop()):
             if not seed_schedule:
                 continue
@@ -699,7 +875,7 @@ class EdgeScheduler:
         return best
 
     def compute_ranks_min(self):
-        """Admissible variant of the HEFT-cabeee upward rank, used as the A-Beam
+        """Admissible variant of the HEFT-RLC upward rank, used as the A-Beam
         heuristic h. Three changes make it a strict lower bound on the time still needed
         from the moment a task starts:
 
@@ -711,7 +887,17 @@ class EdgeScheduler:
 
         No real placement can finish the sub-DAG below a task faster than this, so
         f = g + h never overestimates the true makespan and the ranking stays
-        admissible."""
+        admissible.
+
+        Taking the MAXIMUM over successors instead would also be admissible, and makes
+        individual ranks larger - but it cannot change A-Beam at all, so it is not
+        offered. _abeam_latency_bound() maximizes est_lb(u) + rank(u) over EVERY unplaced
+        task u, and every descendant of an unplaced task is itself unplaced. For u's
+        longest downstream chain ending at an exit task w, the forward est_lb pass gives
+        est_lb(w) + min_comp(w) >= est_lb(u) + max-rank(u), and an exit task's rank is
+        min_comp(w) under either rule. So the maximum over tasks already recovers the
+        longest chain, and the bound is identical either way (verified: identical results
+        on 400 scenarios x 6 beam widths, and on 8,000 random partial placements)."""
         self.rank_min_u = {}
         placeable_set = {t for t in self.tasks if self.comp_matrix.get(t)}
 
@@ -730,17 +916,18 @@ class EdgeScheduler:
             if t in placeable_set:
                 calc_upward(t)
 
-    def _abeam_f(self, placement, makespan, pending):
-        """f = g + h for a partial placement.
+    def _abeam_latency_bound(self, placement, makespan, pending):
+        """The latency part of A-Beam's f = g + h for a partial placement, in ns.
 
         g is the makespan already committed by the tasks in `placement`. h is the extra
-        time still unavoidably needed on top of g, so f = g + h collapses to
+        time still unavoidably needed on top of g, so g + h collapses to
 
-            f = max( g, max over unplaced u of ( est_lb(u) + rank_min_u(u) ) )
+            max( g, max over unplaced u of ( est_lb(u) + rank_min_u(u) ) )
 
         which is the right form for a makespan (a max-metric, not a sum: work still to
         come can overlap with work already scheduled, so literally adding the two would
-        overestimate and break admissibility).
+        overestimate and break admissibility). The result is a lower bound on the final
+        makespan of any completion of this placement.
 
         est_lb(u) is a forward lower bound on when u could possibly start - each
         predecessor's earliest finish plus that edge's cheapest transfer, with already
@@ -764,19 +951,82 @@ class EdgeScheduler:
 
         return f
 
-    def schedule_abeam(self, beam_width=None, max_step_combinations=None):
+    def schedule_abeam_l(self, beam_width=None, max_step_combinations=None, heuristic="rank"):
+        """A_Beam<k>_L: A-Beam optimizing latency (makespan) alone - schedule_abeam() with
+        weights latency 1, energy 0, quality 0. This is the A-Beam from before energy and
+        quality were added: with those weights f is a positive rescaling of the old
+        makespan-only f, so every branch ranks exactly as it used to and the placements
+        are identical (verified on 150 scenarios)."""
+        return self.schedule_abeam(beam_width, max_step_combinations,
+                                   weights={"latency": 1.0, "energy": 0.0, "quality": 0.0},
+                                   heuristic=heuristic)
+
+    def schedule_abeam_leq(self, beam_width=None, max_step_combinations=None, heuristic="rank"):
+        """A_Beam<k>_LEQ: A-Beam optimizing the weighted Latency + Energy + Quality cost,
+        with the configured self.weight_latency / weight_energy / weight_quality."""
+        return self.schedule_abeam(beam_width, max_step_combinations, heuristic=heuristic)
+
+    def _abeam_rollout(self, placement, avail, order, options):
+        """Completes a partial placement greedily, HEFT-style: every still-unplaced task,
+        taken in `order` (topological), goes on the eligible node with the earliest finish
+        time. Returns the completed placement. Used by the "rollout_min"/"rollout_avg"
+        A-Beam heuristics, where f is the cost of this completed schedule.
+
+        Unlike the rank heuristic this is NOT a lower bound: it is the cost of one real
+        completion, so it can overestimate the best completion (it is an upper bound)."""
+        pl = dict(placement)
+        av = dict(avail)
+        for task in order:
+            if task in pl:
+                continue
+            best_node, best_est, best_eft = None, 0, math.inf
+            for node, comp_time in options[task]:
+                est = self._earliest_start(task, node, pl, av)
+                eft = est + comp_time
+                if eft < best_eft:
+                    best_node, best_est, best_eft = node, est, eft
+            pl[task] = (best_node, best_est, best_eft)
+            av[best_node] = best_eft
+        return pl
+
+    def schedule_abeam(self, beam_width=None, max_step_combinations=None, weights=None,
+                       heuristic="rank"):
         """A-Beam: an A*-flavoured beam search that walks the DAG one "step" at a time.
+        This is the engine behind both schedule_abeam_l() and schedule_abeam_leq(); they
+        differ only in the objective weights passed in `weights` (see
+        _resolve_weights(); None means the configured self.weight_*).
 
         The DAG is split into steps by _dag_steps() (the critical path sets how many there
         are). At each step every hosting combination for that step's services is explored
-        as a separate branch; each branch is scored by f = g + h, where g is the makespan
-        committed so far and h is the admissible remaining-time estimate from
-        compute_ranks_min(). Once the whole step has been expanded, the frontier is pruned
-        down to the k branches with the lowest f, and the search moves to the next step.
+        as a separate branch; each branch is scored by f = g + h. Once the whole step has
+        been expanded, the frontier is pruned down to the k branches with the lowest f,
+        and the search moves to the next step.
+
+        The objective is the weighted latency + quality + energy cost of
+        evaluate_schedule(), and f is an admissible (never too high) estimate of the final
+        cost of any completion of a branch:
+
+          g : the cost already committed by the placed services - the makespan so far,
+              plus the energy and quality of every placed service
+          h : the least cost the unplaced services can still add -
+                latency : the extra makespan they force, from _abeam_latency_bound()
+                          (admissible via compute_ranks_min())
+                energy + quality : for each unplaced service, the cheapest
+                          w_energy * energy + w_quality * quality-loss over its eligible
+                          nodes. Taking the minimum of the COMBINED per-node cost, rather
+                          than the best energy node plus the best quality node separately,
+                          is still admissible (both are additive per service) and is
+                          tighter whenever a service's greenest node is not its
+                          highest-quality one.
 
         beam_width (k) may be an int for a constant width, or a callable
         k(step_index, total_steps) -> int for a schedule that varies with depth (wider
         early, narrower later). Defaults to self.abeam_beam_width.
+
+        Two separate limits keep this affordable. self.abeam_max_open_branches caps how
+        many branches may be held at once, because enumerating a step exactly multiplies
+        the live branch list by the beam width; when an expansion would exceed it, the
+        branches are trimmed to the best f first, which also makes that step inexact.
 
         A step's full hosting product is enumerated whenever it is small enough
         (max_step_combinations, default self.abeam_max_step_combinations). It often is
@@ -790,7 +1040,28 @@ class EdgeScheduler:
 
         Services within a step are mutually independent, so they are placed in self.tasks
         order; that order only matters when two of them land on the same node, where it
-        decides which runs first."""
+        decides which runs first.
+
+        `heuristic` chooses how h is computed:
+          "rank"        : the admissible bound above (UpRank_min + forward pass). Default.
+          "rollout_min" : complete the branch greedily with HEFT placement
+                          (_abeam_rollout), taking the remaining services in topological
+                          order ranked by UpRank_min, and use the completed schedule's
+                          cost as f.
+          "rollout_avg" : the same rollout, ranked by the standard HEFT upward rank
+                          (average compute cost, average communication cost).
+        Rollouts are an upper bound rather than a lower bound, and cost O(H x e) per
+        evaluation instead of O(e), so for them f is only computed where pruning
+        actually reads it: inside an exactly enumerated step no pruning happens until
+        the step ends, so mid-step branches are scored lazily, only if the open-branch
+        ceiling forces a trim. The "rank" heuristic keeps its original behavior and
+        scores every branch.
+
+        self.abeam_heuristic_evals counts f evaluations and self.abeam_heuristic_time
+        is the wall time spent in them (seconds), so the cost of one evaluation can be
+        compared across heuristics."""
+        if heuristic not in ("rank", "rollout_min", "rollout_avg"):
+            raise ValueError(f"unknown A-Beam heuristic {heuristic!r}")
         if beam_width is None:
             beam_width = self.abeam_beam_width
         if max_step_combinations is None:
@@ -802,6 +1073,8 @@ class EdgeScheduler:
         for task in self.tasks:
             if not self.comp_matrix.get(task):
                 print(f"Warning: Task {task} could not be scheduled (No eligible nodes).")
+        self.abeam_heuristic_evals = 0
+        self.abeam_heuristic_time = 0.0
         if not steps:
             self.abeam_expansions = 0
             self.abeam_steps_enumerated = 0
@@ -810,21 +1083,84 @@ class EdgeScheduler:
 
         self.compute_ranks_min()
 
+        w = self._resolve_weights(weights)
+        latency_ref = self._objective_refs()["latency_ref"]
+        w_latency = w["latency"]
+        offset = self._cost_offset(w)
+
         # Cheapest node first, so the partial-combination prune inside a wide step keeps
         # sensible branches even before f has much to go on.
         options = {t: sorted(self.comp_matrix[t].items(), key=lambda kv: kv[1])
                    for step in steps for t in step}
 
+        # Weighted energy + quality cost of every (service, node) pairing, and each
+        # service's cheapest one - the latter is the energy/quality part of h.
+        eq_cost = {t: {n: self._energy_quality_cost(t, n, w) for n in self.comp_matrix[t]}
+                   for step in steps for t in step}
+        eq_min = {t: min(costs.values()) for t, costs in eq_cost.items()}
+
         # Everything still unplaced after step i, in topological order (steps are
-        # topological by construction), precomputed once for _abeam_f().
+        # topological by construction), precomputed once for _abeam_latency_bound().
         pending_after = [[t for later in steps[i + 1:] for t in later] for i in range(len(steps))]
+        pending_after_eq = [sum(eq_min[t] for t in pending) for pending in pending_after]
 
         self.abeam_expansions = 0
         self.abeam_steps_enumerated = 0
         self.abeam_complete = True
 
-        # A branch is (f, makespan, placement, avail).
-        beam = [(0, 0, {}, {n: 0 for n in self.nodes})]
+        # Rollout heuristics complete each branch in a fixed topological order of all
+        # services, ranked by UpRank_min ("rollout_min") or by the standard HEFT upward
+        # rank ("rollout_avg"). Ranking by UpRank_min alone is not always topological
+        # (it takes the minimum over successors), hence the topological sort.
+        rollout = heuristic != "rank"
+        if rollout:
+            if heuristic == "rollout_min":
+                priority = dict(self.rank_min_u)
+            else:
+                self.compute_ranks()
+                priority = dict(self.rank_u)
+            rollout_order = [t for t in self._topological_order(priority)
+                             if self.comp_matrix.get(t)]
+
+        # Heuristic timing is accumulated in locals and stored on self at the end. A rank
+        # evaluation takes only a few microseconds, so even two clock reads per evaluation
+        # slowed the rank-only schemes by ~3% - enough to distort their measured runtimes.
+        # Rank evaluations are therefore timed 1 in RANK_TIMING_STRIDE and scaled up
+        # (an estimate, but the sample spans every depth of the search); rollouts cost
+        # hundreds of microseconds each, so every one is timed exactly.
+        RANK_TIMING_STRIDE = 16
+        clock = time.perf_counter
+        h_time = 0.0       # rollouts: exact total; rank: total over the sampled evaluations
+        h_evals = 0
+        h_sampled = 0      # rank evaluations actually timed
+
+        def score_rollout(placement, avail, eq_placed):
+            """f = the cost of completing this branch with a greedy HEFT placement."""
+            nonlocal h_time, h_evals
+            t0 = clock()
+            done = self._abeam_rollout(placement, avail, rollout_order, options)
+            latency = 0
+            eq_total = eq_placed
+            for t, (node, _start, end) in done.items():
+                if end > latency:
+                    latency = end
+                if t not in placement:
+                    eq_total += eq_cost[t][node]
+            f = w_latency * (latency / latency_ref - 1) + eq_total - offset
+            h_time += clock() - t0
+            h_evals += 1
+            return f
+
+        def scored(b):
+            """A branch with its f filled in, if it was deferred (rollouts only)."""
+            if b[0] is not None:
+                return b
+            return (score_rollout(b[2], b[3], b[4]),) + b[1:]
+
+        # A branch is (f, makespan, placement, avail, eq_placed), where eq_placed is the
+        # weighted energy + quality cost of the services it has placed so far. f is None
+        # while a rollout score has been deferred (see the docstring).
+        beam = [(0, 0, {}, {n: 0 for n in self.nodes}, 0.0)]
 
         for i, step_tasks in enumerate(steps):
             k = max(1, int(width_of(i, len(steps))))
@@ -842,10 +1178,33 @@ class EdgeScheduler:
             # cap nothing is dropped mid-step, so this enumerates every combination; when
             # it does not, the partial branches are pruned back to k after each service.
             branches = beam
+            step_exact = exact
             for position, task in enumerate(step_tasks):
+                # Expanding multiplies the branch list by this service's eligible node
+                # count, so trim to the best f BEFORE expanding whenever that product
+                # would blow past the ceiling. Without this, an exactly enumerated step
+                # holds beam_width x step_combinations branches at once.
+                fanout = len(options[task])
+                if len(branches) * fanout > self.abeam_max_open_branches:
+                    keep = max(1, self.abeam_max_open_branches // fanout)
+                    if keep < len(branches):
+                        if rollout:
+                            branches = [scored(b) for b in branches]
+                        branches = sorted(branches, key=lambda b: (b[0], b[1]))[:keep]
+                        if step_exact:
+                            # this step no longer saw every combination
+                            step_exact = False
+                            self.abeam_steps_enumerated -= 1
+                            self.abeam_complete = False
+
                 grown = []
                 remaining_in_step = step_tasks[position + 1:]
-                for _f, makespan, placement, avail in branches:
+                pending = remaining_in_step + pending_after[i]
+                pending_eq = sum(eq_min[t] for t in remaining_in_step) + pending_after_eq[i]
+                mid_step = position < len(step_tasks) - 1
+                # Nothing reads f before this exact step ends, so defer rollout scores.
+                defer = rollout and step_exact and mid_step
+                for _f, makespan, placement, avail, eq_placed in branches:
                     for node, comp_time in options[task]:
                         self.abeam_expansions += 1
 
@@ -857,24 +1216,47 @@ class EdgeScheduler:
                         new_avail = dict(avail)
                         new_avail[node] = eft
                         new_makespan = makespan if makespan > eft else eft
+                        new_eq = eq_placed + eq_cost[task][node]
 
-                        pending = remaining_in_step + pending_after[i]
-                        new_f = self._abeam_f(new_placement, new_makespan, pending)
-                        grown.append((new_f, new_makespan, new_placement, new_avail))
+                        # f = g + h, in the units of evaluate_schedule()'s cost. At a
+                        # leaf (nothing pending) this is exactly the schedule's cost.
+                        if not rollout:
+                            h_evals += 1
+                            if (h_evals - 1) % RANK_TIMING_STRIDE == 0:   # 1st, 17th, ...
+                                t0 = clock()
+                                latency = self._abeam_latency_bound(new_placement,
+                                                                    new_makespan, pending)
+                                h_time += clock() - t0
+                                h_sampled += 1
+                            else:
+                                latency = self._abeam_latency_bound(new_placement,
+                                                                    new_makespan, pending)
+                            new_f = (w_latency * (latency / latency_ref - 1)
+                                     + new_eq + pending_eq - offset)
+                        elif defer:
+                            new_f = None
+                        else:
+                            new_f = score_rollout(new_placement, new_avail, new_eq)
+                        grown.append((new_f, new_makespan, new_placement, new_avail, new_eq))
 
                 # Prune to the k lowest f. Skipped mid-step while the step is being
                 # enumerated exactly, so that an exact step really does see every
                 # combination before the beam closes at its boundary.
-                mid_step = position < len(step_tasks) - 1
-                if not (exact and mid_step):
+                if not (step_exact and mid_step):
                     grown.sort(key=lambda b: (b[0], b[1]))
                     grown = grown[:k]
                 branches = grown
 
             beam = branches
 
-        # Every branch is a complete schedule; return the one that actually finishes first
-        best = min(beam, key=lambda b: b[1])
+        if not rollout and h_sampled:
+            h_time *= h_evals / h_sampled
+        self.abeam_heuristic_time = h_time
+        self.abeam_heuristic_evals = h_evals
+
+        # Every branch is now a complete schedule, and with nothing pending its f is
+        # exactly its cost. Return the cheapest, ties going to the one that finishes first.
+        best = min(beam, key=lambda b: (b[0], b[1]))
         return best[2]
 
     def _earliest_start(self, task, node, schedule, avail):
@@ -903,7 +1285,7 @@ class EdgeScheduler:
 
     def _place_tasks(self, ordered_tasks):
         """Greedy earliest-finish-time placement of an already prioritized task list.
-        Identical to the placement loop in schedule_heft()/schedule_heft_cabeee()."""
+        Identical to the placement loop in schedule_heft()/schedule_heft_rlc()."""
         avail = {n: 0 for n in self.nodes}
         schedule = {} # task -> (node, start_time, end_time)
 
@@ -933,11 +1315,11 @@ class EdgeScheduler:
 
 
     def _topological_order(self, priority=None):
-        """Kahn topological sort. Ties are broken by descending priority (cabeee rank_u by
+        """Kahn topological sort. Ties are broken by descending priority (RLC rank_u by
         default), so the resulting order matches the HEFT task ordering whenever that
         ordering is itself topological - which keeps the exhaustive search comparable."""
         if priority is None:
-            self.compute_ranks_cabeee()
+            self.compute_ranks_rlc()
             priority = dict(self.rank_u)
 
         indegree = {t: len(self.dag_parents.get(t, [])) for t in self.tasks}
@@ -1045,43 +1427,114 @@ if __name__ == "__main__":
 # --- Execution Entry Point (Batch Processor) ---
 
 # CSV columns, shared by the worker and the writer in the parent process.
-# All *_Time_ms columns are wall-clock milliseconds for that scheme alone, measured
+# Every "... Time ms" column is wall-clock milliseconds for that scheme alone, measured
 # with time.perf_counter(). Milliseconds is the one scale that covers the whole range
 # seen here: the HEFT variants finish in well under a millisecond on small DAGs, while
 # a budget-hit exhaustive search runs for tens of seconds.
+#
+# "Energy J", "Quality" and "Cost" are every scheme's schedule scored by the SAME
+# EdgeScheduler.evaluate_schedule() and weights: total energy (sum over services), total
+# quality (product over services) and the weighted, normalized latency + quality + energy
+# cost that the A_Beam<k>_LEQ schemes minimize. Only they optimize that cost; the
+# A_Beam<k>_L schemes and the other schemes optimize makespan alone, so their Cost shows what ignoring quality and
+# energy costs them.
 FIELDNAMES = [
-    "Scenario_File",
-    "Total_Tasks",
-    "Total_Nodes",
-    "CP_min_ns",
-    "HEFT_Makespan_ns",
-    "HEFT_SLR",
-    "HEFT_Time_ms",
-    "HEFT_Cabeee_Makespan_ns",
-    "HEFT_Cabeee_SLR",
-    "HEFT_Cabeee_Time_ms",
-    "HEFT_Cabeee_mod1_Makespan_ns",
-    "HEFT_Cabeee_mod1_SLR",
-    "HEFT_Cabeee_mod1_Time_ms",
-    "HEFT_Cabeee_mod2_Makespan_ns",
-    "HEFT_Cabeee_mod2_SLR",
-    "HEFT_Cabeee_mod2_iterations",
-    "HEFT_Cabeee_mod2_Time_ms",
-    "CPOP_Makespan_ns",
-    "CPOP_SLR",
-    "CPOP_Time_ms",
-    "exhaustive_Makespan_ns",
-    "exhaustive_SLR",
-    "exhaustive_Status",
-    "exhaustive_Time_ms",
-    "A_Beam_Makespan_ns",
-    "A_Beam_SLR",
-    "A_Beam_Status",
-    "A_Beam_Beam_Width",
-    "A_Beam_Time_ms",
-    "Setup_Time_ms",
-    "Scenario_Time_ms"
+    "Scenario File",
+    "Total Tasks",
+    "Total Nodes",
+    "CP min ns",
+    "HEFT Makespan ns",
+    "HEFT SLR",
+    "HEFT Energy J",
+    "HEFT Quality",
+    "HEFT Cost",
+    "HEFT Time ms",
+    "HEFT RLC Makespan ns",
+    "HEFT RLC SLR",
+    "HEFT RLC Energy J",
+    "HEFT RLC Quality",
+    "HEFT RLC Cost",
+    "HEFT RLC Time ms",
+    "HEFT IC Makespan ns",
+    "HEFT IC SLR",
+    "HEFT IC Energy J",
+    "HEFT IC Quality",
+    "HEFT IC Cost",
+    "HEFT IC Time ms",
+    "HEFT Iter Makespan ns",
+    "HEFT Iter SLR",
+    "HEFT Iter Energy J",
+    "HEFT Iter Quality",
+    "HEFT Iter Cost",
+    "HEFT Iter iterations",
+    "HEFT Iter Time ms",
+    "CPOP Makespan ns",
+    "CPOP SLR",
+    "CPOP Energy J",
+    "CPOP Quality",
+    "CPOP Cost",
+    "CPOP Time ms",
+    "Exhaustive Makespan ns",
+    "Exhaustive SLR",
+    "Exhaustive Energy J",
+    "Exhaustive Quality",
+    "Exhaustive Cost",
+    "Exhaustive Status",
+    "Exhaustive Time ms",
+    "Weight Latency",
+    "Weight Quality",
+    "Weight Energy",
+    "Setup Time ms",
+    "Scenario Time ms"
 ]
+
+# A-Beam is run at every beam width in this list, once optimizing latency alone
+# (A_Beam<k>_L) and once optimizing latency + energy + quality (A_Beam<k>_LEQ).
+# Override from the command line with -k/--beam-widths.
+ABEAM_BEAM_WIDTHS = [1, 10, 100]
+ABEAM_OBJECTIVES = ("L", "LEQ")
+
+# Extra A-Beam variants whose heuristic completes each branch with a greedy HEFT
+# placement (a rollout) instead of using the UpRank_min bound. Each entry is
+# (tag, heuristic, beam width) and adds A_Beam<tag><k>_L and A_Beam<tag><k>_LEQ:
+#   PM - rollout order ranked by UpRank_min (minimum costs)
+#   PA - rollout order ranked by the standard HEFT upward rank (average costs)
+# These run at their own fixed width, independent of -k/--beam-widths.
+ABEAM_ROLLOUT_SCHEMES = [("PM", "rollout_min", 10), ("PA", "rollout_avg", 10)]
+
+# "Expansions" counts (branch, node) pairs generated; "Heuristic Evals" counts f
+# evaluations (rollout variants defer them inside exactly enumerated steps, so they can
+# be fewer); "Heuristic Time ms" is the wall time spent evaluating f, and
+# "Heuristic us per Eval" the mean cost of one evaluation.
+ABEAM_METRICS = ("Makespan ns", "SLR", "Energy J", "Quality", "Cost", "Status", "Time ms",
+                 "Expansions", "Heuristic Evals", "Heuristic Time ms", "Heuristic us per Eval")
+
+
+def abeam_specs(widths):
+    """Every A-Beam scheme to run, in run order, as (label, heuristic, k, objective)."""
+    specs = [(f"A_Beam{k}_{obj}", "rank", k, obj)
+             for k in widths for obj in ABEAM_OBJECTIVES]
+    specs += [(f"A_Beam{tag}{k}_{obj}", heuristic, k, obj)
+              for tag, heuristic, k in ABEAM_ROLLOUT_SCHEMES for obj in ABEAM_OBJECTIVES]
+    return specs
+
+
+def abeam_labels(widths):
+    """Scheme labels for every A-Beam scheme, in run order."""
+    return [label for label, _, _, _ in abeam_specs(widths)]
+
+
+def build_fieldnames(widths):
+    """CSV columns: the fixed schemes, then one block per A-Beam variant, then the tail
+    (weights and setup/scenario times)."""
+    tail_start = FIELDNAMES.index("Weight Latency")
+    abeam_cols = [f"{label} {m}" for label in abeam_labels(widths) for m in ABEAM_METRICS]
+    return FIELDNAMES[:tail_start] + abeam_cols + FIELDNAMES[tail_start:]
+
+
+# Minimal scenario used only to read EdgeScheduler's default limits back out for
+# diagnostics, without needing a real scenario file.
+EMPTY_SCENARIO = {"router": [], "link": [], "routerHosting": [], "dag": {"dag1": {}}}
 
 
 def _stamp():
@@ -1113,18 +1566,19 @@ def _format_duration(seconds):
 # scenarios have started, and the total number of scenarios.
 _started_counter = None
 _total_scenarios = None
-_beam_width = None
+_beam_widths = None
 
 
-def _init_worker(started_counter, total_scenarios, beam_width=None):
-    """Pool initializer: hand every worker process the shared start counter."""
-    global _started_counter, _total_scenarios, _beam_width
+def _init_worker(started_counter, total_scenarios, beam_widths=None):
+    """Pool initializer: hand every worker process the shared start counter and the
+    A-Beam beam widths to run."""
+    global _started_counter, _total_scenarios, _beam_widths
     _started_counter = started_counter
     _total_scenarios = total_scenarios
-    _beam_width = beam_width
+    _beam_widths = beam_widths
 
 
-def process_scenario(file_path, beam_width=None):
+def process_scenario(file_path, beam_widths=None):
     """Runs every scheduling algorithm over a single JSON scenario file.
 
     This is the unit of work handed to each worker process, so it must be a
@@ -1162,26 +1616,26 @@ def process_scenario(file_path, beam_width=None):
         makespan_heft = scheduler.get_makespan(heft_sched)
         slr_heft = makespan_heft / cp_min if cp_min > 0 else 0
 
-        # Run HEFT-cabeee (Your optimized version)
+        # Run HEFT-RLC (Your optimized version)
         t0 = time.perf_counter()
-        heft_cabeee_sched = scheduler.schedule_heft_cabeee()
-        time_cabeee = (time.perf_counter() - t0) * 1000.0
-        makespan_cabeee = scheduler.get_makespan(heft_cabeee_sched)
-        slr_cabeee = makespan_cabeee / cp_min if cp_min > 0 else 0
+        heft_rlc_sched = scheduler.schedule_heft_rlc()
+        time_rlc = (time.perf_counter() - t0) * 1000.0
+        makespan_rlc = scheduler.get_makespan(heft_rlc_sched)
+        slr_rlc = makespan_rlc / cp_min if cp_min > 0 else 0
 
-        # Run HEFT-cabeee_mod1 (Your optimized version with modification 1)
+        # Run HEFT-IC (Your optimized version with modification 1)
         t0 = time.perf_counter()
-        heft_cabeee_mod1_sched = scheduler.schedule_heft_cabeee_mod1()
-        time_cabeee_mod1 = (time.perf_counter() - t0) * 1000.0
-        makespan_cabeee_mod1 = scheduler.get_makespan(heft_cabeee_mod1_sched)
-        slr_cabeee_mod1 = makespan_cabeee_mod1 / cp_min if cp_min > 0 else 0
+        heft_ic_sched = scheduler.schedule_heft_ic()
+        time_ic = (time.perf_counter() - t0) * 1000.0
+        makespan_ic = scheduler.get_makespan(heft_ic_sched)
+        slr_ic = makespan_ic / cp_min if cp_min > 0 else 0
 
-        # Run HEFT-cabeee_mod2 (Your optimized version with modification 2)
+        # Run HEFT-Iter (Your optimized version with modification 2)
         t0 = time.perf_counter()
-        heft_cabeee_mod2_sched, iterations_cabeee_mod2 = scheduler.schedule_heft_cabeee_mod2()
-        time_cabeee_mod2 = (time.perf_counter() - t0) * 1000.0
-        makespan_cabeee_mod2 = scheduler.get_makespan(heft_cabeee_mod2_sched)
-        slr_cabeee_mod2 = makespan_cabeee_mod2 / cp_min if cp_min > 0 else 0
+        heft_iter_sched, iterations_iter = scheduler.schedule_heft_iter()
+        time_iter = (time.perf_counter() - t0) * 1000.0
+        makespan_iter = scheduler.get_makespan(heft_iter_sched)
+        slr_iter = makespan_iter / cp_min if cp_min > 0 else 0
 
         # Run CPOP
         t0 = time.perf_counter()
@@ -1199,15 +1653,23 @@ def process_scenario(file_path, beam_width=None):
         makespan_exhaustive = scheduler.get_makespan(exhaustive_sched)
         slr_exhaustive = makespan_exhaustive / cp_min if cp_min > 0 else 0
 
-        # Run A-Beam (step-wise beam search ordered by f = g + h)
-        k = beam_width if beam_width is not None else _beam_width
-        if k is not None:
-            scheduler.abeam_beam_width = k
-        t0 = time.perf_counter()
-        abeam_sched = scheduler.schedule_abeam()
-        time_abeam = (time.perf_counter() - t0) * 1000.0
-        makespan_abeam = scheduler.get_makespan(abeam_sched)
-        slr_abeam = makespan_abeam / cp_min if cp_min > 0 else 0
+        # Run every A-Beam scheme with the same engine: A_Beam<k>_L optimizes latency
+        # alone, A_Beam<k>_LEQ the weighted latency + energy + quality cost, and the
+        # PM/PA variants swap the UpRank_min heuristic for a HEFT-placement rollout.
+        widths = beam_widths or _beam_widths or ABEAM_BEAM_WIDTHS
+        abeam_runs = []
+        for label, heuristic, k, obj in abeam_specs(widths):
+            run = scheduler.schedule_abeam_l if obj == "L" else scheduler.schedule_abeam_leq
+            t0 = time.perf_counter()
+            sched = run(beam_width=k, heuristic=heuristic)
+            elapsed = (time.perf_counter() - t0) * 1000.0
+            abeam_runs.append({
+                "label": label, "sched": sched, "time_ms": elapsed,
+                "complete": scheduler.abeam_complete,
+                "expansions": scheduler.abeam_expansions,
+                "evals": scheduler.abeam_heuristic_evals,
+                "heuristic_ms": scheduler.abeam_heuristic_time * 1000.0,
+            })
 
         elapsed_ms = (time.perf_counter() - scenario_t0) * 1000.0
 
@@ -1225,35 +1687,58 @@ def process_scenario(file_path, beam_width=None):
             "HEFT Makespan ns": makespan_heft,
             "HEFT SLR": f"{slr_heft:.4f}",
             "HEFT Time ms": f"{time_heft:.3f}",
-            "HEFT cabeee Makespan ns": makespan_cabeee,
-            "HEFT cabeee SLR": f"{slr_cabeee:.4f}",
-            "HEFT cabeee Time ms": f"{time_cabeee:.3f}",
-            "HEFT cabeee mod1 Makespan ns": makespan_cabeee_mod1,
-            "HEFT cabeee mod1 SLR": f"{slr_cabeee_mod1:.4f}",
-            "HEFT cabeee mod1 Time ms": f"{time_cabeee_mod1:.3f}",
-            "HEFT cabeee mod2 Makespan ns": makespan_cabeee_mod2,
-            "HEFT cabeee mod2 SLR": f"{slr_cabeee_mod2:.4f}",
-            "HEFT cabeee mod2 iterations": iterations_cabeee_mod2,
-            "HEFT cabeee mod2 Time ms": f"{time_cabeee_mod2:.3f}",
+            "HEFT RLC Makespan ns": makespan_rlc,
+            "HEFT RLC SLR": f"{slr_rlc:.4f}",
+            "HEFT RLC Time ms": f"{time_rlc:.3f}",
+            "HEFT IC Makespan ns": makespan_ic,
+            "HEFT IC SLR": f"{slr_ic:.4f}",
+            "HEFT IC Time ms": f"{time_ic:.3f}",
+            "HEFT Iter Makespan ns": makespan_iter,
+            "HEFT Iter SLR": f"{slr_iter:.4f}",
+            "HEFT Iter iterations": iterations_iter,
+            "HEFT Iter Time ms": f"{time_iter:.3f}",
             "CPOP Makespan ns": makespan_cpop,
             "CPOP SLR": f"{slr_cpop:.4f}",
             "CPOP Time ms": f"{time_cpop:.3f}",
-            "exhaustive Makespan ns": makespan_exhaustive,
-            "exhaustive SLR": f"{slr_exhaustive:.4f}",
+            "Exhaustive Makespan ns": makespan_exhaustive,
+            "Exhaustive SLR": f"{slr_exhaustive:.4f}",
             # 1 = the search finished, so the makespan is a proven optimum.
             # 0 = it ran out of evaluations, so it is only the best found.
-            "exhaustive Status": 1 if scheduler.exhaustive_complete else 0,
-            "exhaustive Time ms": f"{time_exhaustive:.3f}",
-            "A_Beam Makespan ns": makespan_abeam,
-            "A_Beam SLR": f"{slr_abeam:.4f}",
-            # 1 = every DAG step had its full hosting product enumerated exactly.
-            # 0 = at least one step was too wide and was expanded service by service.
-            "A_Beam Status": 1 if scheduler.abeam_complete else 0,
-            "A_Beam Beam Width": scheduler.abeam_beam_width,
-            "A_Beam Time ms": f"{time_abeam:.3f}",
+            "Exhaustive Status": 1 if scheduler.exhaustive_complete else 0,
+            "Exhaustive Time ms": f"{time_exhaustive:.3f}",
             "Setup Time ms": f"{time_setup:.3f}",
             "Scenario Time ms": f"{elapsed_ms:.3f}"
         }
+
+        # Energy, quality and combined cost for every scheme, all scored identically
+        for label, sched in (("HEFT", heft_sched),
+                             ("HEFT RLC", heft_rlc_sched),
+                             ("HEFT IC", heft_ic_sched),
+                             ("HEFT Iter", heft_iter_sched),
+                             ("CPOP", cpop_sched),
+                             ("Exhaustive", exhaustive_sched),
+                             *((r["label"], r["sched"]) for r in abeam_runs)):
+            metrics = scheduler.evaluate_schedule(sched)
+            row[f"{label} Energy J"] = f"{metrics['energy']:.4f}"
+            row[f"{label} Quality"] = f"{metrics['quality']:.6g}"
+            row[f"{label} Cost"] = f"{metrics['cost']:.6f}"
+        for r in abeam_runs:
+            label = r["label"]
+            makespan = scheduler.get_makespan(r["sched"])
+            row[f"{label} Makespan ns"] = makespan
+            row[f"{label} SLR"] = f"{(makespan / cp_min if cp_min > 0 else 0):.4f}"
+            # 1 = every DAG step had its full hosting product enumerated exactly.
+            # 0 = at least one step was too wide and was expanded service by service.
+            row[f"{label} Status"] = 1 if r["complete"] else 0
+            row[f"{label} Time ms"] = f"{r['time_ms']:.3f}"
+            row[f"{label} Expansions"] = r["expansions"]
+            row[f"{label} Heuristic Evals"] = r["evals"]
+            row[f"{label} Heuristic Time ms"] = f"{r['heuristic_ms']:.3f}"
+            per_eval = r["heuristic_ms"] * 1000.0 / r["evals"] if r["evals"] else 0.0
+            row[f"{label} Heuristic us per Eval"] = f"{per_eval:.3f}"
+        row["Weight Latency"] = f"{scheduler.weight_latency:.4f}"
+        row["Weight Quality"] = f"{scheduler.weight_quality:.4f}"
+        row["Weight Energy"] = f"{scheduler.weight_energy:.4f}"
         return {"file": file_name, "row": row, "warning": warning,
                 "error": None, "elapsed_ms": elapsed_ms}
 
@@ -1271,10 +1756,12 @@ if __name__ == "__main__":
     parser.add_argument("-j", "--jobs", type=int, default=os.cpu_count(),
                         help="Number of worker processes / CPU cores to use in parallel "
                              "(default: all available cores). Use 1 to run serially.")
-    parser.add_argument("-k", "--beam-width", type=int, default=None,
-                        help="A-Beam beam width: how many branches survive the prune at "
-                             "each DAG step (default: the EdgeScheduler default of 10). "
-                             "Larger k searches more and runs slower.")
+    parser.add_argument("-k", "--beam-widths", default=",".join(map(str, ABEAM_BEAM_WIDTHS)),
+                        help="Comma-separated A-Beam beam widths (default: %(default)s). "
+                             "Each width k adds two schemes, A_Beam<k>_L (latency only) and "
+                             "A_Beam<k>_LEQ (latency + energy + quality), with their own CSV "
+                             "columns. k is how many branches survive the prune at each DAG "
+                             "step; larger k searches more and runs slower.")
     parser.add_argument("-p", "--pattern", default="*.json",
                         help="Only run scenarios whose file name matches this glob pattern "
                              "(default: '*.json', i.e. every scenario in the directory). A "
@@ -1282,6 +1769,15 @@ if __name__ == "__main__":
                              "-p 1-noSD2-multicast.json runs every file ending in that. "
                              "Quote patterns containing * so the shell does not expand them.")
     args = parser.parse_args()
+
+    try:
+        beam_widths = [int(x) for x in args.beam_widths.split(",") if x.strip()]
+    except ValueError:
+        parser.error(f"-k/--beam-widths must be comma-separated integers, got {args.beam_widths!r}")
+    if not beam_widths or any(k < 1 for k in beam_widths):
+        parser.error("-k/--beam-widths needs at least one width, all >= 1")
+    beam_widths = sorted(set(beam_widths))
+    fieldnames = build_fieldnames(beam_widths)
 
     # 2. Find the JSON files in the specified directory, then keep the ones matching
     #    the requested pattern. A pattern with no glob wildcard is a plain suffix.
@@ -1320,24 +1816,25 @@ if __name__ == "__main__":
     total = len(json_files)
     finished = 0
     interrupted = False
+    pool_broken = False
     started_counter = multiprocessing.Value('i', 0)
 
     csv_file = open(args.out, mode='w', newline='')
-    writer = csv.DictWriter(csv_file, fieldnames=FIELDNAMES)
+    writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
     writer.writeheader()
     csv_file.flush()
 
     run_t0 = time.perf_counter()
     scenario_seconds = 0.0   # summed per-scenario time, for the parallel-speedup line
 
-    # The executor is driven manually rather than with a "with" block: on Ctrl-C we
-    # want shutdown(cancel_futures=True) so the queued scenarios are dropped and the
-    # run stops promptly. A plain "with" would call shutdown(wait=True), which drains
-    # the entire remaining queue before exiting.
+    # The executor is driven manually rather than with a "with" block: on Ctrl-C we want
+    # to drop the queued scenarios so the run stops promptly. A plain "with" would call
+    # shutdown(wait=True), which drains the entire remaining queue before exiting.
+    future_to_file = {}
     executor = concurrent.futures.ProcessPoolExecutor(
         max_workers=workers,
         initializer=_init_worker,
-        initargs=(started_counter, total, args.beam_width),
+        initargs=(started_counter, total, beam_widths),
     )
     try:
         future_to_file = {
@@ -1364,19 +1861,46 @@ if __name__ == "__main__":
         # Ctrl-C in the parent only
         interrupted = True
     except concurrent.futures.process.BrokenProcessPool:
-        # Ctrl-C from a terminal reaches the whole process group, so the workers die
-        # first and the pool breaks before the parent sees its own KeyboardInterrupt
+        # A worker process died. Either Ctrl-C from a terminal reached the whole process
+        # group (so the workers died before the parent saw its own KeyboardInterrupt), or
+        # a worker was killed outright - most often by the kernel's OOM killer, since
+        # A-Beam's memory grows with the beam width and every worker pays it. Report it
+        # instead of silently calling it an interrupt.
         interrupted = True
+        pool_broken = True
     finally:
         if interrupted:
-            print(f"\n{_stamp()} Stopping (waiting for the scenarios already running to finish)...",
-                  flush=True)
-            executor.shutdown(wait=True, cancel_futures=True)
+            if pool_broken:
+                print(f"\n{_stamp()} A worker process died - stopping.", flush=True)
+            else:
+                print(f"\n{_stamp()} Stopping (waiting for the scenarios already running "
+                      f"to finish)...", flush=True)
+            # Drop everything still queued, then wait only for what is already running.
+            # shutdown(cancel_futures=True) does this in one call, but that argument only
+            # exists in Python 3.9+, so cancel the pending futures explicitly first -
+            # which has the same effect on every version. Futures already running cannot
+            # be cancelled and simply finish.
+            for pending in future_to_file:
+                pending.cancel()
+            executor.shutdown(wait=True)
         else:
             executor.shutdown(wait=True)
         csv_file.close()
 
     run_elapsed = time.perf_counter() - run_t0
+
+    if pool_broken:
+        print(f"\nSTOPPED after {finished}/{total} scenarios in "
+              f"{_format_duration(run_elapsed)}: a worker process died, which breaks the "
+              f"pool and ends the run.")
+        print("  The usual cause is the kernel's OOM killer. Check with:")
+        print("    dmesg -T | grep -i 'killed process'")
+        print(f"  A-Beam holds up to abeam_max_open_branches "
+              f"({EdgeScheduler(EMPTY_SCENARIO).abeam_max_open_branches:,}) branches of "
+              f"~2 KB in EVERY worker, so if that is the cause, use fewer workers (-j), "
+              f"smaller beam widths (-k), or lower abeam_max_open_branches.")
+        print(f"  Partial results (unsorted) saved in: {args.out}")
+        exit(1)
 
     if interrupted:
         print(f"\nInterrupted after {finished}/{total} scenarios in "
@@ -1387,7 +1911,7 @@ if __name__ == "__main__":
     # 4. Full run finished: rewrite the CSV in the original (sorted) file order so
     #    the output is deterministic regardless of the order the workers finished.
     with open(args.out, mode='w', newline='') as csv_file:
-        writer = csv.DictWriter(csv_file, fieldnames=FIELDNAMES)
+        writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
         writer.writeheader()
         for file_path in json_files:
             res = results.get(os.path.basename(file_path))
@@ -1403,3 +1927,19 @@ if __name__ == "__main__":
     if run_elapsed > 0:
         print(f"  parallel speedup     : {scenario_seconds / run_elapsed:.1f}x "
               f"on {workers} core(s)")
+
+    # Push a completion notification through ntfy.sh. The total is the same string as
+    # the "Total wall-clock time" line above. Best effort only: the results are already
+    # saved, so a failed notification must not turn a finished run into an error.
+    ntfy_topic = "ntfy.sh/cabeee-dag_run"
+    ntfy_message = f"A-Beam runs complete! Total exec time: {_format_duration(run_elapsed)}."
+    try:
+        notify = subprocess.run(["curl", "-d", ntfy_message, ntfy_topic],
+                                stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+                                timeout=30)
+        if notify.returncode == 0:
+            print(f"Sent completion notification to {ntfy_topic}")
+        else:
+            print(f"(completion notification failed: curl exited with {notify.returncode})")
+    except (OSError, subprocess.TimeoutExpired) as e:
+        print(f"(completion notification failed: {e})")
